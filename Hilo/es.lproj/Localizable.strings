@@ -1,0 +1,33 @@
+/* 
+  Localizable.strings
+  Hilo
+
+  Created by Yhon Vivas on 08-02-26.
+  
+*/
+
+/* ==== RegisterView ==== */
+"join_readers_community" = "Únete a la comunidad de lectores";
+
+"form_name_placeholder" = "Ingresa tu nombre";
+"form_username_placeholder" = "Ingresa tu usuario, ejemplo '@user'";
+"form_email_placeholder" = "Ingresa tu email";
+
+"personal_data_section" = "Datos personales";
+
+"password_placeholder" = "Crea tu contraseña";
+"confirm_password_placeholder" = "Confirma tu contraseña";
+
+"password_section" = "Contraseña";
+
+"register_button" = "Registrarse";
+"passwords_dont_match" = "Las contraseñas no coinciden";
+"all_fields_required" = "Todos los campos son requeridos";
+
+/* ==== LoginView ==== */
+"login_subtitle" = "Feliz de verte de nuevo";
+"login_into_your_account" = "Ingresa a tu cuenta";
+"register_your_account" = "¿Aún no estás registrado? ¡Registrate!";
+"log_in" = "Ingresa";
+"type_your_credentials" = "Ingresa tus credenciales";
+"forgot_password_text" = "¿Olvidaste tu contraseña?";

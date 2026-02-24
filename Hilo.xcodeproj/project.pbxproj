@@ -6,13 +6,33 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		C27445CA2F2E954300ED3B42 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = C27445C92F2E954300ED3B42 /* FirebaseAnalytics */; };
+		C27445CC2F2E954300ED3B42 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = C27445CB2F2E954300ED3B42 /* FirebaseAuth */; };
+		C27445CE2F2E954300ED3B42 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = C27445CD2F2E954300ED3B42 /* FirebaseFirestore */; };
+		C27445D02F2E954300ED3B42 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = C27445CF2F2E954300ED3B42 /* FirebaseStorage */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		C27445B82F2E89EC00ED3B42 /* Hilo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Hilo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		C2D45E3C2F43E2BA001E8644 /* Exceptions for "Hilo" folder in "Hilo" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = C27445B72F2E89EC00ED3B42 /* Hilo */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		C27445BA2F2E89EC00ED3B42 /* Hilo */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				C2D45E3C2F43E2BA001E8644 /* Exceptions for "Hilo" folder in "Hilo" target */,
+			);
 			path = Hilo;
 			sourceTree = "<group>";
 		};
@@ -23,6 +43,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C27445CA2F2E954300ED3B42 /* FirebaseAnalytics in Frameworks */,
+				C27445D02F2E954300ED3B42 /* FirebaseStorage in Frameworks */,
+				C27445CC2F2E954300ED3B42 /* FirebaseAuth in Frameworks */,
+				C27445CE2F2E954300ED3B42 /* FirebaseFirestore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +89,10 @@
 			);
 			name = Hilo;
 			packageProductDependencies = (
+				C27445C92F2E954300ED3B42 /* FirebaseAnalytics */,
+				C27445CB2F2E954300ED3B42 /* FirebaseAuth */,
+				C27445CD2F2E954300ED3B42 /* FirebaseFirestore */,
+				C27445CF2F2E954300ED3B42 /* FirebaseStorage */,
 			);
 			productName = Hilo;
 			productReference = C27445B82F2E89EC00ED3B42 /* Hilo.app */;
@@ -91,9 +119,13 @@
 			knownRegions = (
 				en,
 				Base,
+				es,
 			);
 			mainGroup = C27445AF2F2E89EC00ED3B42;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				C27445C82F2E954300ED3B42 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = C27445B92F2E89EC00ED3B42 /* Products */;
 			projectDirPath = "";
@@ -130,6 +162,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -194,6 +227,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -256,11 +290,13 @@
 				DEVELOPMENT_TEAM = 2P8CWA2JF6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Hilo/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -288,11 +324,13 @@
 				DEVELOPMENT_TEAM = 2P8CWA2JF6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Hilo/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -332,6 +370,40 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		C27445C82F2E954300ED3B42 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.8.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		C27445C92F2E954300ED3B42 /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C27445C82F2E954300ED3B42 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
+		};
+		C27445CB2F2E954300ED3B42 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C27445C82F2E954300ED3B42 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		C27445CD2F2E954300ED3B42 /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C27445C82F2E954300ED3B42 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+		C27445CF2F2E954300ED3B42 /* FirebaseStorage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C27445C82F2E954300ED3B42 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseStorage;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = C27445B02F2E89EC00ED3B42 /* Project object */;
 }

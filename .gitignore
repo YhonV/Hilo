@@ -1,0 +1,28 @@
+# Xcode
+xcuserdata/
+*.xcuserstate
+*.xcworkspace/xcuserdata/
+project.xcworkspace/xcuserdata/
+
+# Firebase
+GoogleService-Info.plist
+google-services.json
+
+# Swift Package Manager
+.swiftpm/
+.build/
+
+# CocoaPods (si lo usas en el futuro)
+Pods/
+*.xcworkspace
+!default.xcworkspace
+Podfile.lock
+
+# macOS
+.DS_Store
+
+# fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output
