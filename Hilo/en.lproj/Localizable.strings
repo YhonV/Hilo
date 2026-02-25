@@ -10,7 +10,7 @@
 "join_readers_community" = "Join the readers community";
 
 "form_name_placeholder" = "Enter your name";
-"form_username_placeholder" = "Enter your username, e.g. '@user'";
+"form_username_placeholder" = "'@user'";
 "form_email_placeholder" = "Enter your email";
 
 "personal_data_section" = "Personal information";
@@ -24,11 +24,20 @@
 
 "passwords_dont_match" = "Passwords doesn't match";
 "all_fields_required" = "All fields are required";
+"already_have_an_account" = "Already have an account?";
 
 /* ==== LoginView ==== */
-"login_subtitle" = "Happy to see you back";
+"login_subtitle" = "Follow the thread of everything you read";
 "login_into_your_account" = "Log in into your account";
-"register_your_account" = "Not registered yet? Sign up!";
+"not_registered_yet" = "Not registered yet?";
 "log_in" = "Log in";
+"sign_up" = "Sign Up!";
 "type_your_credentials" = "Type your credentials";
 "forgot_password_text" = "Did you forgot your password?";
+"forgot_password_subtitle" = "Type your email to recover your password";
+
+/* ==== ForgetPasswordView ==== */
+"wanna_go_back_to_login" = "Want to go back to login?";
+"forgot_password_button" = "Send recovery email";
+"forgot_password_disclaimer" = "Check your spam folder if you don't see the email";
+"username_not_available" = "This username is already taken";

@@ -6,6 +6,7 @@
 //
 import FirebaseCore
 import FirebaseFirestore
+import FirebaseAuth
 
 class FirestoreService {
     static let shared = FirestoreService()
@@ -27,7 +28,7 @@ class FirestoreService {
             "totalReviews": book.totalReviews
         ]
         
-        let ref = try await db.collection("books").addDocument(data: bookData)
+        try await db.collection("books").addDocument(data: bookData)
     }
     
     func createUser(_ user: User) async throws {
@@ -41,6 +42,18 @@ class FirestoreService {
                 "userBio": user.userBio as Any,
                 "createdAt": user.createdAt
             ])
+    }
+    
+    func resetPassword(email: String) async throws {
+        try await Auth.auth().sendPasswordReset(withEmail: email)
+    }
+    
+    func isUsernameTaken(_ username: String) async throws -> Bool {
+        let snapshot = try await db.collection("users")
+            .whereField("username", isEqualTo: username.lowercased())
+            .getDocuments()
+        
+        return !snapshot.documents.isEmpty
     }
     
 }

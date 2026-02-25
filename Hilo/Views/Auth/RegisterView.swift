@@ -22,105 +22,140 @@ struct RegisterView: View {
     var body: some View {
         NavigationStack {
             ZStack(alignment: .bottom) {
-                VStack(spacing: 0) {
-                    // Header
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("hilo")
-                            .font(.system(size: 40, weight: .bold))
-                            .foregroundColor(AppColors.primary)
-                        
-                        Text("join_readers_community")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 20)
-                    .padding(.top, 20)
-                    .padding(.bottom, 10)
-                    
-                    // Form sin el botón
-                    Form {
-                        Section{
-                            HStack {
-                                Image(systemName: "person")
-                                    .foregroundColor(.gray)
-                                    .frame(width: 20)
-                                
-                                TextField("form_name_placeholder", text: $displayName)
-                                    .padding(.vertical, 8)
-                            }
-                            
-                            HStack {
-                                Image(systemName: "at")
-                                    .foregroundColor(.gray)
-                                    .frame(width: 20)
-                                TextField("form_username_placeholder", text: $username)
-                                    .padding(.vertical, 8)
-                            }
-                            
-                            HStack {
-                                Image(systemName: "envelope")
-                                   .foregroundColor(.gray)
-                                   .frame(width: 20)
-                                
-                                TextField("form_email_placeholder", text: $email)
-                                    .keyboardType(.emailAddress)
-                                    .textInputAutocapitalization(.never)
-                                    .padding(.vertical, 8)
-                            }
-                            
-                        } header: {
-                            Text("personal_data_section")
-                                .font(.subheadline)
-                                .fontWeight(.semibold)
-                                .foregroundColor(AppColors.titles)
-                                .textCase(nil)
-                        }
-                        .listRowBackground(
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(Color.white)
-                        )
-                        
-                        Section {
-                            HStack {
-                                Image(systemName: "lock")
-                                    .foregroundColor(.gray)
-                                    .frame(width: 20)
-                                
-                                SecureField("password_placeholder", text: $password)
-                                    .padding(.vertical, 8)
-                            }
-                            
-                            HStack {
-                                Image(systemName: "lock")
-                                    .foregroundColor(.gray)
-                                    .frame(width: 20)
-                                
-                                SecureField("confirm_password_placeholder", text: $confirmPassword)
-                                    .padding(.vertical, 8)
-                            }
-                            
-                        } header: {
-                            Text("password_section")
-                                .font(.subheadline)
-                                .fontWeight(.semibold)
-                                .foregroundColor(AppColors.titles)
-                                .textCase(nil)
-                        }
-                        .listRowBackground(
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(Color.white)
-                        )
-                    }
-                    .scrollContentBackground(.hidden)
-                }
+                // FONDO
+                AppColors.background
+                    .ignoresSafeArea()
                 
-                // Botón flotante abajo
+                ScrollView {
+                    VStack(spacing: 0) {
+                        // LOGO + HEADER
+                        VStack(spacing: 0) {
+                            Image("hilo-logo")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 140, height: 140)
+                            
+                            Text("join_readers_community")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
+                        .padding(.bottom, 5)
+                        
+                        // TARJETA CON FORM
+                        VStack(spacing: 12) {
+                            // SECCIÓN: DATOS PERSONALES
+                            VStack(alignment: .leading, spacing: 16) {
+                                Text("personal_data_section")
+                                    .font(.headline)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(AppColors.titles)
+                                
+                                // NOMBRE
+                                HStack(spacing: 12) {
+                                    Image(systemName: "person")
+                                        .foregroundColor(.gray)
+                                        .frame(width: 20)
+                                    
+                                    TextField("form_name_placeholder", text: $displayName)
+                                }
+                                .padding()
+                                .background(AppColors.background)
+                                .cornerRadius(12)
+                                
+                                // USERNAME
+                                HStack(spacing: 12) {
+                                    Image(systemName: "at")
+                                        .foregroundColor(.gray)
+                                        .frame(width: 20)
+                                    
+                                    TextField("form_username_placeholder", text: $username)
+                                        .textInputAutocapitalization(.never)
+                                }
+                                .padding()
+                                .background(AppColors.background)
+                                .cornerRadius(12)
+                                
+                                // EMAIL
+                                HStack(spacing: 12) {
+                                    Image(systemName: "envelope")
+                                        .foregroundColor(.gray)
+                                        .frame(width: 20)
+                                    
+                                    TextField("form_email_placeholder", text: $email)
+                                        .keyboardType(.emailAddress)
+                                        .textInputAutocapitalization(.never)
+                                }
+                                .padding()
+                                .background(AppColors.background)
+                                .cornerRadius(12)
+                            }
+                            
+                            // SECCIÓN: CONTRASEÑA
+                            VStack(alignment: .leading, spacing: 16) {
+                                Text("password_section")
+                                    .font(.headline)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(AppColors.titles)
+                                
+                                // PASSWORD
+                                HStack(spacing: 12) {
+                                    Image(systemName: "lock")
+                                        .foregroundColor(.gray)
+                                        .frame(width: 20)
+                                    
+                                    SecureField("password_placeholder", text: $password)
+                                }
+                                .padding()
+                                .background(AppColors.background)
+                                .cornerRadius(12)
+                                
+                                // CONFIRM PASSWORD
+                                HStack(spacing: 12) {
+                                    Image(systemName: "lock")
+                                        .foregroundColor(.gray)
+                                        .frame(width: 20)
+                                    
+                                    SecureField("confirm_password_placeholder", text: $confirmPassword)
+                                }
+                                .padding()
+                                .background(AppColors.background)
+                                .cornerRadius(12)
+                            }
+                            
+                            // LINK A LOGIN
+                            HStack(spacing: 4) {
+                                Text("already_have_an_account")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                                
+                                NavigationLink(destination: LoginView()) {
+                                    Text("log_in")
+                                        .font(.subheadline)
+                                        .foregroundColor(AppColors.primary)
+                                        .fontWeight(.semibold)
+                                }
+                            }
+                            .padding(.top, 8)
+                            .padding(.bottom, 8)
+                        }
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 28)
+                        .background(Color.white)
+                        .cornerRadius(24)
+                        .shadow(color: .black.opacity(0.06), radius: 16, x: 0, y: 8)
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 100)
+                    }
+                }
+                .scrollIndicators(.hidden)
+
+                // BOTÓN FIJO
                 Button {
                     Task {
                         do {
                             try await register(email: email, password: password)
                         } catch {
+                            isLoading = false
                             errorMessage = error.localizedDescription
                             showError = true
                         }
@@ -136,20 +171,23 @@ struct RegisterView: View {
                     }
                 }
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
+                .frame(height: 56)
                 .background(AppColors.primary)
-                .cornerRadius(12)
-                .shadow(color: AppColors.primary.opacity(0.3), radius: 10, y: 5)
+                .cornerRadius(16)
+                .shadow(color: AppColors.primary.opacity(0.3), radius: 12, y: 6)
                 .padding(.horizontal, 20)
-                .padding(.bottom, 30)
+                .padding(.bottom, 40)
+                .disabled(isLoading)
             }
-            .background(AppColors.background)
             .alert("Error", isPresented: $showError) {
                 Button("OK", role: .cancel) { }
             } message: {
                 Text(LocalizedStringKey(errorMessage ?? "error_unknown"))
             }
-            .navigationDestination(isPresented: $navigateToHome) { HomeView() }
+            .navigationDestination(isPresented: $navigateToHome) {
+                HomeView()
+            }
+            //.navigationBarHidden(true)
         }
     }
     
@@ -169,12 +207,29 @@ struct RegisterView: View {
             isLoading = false
             return
         }
+        
+        let finalUsername = username.hasPrefix("@") ? username : "@" + username
+        
+        let usernameTaken = try await FirestoreService.shared.isUsernameTaken(finalUsername)
+        if usernameTaken {
+            isLoading = false
+            errorMessage = "username_not_available"
+            showError = true
+            return
+        }
+        
         let response = try await AuthService.shared.register(email: email, password: password)
-        guard !response.userId.isEmpty else { throw NSError(domain: "RegisterError", code: 0)}
+        guard !response.userId.isEmpty else {
+                throw NSError(
+                    domain: "RegisterError",
+                    code: 0,
+                    userInfo: [NSLocalizedDescriptionKey: "Failed to create user account"]
+                )
+            }
         
         let userData = User (
             userId: response.userId,
-            username: username,
+            username: finalUsername.lowercased(),
             displayName: displayName,
             profilePic: "",
             userBio: "",
