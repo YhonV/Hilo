@@ -40,3 +40,14 @@
 "forgot_password_button" = "Envía email para recuperar contraseña";
 "forgot_password_disclaimer" = "Revisa tu carpeta de spam en caso de que no veas el email";
 "username_not_available" = "Este nombre de usuario ya está ocupado";
+
+
+/* ===== MainTabView ==== */
+"home_text_tab" = "Inicio";
+"search_text_tab" = "Buscar";
+"profile_text_tab" = "Perfil";
+
+/* ==== EnumRead ==== */
+"read" = "Leído";
+"reading" = "Leyendo";
+"to_read" = "Por leer";

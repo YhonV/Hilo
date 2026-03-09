@@ -21,10 +21,28 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 @main
 struct HiloApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
+    @State private var authViewModel: AuthViewModel?  // ← Opcional
+    
     var body: some Scene {
         WindowGroup {
-            LoginView()
-                .preferredColorScheme(.light)
+            Group {
+                if let authViewModel {
+                    if authViewModel.isAuthenticated {
+                        MainTabView()
+                            .environment(authViewModel)
+                    } else {
+                        LoginView()
+                            .environment(authViewModel)
+                    }
+                } else {
+                    ProgressView()
+                }
+            }
+            .onAppear {
+                if authViewModel == nil {
+                    authViewModel = AuthViewModel()
+                }
+            }
         }
     }
 }

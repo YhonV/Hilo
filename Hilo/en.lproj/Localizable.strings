@@ -41,3 +41,14 @@
 "forgot_password_button" = "Send recovery email";
 "forgot_password_disclaimer" = "Check your spam folder if you don't see the email";
 "username_not_available" = "This username is already taken";
+
+/* ===== MainTabView ==== */
+"home_text_tab" = "Home";
+"search_text_tab" = "Search";
+"profile_text_tab" = "Profile";
+
+/* ==== EnumRead ==== */
+"read" = "Read";
+"reading" = "Reading";
+"to_read" = "To Read";
+

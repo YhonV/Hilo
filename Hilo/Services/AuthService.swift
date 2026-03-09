@@ -16,7 +16,7 @@ class AuthService {
         
         let firebaseUser = result.user
         
-        return User(userId: firebaseUser.uid, username: "", displayName: "", createdAt: Date())
+        return User(id: firebaseUser.uid, username: "", displayName: "", email: "", createdAt: Date())
     }
 
     func signIn(email: String, password: String) async throws {

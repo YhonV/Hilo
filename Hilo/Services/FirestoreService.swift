@@ -7,6 +7,7 @@
 import FirebaseCore
 import FirebaseFirestore
 import FirebaseAuth
+import Foundation
 
 class FirestoreService {
     static let shared = FirestoreService()
@@ -15,33 +16,11 @@ class FirestoreService {
     let db = Firestore.firestore()
     
     func saveBook(_ book: Book) async throws {
-        let bookData: [String: Any] = [
-            "bookId": book.bookId,
-            "title": book.title,
-            "author": book.author,
-            "cover": book.cover,
-            "genre": book.genre,
-            "description": book.description as Any,
-            "numberOfPages": book.numberOfPages,
-            "isbn": book.isbn as Any,
-            "averageRating": book.averageRating as Any,
-            "totalReviews": book.totalReviews
-        ]
-        
-        try await db.collection("books").addDocument(data: bookData)
+        try db.collection("books").addDocument(from: book)
     }
     
-    func createUser(_ user: User) async throws {
-        try await db.collection("users")
-            .document(user.userId)
-            .setData([
-                "userId": user.userId,
-                "username": user.username,
-                "displayName": user.displayName,
-                "profilePic": user.profilePic as Any,
-                "userBio": user.userBio as Any,
-                "createdAt": user.createdAt
-            ])
+    func createUser(_ user: User, uid: String) async throws {
+        try db.collection("users").document(uid).setData(from: user)
     }
     
     func resetPassword(email: String) async throws {
@@ -56,4 +35,40 @@ class FirestoreService {
         return !snapshot.documents.isEmpty
     }
     
+    func getUser(uid: String) async throws -> User {
+        guard !uid.isEmpty else {
+            throw FirestoreError.invalidUID
+        }
+        
+        let docRef = db.collection("users").document(uid)
+        let document = try await docRef.getDocument()
+        
+        guard document.exists else {
+            throw FirestoreError.userNotFound
+        }
+        
+        do {
+            let user = try document.data(as: User.self)
+            return user
+        } catch {
+            print("Error decodificando: \(error)")
+            throw FirestoreError.decodingError
+        }
+    }
+    
+}
+
+
+enum FirestoreError: Error, LocalizedError {
+    case invalidUID
+    case userNotFound
+    case decodingError
+    
+    var errorDescription: String? {
+        switch self {
+        case .invalidUID: return "ID de usuario inválido"
+        case .userNotFound: return "Usuario no encontrado"
+        case .decodingError: return "Error al leer datos del usuario"
+        }
+    }
 }

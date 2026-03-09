@@ -5,18 +5,19 @@
 //  Created by Yhon Vivas on 01-02-26.
 //
 import Foundation
+import FirebaseFirestore
 
-enum States: String {
-    case read = "Leído"
-    case reading = "Leyendo"
-    case toRead = "Por leer"
+enum ReadingStatus: String, Codable {
+    case read = "read"
+    case reading = "reading"
+    case toRead = "to_read"
 }
 
-struct ReadingList {
-    var readingListId: String
+struct ReadingList: Codable, Identifiable {
+    @DocumentID var id: String?
     var userId: String
     var bookId: String
-    var states: States
+    var states: ReadingStatus
     var dateOfBegining: Date?
     var dateOfFinish: Date?
 }

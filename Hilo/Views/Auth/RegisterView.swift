@@ -219,7 +219,9 @@ struct RegisterView: View {
         }
         
         let response = try await AuthService.shared.register(email: email, password: password)
-        guard !response.userId.isEmpty else {
+        let uid = response.id
+        
+        guard let uid = uid, !uid.isEmpty else {
                 throw NSError(
                     domain: "RegisterError",
                     code: 0,
@@ -228,15 +230,15 @@ struct RegisterView: View {
             }
         
         let userData = User (
-            userId: response.userId,
             username: finalUsername.lowercased(),
             displayName: displayName,
+            email: email,
             profilePic: "",
             userBio: "",
             createdAt: Date()
         )
         
-        try await FirestoreService.shared.createUser(userData)
+        try await FirestoreService.shared.createUser(userData, uid: uid)
         isLoading = false
         navigateToHome = true
         clearFields()
