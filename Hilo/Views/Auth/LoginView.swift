@@ -17,7 +17,7 @@ struct LoginView: View {
     
     var body: some View {
         NavigationStack {
-            ZStack(alignment: .bottom) {
+            ZStack() {
                 // FONDO
                 AppColors.background
                     .ignoresSafeArea()
@@ -55,7 +55,7 @@ struct LoginView: View {
                                     Image(systemName: "envelope")
                                         .foregroundColor(.gray)
                                         .frame(width: 20)
-
+                                    
                                     TextField("form_email_placeholder", text: $email)
                                         .keyboardType(.emailAddress)
                                         .textInputAutocapitalization(.never)
@@ -69,14 +69,14 @@ struct LoginView: View {
                                     Image(systemName: "lock")
                                         .foregroundColor(.gray)
                                         .frame(width: 20)
-
+                                    
                                     SecureField("password_placeholder", text: $password)
                                 }
                                 .padding()
                                 .background(AppColors.background)
                                 .cornerRadius(12)
                             }
-
+                            
                             // FORGOT PASSWORD
                             HStack {
                                 NavigationLink(destination: ForgotPasswordView()) {
@@ -106,6 +106,35 @@ struct LoginView: View {
                             }
                             .padding(.top, 8)
                             .padding(.bottom, 8)
+                            
+                            // BOTÓN FIJO
+                            Button {
+                                Task {
+                                    do {
+                                        try await signIn(email: email, password: password)
+                                    } catch {
+                                        errorMessage = error.localizedDescription
+                                        showError = true
+                                    }
+                                }
+                            } label: {
+                                if isLoading {
+                                    ProgressView()
+                                        .tint(.white)
+                                } else {
+                                    Text("log_in")
+                                        .font(.headline)
+                                        .foregroundColor(.white)
+                                }
+                            }
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 56)
+                            .background(AppColors.primary)
+                            .cornerRadius(16)
+                            .shadow(color: AppColors.primary.opacity(0.3), radius: 12, y: 6)
+                            .padding(.horizontal, 20)
+                            .padding(.bottom, 40)
+                            .disabled(isLoading)
                         }
                         .padding(.horizontal, 24)
                         .padding(.vertical, 28)
@@ -117,45 +146,16 @@ struct LoginView: View {
                     }
                 }
                 .scrollIndicators(.hidden)
-
-                // BOTÓN FIJO
-                Button {
-                    Task {
-                        do {
-                            try await signIn(email: email, password: password)
-                        } catch {
-                            errorMessage = error.localizedDescription
-                            showError = true
-                        }
-                    }
-                } label: {
-                    if isLoading {
-                        ProgressView()
-                            .tint(.white)
-                    } else {
-                        Text("log_in")
-                            .font(.headline)
-                            .foregroundColor(.white)
-                    }
+                .alert("Error", isPresented: $showError) {
+                    Button("OK", role: .cancel) { }
+                } message: {
+                    Text(LocalizedStringKey(errorMessage ?? "error_unknown"))
                 }
-                .frame(maxWidth: .infinity)
-                .frame(height: 56)
-                .background(AppColors.primary)
-                .cornerRadius(16)
-                .shadow(color: AppColors.primary.opacity(0.3), radius: 12, y: 6)
-                .padding(.horizontal, 20)
-                .padding(.bottom, 40)
-                .disabled(isLoading)
+                .navigationDestination(isPresented: $navigateToHome) {
+                    HomeView()
+                }
+                .navigationBarHidden(true)
             }
-            .alert("Error", isPresented: $showError) {
-                Button("OK", role: .cancel) { }
-            } message: {
-                Text(LocalizedStringKey(errorMessage ?? "error_unknown"))
-            }
-            .navigationDestination(isPresented: $navigateToHome) {
-                HomeView()
-            }
-            .navigationBarHidden(true)
         }
     }
     

@@ -21,7 +21,7 @@ struct RegisterView: View {
     
     var body: some View {
         NavigationStack {
-            ZStack(alignment: .bottom) {
+            ZStack() {
                 // FONDO
                 AppColors.background
                     .ignoresSafeArea()
@@ -57,6 +57,7 @@ struct RegisterView: View {
                                         .frame(width: 20)
                                     
                                     TextField("form_name_placeholder", text: $displayName)
+                                        .autocorrectionDisabled()
                                 }
                                 .padding()
                                 .background(AppColors.background)
@@ -70,6 +71,7 @@ struct RegisterView: View {
                                     
                                     TextField("form_username_placeholder", text: $username)
                                         .textInputAutocapitalization(.never)
+                                        .autocorrectionDisabled()
                                 }
                                 .padding()
                                 .background(AppColors.background)
@@ -84,6 +86,7 @@ struct RegisterView: View {
                                     TextField("form_email_placeholder", text: $email)
                                         .keyboardType(.emailAddress)
                                         .textInputAutocapitalization(.never)
+                                        .autocorrectionDisabled()
                                 }
                                 .padding()
                                 .background(AppColors.background)
@@ -104,6 +107,7 @@ struct RegisterView: View {
                                         .frame(width: 20)
                                     
                                     SecureField("password_placeholder", text: $password)
+                                        .autocorrectionDisabled()
                                 }
                                 .padding()
                                 .background(AppColors.background)
@@ -116,6 +120,7 @@ struct RegisterView: View {
                                         .frame(width: 20)
                                     
                                     SecureField("confirm_password_placeholder", text: $confirmPassword)
+                                        .autocorrectionDisabled()
                                 }
                                 .padding()
                                 .background(AppColors.background)
@@ -137,6 +142,36 @@ struct RegisterView: View {
                             }
                             .padding(.top, 8)
                             .padding(.bottom, 8)
+                            
+                            // BOTÓN FIJO
+                            Button {
+                                Task {
+                                    do {
+                                        try await register(email: email, password: password)
+                                    } catch {
+                                        isLoading = false
+                                        errorMessage = error.localizedDescription
+                                        showError = true
+                                    }
+                                }
+                            } label: {
+                                if isLoading {
+                                    ProgressView()
+                                        .tint(.white)
+                                } else {
+                                    Text("register_button")
+                                        .font(.headline)
+                                        .foregroundColor(.white)
+                                }
+                            }
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 56)
+                            .background(AppColors.primary)
+                            .cornerRadius(16)
+                            .shadow(color: AppColors.primary.opacity(0.3), radius: 12, y: 6)
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 12)
+                            .disabled(isLoading)
                         }
                         .padding(.horizontal, 24)
                         .padding(.vertical, 28)
@@ -148,36 +183,6 @@ struct RegisterView: View {
                     }
                 }
                 .scrollIndicators(.hidden)
-
-                // BOTÓN FIJO
-                Button {
-                    Task {
-                        do {
-                            try await register(email: email, password: password)
-                        } catch {
-                            isLoading = false
-                            errorMessage = error.localizedDescription
-                            showError = true
-                        }
-                    }
-                } label: {
-                    if isLoading {
-                        ProgressView()
-                            .tint(.white)
-                    } else {
-                        Text("register_button")
-                            .font(.headline)
-                            .foregroundColor(.white)
-                    }
-                }
-                .frame(maxWidth: .infinity)
-                .frame(height: 56)
-                .background(AppColors.primary)
-                .cornerRadius(16)
-                .shadow(color: AppColors.primary.opacity(0.3), radius: 12, y: 6)
-                .padding(.horizontal, 20)
-                .padding(.bottom, 40)
-                .disabled(isLoading)
             }
             .alert("Error", isPresented: $showError) {
                 Button("OK", role: .cancel) { }

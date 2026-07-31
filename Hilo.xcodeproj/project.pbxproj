@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C2649141301056FC0079E2F8 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = C2649140301056FC0079E2F8 /* GoogleService-Info.plist */; };
 		C27445CA2F2E954300ED3B42 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = C27445C92F2E954300ED3B42 /* FirebaseAnalytics */; };
 		C27445CC2F2E954300ED3B42 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = C27445CB2F2E954300ED3B42 /* FirebaseAuth */; };
 		C27445CE2F2E954300ED3B42 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = C27445CD2F2E954300ED3B42 /* FirebaseFirestore */; };
@@ -14,6 +15,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		C2649140301056FC0079E2F8 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		C27445B82F2E89EC00ED3B42 /* Hilo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Hilo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -58,6 +60,7 @@
 			children = (
 				C27445BA2F2E89EC00ED3B42 /* Hilo */,
 				C27445B92F2E89EC00ED3B42 /* Products */,
+				C2649140301056FC0079E2F8 /* GoogleService-Info.plist */,
 			);
 			sourceTree = "<group>";
 		};
@@ -141,6 +144,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C2649141301056FC0079E2F8 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
