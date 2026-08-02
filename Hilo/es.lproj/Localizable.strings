@@ -29,11 +29,13 @@
 "login_subtitle" = "Lleva el hilo de todo lo que lees";
 "login_into_your_account" = "Ingresa a tu cuenta";
 "not_registered_yet" = "¿Aún no estás registrado?";
+"form_password_placeholder" = "Ingresa tu contraseña";
 "sign_up" = "Registrate";
 "log_in" = "Ingresa";
 "type_your_credentials" = "Ingresa tus credenciales";
 "forgot_password_text" = "¿Olvidaste tu contraseña?";
 "forgot_password_subtitle" = "Ingresa tu email para recuperar tu contraseña";
+"other_ways_to_sign_in" = "O inicia sesión con:";
 
 /* ==== ForgetPasswordView ==== */
 "wanna_go_back_to_login" = "¿Quieres volver al Login?";

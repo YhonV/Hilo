@@ -15,6 +15,8 @@ struct LoginView: View {
     @State private var showError = false
     @State private var navigateToHome = false
     
+    @FocusState private var isFocused: Bool
+    
     var body: some View {
         NavigationStack {
             ZStack() {
@@ -59,6 +61,7 @@ struct LoginView: View {
                                     TextField("form_email_placeholder", text: $email)
                                         .keyboardType(.emailAddress)
                                         .textInputAutocapitalization(.never)
+                                        .focused($isFocused)
                                 }
                                 .padding()
                                 .background(AppColors.background)
@@ -70,7 +73,8 @@ struct LoginView: View {
                                         .foregroundColor(.gray)
                                         .frame(width: 20)
                                     
-                                    SecureField("password_placeholder", text: $password)
+                                    SecureField("form_password_placeholder", text: $password)
+                                        .focused($isFocused)
                                 }
                                 .padding()
                                 .background(AppColors.background)
@@ -133,8 +137,38 @@ struct LoginView: View {
                             .cornerRadius(16)
                             .shadow(color: AppColors.primary.opacity(0.3), radius: 12, y: 6)
                             .padding(.horizontal, 20)
-                            .padding(.bottom, 40)
+//                            .padding(.bottom, 40)
                             .disabled(isLoading)
+                            
+                            VStack(spacing: 6) {
+                                Text("other_ways_to_sign_in")
+                                    .font(.footnote)
+                                    .foregroundStyle(.secondary)
+
+                                HStack(spacing: 28) {
+                                    Button {
+                                        print("Google")
+                                    } label: {
+                                        Image("google-logo")
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(width: 36, height: 36) // logo
+                                            .offset(y: 2)
+                                            .frame(width: 52, height: 52) // area tactil boton
+                                    }
+
+                                    Button {
+                                        print("Apple")
+                                    } label: {
+                                        Image(systemName: "apple.logo")
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(width: 42, height: 42)
+                                            .frame(width: 52, height: 52)
+                                            .foregroundStyle(.black)
+                                    }
+                                }
+                            }
                         }
                         .padding(.horizontal, 24)
                         .padding(.vertical, 28)
@@ -145,6 +179,10 @@ struct LoginView: View {
                         .padding(.bottom, 100)
                     }
                 }
+                .onTapGesture {
+                    isFocused = false
+                }
+//                .scrollDismissesKeyboard(.immediately) 
                 .scrollIndicators(.hidden)
                 .alert("Error", isPresented: $showError) {
                     Button("OK", role: .cancel) { }

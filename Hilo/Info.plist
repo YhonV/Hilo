@@ -15,5 +15,9 @@
 			<string>Light</string>
 		</dict>
 	</array>
+	<key>GoogleBooksAPIKey</key>
+	<string>$(GOOGLE_BOOKS_API_KEY)</string>
+	<key>GoogleBooksBaseURL</key>
+	<string>$(GOOGLE_BOOKS_BASE_URL)</string>
 </dict>
 </plist>

@@ -1,0 +1,11 @@
+//
+//  env-example.xcconfig
+//  Hilo
+//
+//  Created by Cactu on 02-08-26.
+//
+
+// Configuration settings file format documentation can be found at:
+// https://developer.apple.com/documentation/xcode/adding-a-build-configuration-file-to-your-project
+GOOGLE_BOOKS_API_KEY =
+GOOGLE_BOOKS_BASE_URL =

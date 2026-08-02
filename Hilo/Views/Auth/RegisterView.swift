@@ -18,6 +18,7 @@ struct RegisterView: View {
     @State private var navigateToHome = false
     @State private var errorMessage : String?
     @State private var showError = false
+    @FocusState private var isFocused: Bool
     
     var body: some View {
         NavigationStack {
@@ -58,6 +59,7 @@ struct RegisterView: View {
                                     
                                     TextField("form_name_placeholder", text: $displayName)
                                         .autocorrectionDisabled()
+                                        .focused($isFocused)
                                 }
                                 .padding()
                                 .background(AppColors.background)
@@ -72,6 +74,7 @@ struct RegisterView: View {
                                     TextField("form_username_placeholder", text: $username)
                                         .textInputAutocapitalization(.never)
                                         .autocorrectionDisabled()
+                                        .focused($isFocused)
                                 }
                                 .padding()
                                 .background(AppColors.background)
@@ -87,6 +90,7 @@ struct RegisterView: View {
                                         .keyboardType(.emailAddress)
                                         .textInputAutocapitalization(.never)
                                         .autocorrectionDisabled()
+                                        .focused($isFocused)
                                 }
                                 .padding()
                                 .background(AppColors.background)
@@ -108,6 +112,7 @@ struct RegisterView: View {
                                     
                                     SecureField("password_placeholder", text: $password)
                                         .autocorrectionDisabled()
+                                        .focused($isFocused)
                                 }
                                 .padding()
                                 .background(AppColors.background)
@@ -121,6 +126,7 @@ struct RegisterView: View {
                                     
                                     SecureField("confirm_password_placeholder", text: $confirmPassword)
                                         .autocorrectionDisabled()
+                                        .focused($isFocused)
                                 }
                                 .padding()
                                 .background(AppColors.background)
@@ -183,6 +189,10 @@ struct RegisterView: View {
                     }
                 }
                 .scrollIndicators(.hidden)
+                .onTapGesture {
+                    isFocused = false
+                }
+//                .scrollDismissesKeyboard(.immediately)
             }
             .alert("Error", isPresented: $showError) {
                 Button("OK", role: .cancel) { }

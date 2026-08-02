@@ -29,12 +29,14 @@
 /* ==== LoginView ==== */
 "login_subtitle" = "Follow the thread of everything you read";
 "login_into_your_account" = "Log in into your account";
+"form_password_placeholder" = "Enter yor password";
 "not_registered_yet" = "Not registered yet?";
 "log_in" = "Log in";
 "sign_up" = "Sign Up!";
 "type_your_credentials" = "Type your credentials";
 "forgot_password_text" = "Did you forgot your password?";
 "forgot_password_subtitle" = "Type your email to recover your password";
+"other_ways_to_sign_in" = "Or sign in with:";
 
 /* ==== ForgetPasswordView ==== */
 "wanna_go_back_to_login" = "Want to go back to login?";

@@ -4,6 +4,9 @@ xcuserdata/
 *.xcworkspace/xcuserdata/
 project.xcworkspace/xcuserdata/
 
+# Secrets
+Hilo/Configuration/env.xcconfig
+
 # Firebase
 GoogleService-Info.plist
 google-services.json

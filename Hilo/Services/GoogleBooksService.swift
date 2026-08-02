@@ -9,10 +9,12 @@ import Foundation
 class GoogleBooksService {
     static let shared = GoogleBooksService()
     private init() {}
-    let BASE_URL: String = "https://www.googleapis.com/books/v1/volumes"
-    private let API_KEY: String = ""
+    private let BASE_URL: String = "https://www.googleapis.com/books/v1/volumes"
+    private let API_KEY: String = Bundle.main.object(forInfoDictionaryKey: "GoogleBooksAPIKey") as? String ?? ""
     
     func searchBook(query: String) async throws -> [Book] {
+        print(BASE_URL)
+        print(API_KEY)
         var components = URLComponents(string: BASE_URL)
         components?.queryItems = [
             URLQueryItem(name: "q", value: query),
