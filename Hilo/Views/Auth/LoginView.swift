@@ -35,7 +35,7 @@ struct LoginView: View {
                             
                             Text("login_subtitle")
                                 .font(.subheadline)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(AppColors.secondaryText)
                         }
                         .padding(.top, 40)
                         .padding(.bottom, 40)
@@ -55,7 +55,7 @@ struct LoginView: View {
                                 // EMAIL
                                 HStack(spacing: 12) {
                                     Image(systemName: "envelope")
-                                        .foregroundColor(.gray)
+                                        .foregroundColor(AppColors.secondaryText)
                                         .frame(width: 20)
                                     
                                     TextField("form_email_placeholder", text: $email)
@@ -70,7 +70,7 @@ struct LoginView: View {
                                 // PASSWORD
                                 HStack(spacing: 12) {
                                     Image(systemName: "lock")
-                                        .foregroundColor(.gray)
+                                        .foregroundColor(AppColors.secondaryText)
                                         .frame(width: 20)
                                     
                                     SecureField("form_password_placeholder", text: $password)
@@ -97,7 +97,7 @@ struct LoginView: View {
                             HStack {
                                 Text("not_registered_yet")
                                     .font(.subheadline)
-                                    .foregroundColor(.secondary)
+                                    .foregroundColor(AppColors.secondaryText)
                                     .fontWeight(.medium)
                                 
                                 NavigationLink(destination: RegisterView()) {
@@ -172,7 +172,7 @@ struct LoginView: View {
                         }
                         .padding(.horizontal, 24)
                         .padding(.vertical, 28)
-                        .background(Color.white)
+                        .background(AppColors.surface)
                         .cornerRadius(24)
                         .shadow(color: .black.opacity(0.06), radius: 16, x: 0, y: 8)
                         .padding(.horizontal, 20)

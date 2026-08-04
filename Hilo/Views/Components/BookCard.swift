@@ -13,21 +13,32 @@ struct BookCard: View {
             AsyncImage(url: URL(string: book.cover)) { phase in
                 switch phase {
                 case .success(let image):
-                    image.resizable().scaledToFit()
+                    image.resizable().scaledToFill()
                 case .failure:
                     Image(systemName: "photo")
+                        .resizable()
+                        .scaledToFit()
+                        .foregroundStyle(Color.gray)
+                        .padding(30)
                 case .empty:
                     ProgressView()
                 @unknown default:
                     EmptyView()
                 }
             }
-            .frame(width: 80, height: 120)
+            .frame(width: 110, height: 160)
+            .clipped()
+            .cornerRadius(10)
+            
             Text(book.title)
                 .font(.headline)
+                .lineLimit(2)
+                .multilineTextAlignment(.center)
+                .frame(height: 20, alignment: .top)
             
             Text(book.author)
                 .font(.subheadline)
+                .lineLimit(1)
             
         }
     }

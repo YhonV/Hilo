@@ -8,7 +8,10 @@
 import SwiftUI
 
 struct AppColors {
-    static let background = Color(hex: 0xFFFBF5)
-    static let primary = Color(hex: 0x9B6D00)
-    static let titles = Color(hex: 0x4F4F4F)
+    static let background = Color("color-background")
+    static let primary = Color("color-primary")
+    static let titles = Color("color-titles")
+    static let surface = Color("color-surface")
+    static let secondaryText = Color("color-secondaryText")
+    static let border = Color("color-border")
 }

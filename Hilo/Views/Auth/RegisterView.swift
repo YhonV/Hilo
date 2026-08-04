@@ -38,7 +38,7 @@ struct RegisterView: View {
                             
                             Text("join_readers_community")
                                 .font(.subheadline)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(AppColors.secondaryText)
                         }
                         .padding(.bottom, 5)
                         
@@ -54,7 +54,7 @@ struct RegisterView: View {
                                 // NOMBRE
                                 HStack(spacing: 12) {
                                     Image(systemName: "person")
-                                        .foregroundColor(.gray)
+                                        .foregroundColor(AppColors.secondaryText)
                                         .frame(width: 20)
                                     
                                     TextField("form_name_placeholder", text: $displayName)
@@ -68,7 +68,7 @@ struct RegisterView: View {
                                 // USERNAME
                                 HStack(spacing: 12) {
                                     Image(systemName: "at")
-                                        .foregroundColor(.gray)
+                                        .foregroundColor(AppColors.secondaryText)
                                         .frame(width: 20)
                                     
                                     TextField("form_username_placeholder", text: $username)
@@ -83,7 +83,7 @@ struct RegisterView: View {
                                 // EMAIL
                                 HStack(spacing: 12) {
                                     Image(systemName: "envelope")
-                                        .foregroundColor(.gray)
+                                        .foregroundColor(AppColors.secondaryText)
                                         .frame(width: 20)
                                     
                                     TextField("form_email_placeholder", text: $email)
@@ -107,7 +107,7 @@ struct RegisterView: View {
                                 // PASSWORD
                                 HStack(spacing: 12) {
                                     Image(systemName: "lock")
-                                        .foregroundColor(.gray)
+                                        .foregroundColor(AppColors.secondaryText)
                                         .frame(width: 20)
                                     
                                     SecureField("password_placeholder", text: $password)
@@ -121,7 +121,7 @@ struct RegisterView: View {
                                 // CONFIRM PASSWORD
                                 HStack(spacing: 12) {
                                     Image(systemName: "lock")
-                                        .foregroundColor(.gray)
+                                        .foregroundColor(AppColors.secondaryText)
                                         .frame(width: 20)
                                     
                                     SecureField("confirm_password_placeholder", text: $confirmPassword)
@@ -137,7 +137,7 @@ struct RegisterView: View {
                             HStack(spacing: 4) {
                                 Text("already_have_an_account")
                                     .font(.subheadline)
-                                    .foregroundColor(.secondary)
+                                    .foregroundColor(AppColors.secondaryText)
                                 
                                 NavigationLink(destination: LoginView()) {
                                     Text("log_in")
@@ -181,7 +181,7 @@ struct RegisterView: View {
                         }
                         .padding(.horizontal, 24)
                         .padding(.vertical, 28)
-                        .background(Color.white)
+                        .background(AppColors.surface)
                         .cornerRadius(24)
                         .shadow(color: .black.opacity(0.06), radius: 16, x: 0, y: 8)
                         .padding(.horizontal, 20)
