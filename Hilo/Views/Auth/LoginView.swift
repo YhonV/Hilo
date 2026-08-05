@@ -128,6 +128,7 @@ struct LoginView: View {
                                 } else {
                                     Text("log_in")
                                         .font(.headline)
+                                        .fontWeight(.bold)
                                         .foregroundColor(.white)
                                 }
                             }

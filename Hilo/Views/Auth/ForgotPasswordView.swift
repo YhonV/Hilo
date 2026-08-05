@@ -29,7 +29,7 @@ struct ForgotPasswordView: View {
                             
                             Text("forgot_password_subtitle")
                                 .font(.subheadline)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(AppColors.secondaryText)
                         }
                         .padding(.bottom, 5)
                         
@@ -37,7 +37,7 @@ struct ForgotPasswordView: View {
                         VStack (spacing: 12) {
                             HStack(spacing: 12) {
                                 Image(systemName: "envelope")
-                                    .foregroundColor(.gray)
+                                    .foregroundColor(AppColors.secondaryText)
                                     .frame(width: 20)
                                 
                                 TextField("form_email_placeholder", text: $email)
@@ -64,7 +64,7 @@ struct ForgotPasswordView: View {
                     }
                     .padding(.horizontal, 24)
                     .padding(.vertical, 28)
-                    .background(Color.white)
+                    .background(Color.colorSurface)
                     .cornerRadius(24)
                     .shadow(color: .black.opacity(0.06), radius: 16, x: 0, y: 8)
                     .padding(.horizontal, 20)
@@ -80,9 +80,9 @@ struct ForgotPasswordView: View {
                             .font(.system(size: 12))
                             .foregroundColor(.orange)
                         
-                        Text("Check your spam folder if you don't see the email")
+                        Text("forgot_password_disclaimer")
                             .font(.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(AppColors.secondaryText)
                             .multilineTextAlignment(.leading)
                         
                         Spacer()
