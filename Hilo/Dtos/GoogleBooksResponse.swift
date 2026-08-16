@@ -23,6 +23,8 @@ struct VolumeInfo: Codable {
     var publishedDate:          String?
     var pageCount:              Int?
     var industryIdentifiers:    [IndustryIdentifier]?
+    var averageRating:          Double?
+    var ratingsCount:           Int?
 }
 
 struct IndustryIdentifier: Codable {

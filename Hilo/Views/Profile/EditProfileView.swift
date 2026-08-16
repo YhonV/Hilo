@@ -1,12 +1,13 @@
 //
-//  RegisterView.swift
+//  EditProfileView.swift
 //  Hilo
 //
-//  Created by Yhon Vivas on 08-02-26.
+//  Created by Cactu on 15-08-26.
 //
+
 import SwiftUI
 
-struct RegisterView: View {
+struct EditProfileView: View {
     @State private var displayName: String = ""
     @State private var email: String = ""
     @State private var username: String = ""
@@ -19,6 +20,7 @@ struct RegisterView: View {
     @State private var errorMessage : String?
     @State private var showError = false
     @FocusState private var isFocused: Bool
+    @State private var isEditing = false
     
     var body: some View {
         NavigationStack {
@@ -31,12 +33,20 @@ struct RegisterView: View {
                     VStack(spacing: 0) {
                         // LOGO + HEADER
                         VStack(spacing: 0) {
-                            Image("hilo-logo")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 140, height: 140)
-                            
-                            Text("join_readers_community")
+                            ZStack(alignment: .bottomTrailing) {
+                                Image("edward_profile_pic")
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 100, height: 100)
+                                    .clipShape(.circle)
+
+                                Image(systemName: "pencil")
+                                    .padding(8)
+                                    .glassEffect(.regular, in: .circle)
+                                    .clipShape(.circle)
+                            }
+                            Spacer()
+                            Text("edit_your_profile")
                                 .font(.subheadline)
                                 .foregroundColor(AppColors.secondaryText)
                         }
@@ -46,10 +56,10 @@ struct RegisterView: View {
                         VStack(spacing: 12) {
                             // SECCIÓN: DATOS PERSONALES
                             VStack(alignment: .leading, spacing: 16) {
-                                Text("personal_data_section")
-                                    .font(.headline)
-                                    .fontWeight(.semibold)
-                                    .foregroundColor(AppColors.titles)
+//                                Text("personal_data_section")
+//                                    .font(.headline)
+//                                    .fontWeight(.semibold)
+//                                    .foregroundColor(AppColors.titles)
                                 
                                 // NOMBRE
                                 HStack(spacing: 12) {
@@ -60,9 +70,17 @@ struct RegisterView: View {
                                     TextField("form_name_placeholder", text: $displayName)
                                         .autocorrectionDisabled()
                                         .focused($isFocused)
+                                        .disabled(!isEditing)
+                                        .foregroundStyle(
+                                            !isEditing ? AppColors.titles : AppColors.secondaryText
+                                        )
                                 }
                                 .padding()
-                                .background(AppColors.background.opacity(0.65))
+                                .background(
+                                    !isEditing
+                                        ? AppColors.background.opacity(0.65)
+                                        : AppColors.surface.opacity(0.45)
+                                )
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 12)
                                         .stroke(AppColors.border, lineWidth: 1.2)
@@ -79,95 +97,23 @@ struct RegisterView: View {
                                         .textInputAutocapitalization(.never)
                                         .autocorrectionDisabled()
                                         .focused($isFocused)
+                                        .disabled(!isEditing)
+                                        .foregroundStyle(
+                                            !isEditing ? AppColors.titles : AppColors.secondaryText
+                                        )
                                 }
                                 .padding()
-                                .background(AppColors.background.opacity(0.65))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .stroke(AppColors.border, lineWidth: 1.2)
+                                .background(
+                                    !isEditing
+                                        ? AppColors.background.opacity(0.65)
+                                        : AppColors.surface.opacity(0.45)
                                 )
-                                .cornerRadius(12)
-                                
-                                // EMAIL
-                                HStack(spacing: 12) {
-                                    Image(systemName: "envelope")
-                                        .foregroundColor(AppColors.primary)
-                                        .frame(width: 20)
-                                    
-                                    TextField("form_email_placeholder", text: $email)
-                                        .keyboardType(.emailAddress)
-                                        .textInputAutocapitalization(.never)
-                                        .autocorrectionDisabled()
-                                        .focused($isFocused)
-                                }
-                                .padding()
-                                .background(AppColors.background.opacity(0.65))
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 12)
                                         .stroke(AppColors.border, lineWidth: 1.2)
                                 )
                                 .cornerRadius(12)
                             }
-                            
-                            // SECCIÓN: CONTRASEÑA
-                            VStack(alignment: .leading, spacing: 16) {
-                                Text("password_section")
-                                    .font(.headline)
-                                    .fontWeight(.semibold)
-                                    .foregroundColor(AppColors.titles)
-                                
-                                // PASSWORD
-                                HStack(spacing: 12) {
-                                    Image(systemName: "lock")
-                                        .foregroundColor(AppColors.primary)
-                                        .frame(width: 20)
-                                    
-                                    SecureField("password_placeholder", text: $password)
-                                        .autocorrectionDisabled()
-                                        .focused($isFocused)
-                                }
-                                .padding()
-                                .background(AppColors.background.opacity(0.65))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .stroke(AppColors.border, lineWidth: 1.2)
-                                )
-                                .cornerRadius(12)
-                                
-                                // CONFIRM PASSWORD
-                                HStack(spacing: 12) {
-                                    Image(systemName: "lock")
-                                        .foregroundColor(AppColors.primary)
-                                        .frame(width: 20)
-                                    
-                                    SecureField("confirm_password_placeholder", text: $confirmPassword)
-                                        .autocorrectionDisabled()
-                                        .focused($isFocused)
-                                }
-                                .padding()
-                                .background(AppColors.background.opacity(0.65))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .stroke(AppColors.border, lineWidth: 1.2)
-                                )
-                                .cornerRadius(12)
-                            }
-                            
-                            // LINK A LOGIN
-                            HStack(spacing: 4) {
-                                Text("already_have_an_account")
-                                    .font(.subheadline)
-                                    .foregroundColor(AppColors.secondaryText)
-                                
-                                NavigationLink(destination: LoginView()) {
-                                    Text("log_in")
-                                        .font(.subheadline)
-                                        .foregroundColor(AppColors.primary)
-                                        .fontWeight(.semibold)
-                                }
-                            }
-                            .padding(.top, 8)
-                            .padding(.bottom, 8)
                             
                             // BOTÓN FIJO
                             Button {
@@ -186,7 +132,7 @@ struct RegisterView: View {
                                         ProgressView()
                                             .tint(.white)
                                     } else {
-                                        Text("register_button")
+                                        Text("edit_profile_button")
                                             .font(.headline)
                                             .foregroundColor(.white)
                                     }
@@ -195,9 +141,9 @@ struct RegisterView: View {
                                 .frame(height: 40)
                             }
                             .buttonStyle(.glassProminent)
-                            .tint(AppColors.primaryStrong)
+                            .tint(isEditing ? AppColors.primaryStrong : .gray)
                             .padding(.horizontal, 20)
-                            .disabled(isLoading)
+                            .disabled(isLoading || !isEditing)
                         }
                         .padding(.horizontal, 24)
                         .padding(.vertical, 28)
@@ -212,7 +158,6 @@ struct RegisterView: View {
                 .onTapGesture {
                     isFocused = false
                 }
-//                .scrollDismissesKeyboard(.immediately)
             }
             .alert("Error", isPresented: $showError) {
                 Button("OK", role: .cancel) { }
@@ -222,13 +167,24 @@ struct RegisterView: View {
             .navigationDestination(isPresented: $navigateToHome) {
                 HomeView()
             }
-            //.navigationBarHidden(true)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        isEditing.toggle()
+                    } label: {
+                        Label(
+                            isEditing ? "Guardar" : "Editar",
+                            systemImage: isEditing ? "checkmark" : "pencil"
+                        )
+                    }
+                }
+            }
         }
     }
     
     func register(email: String, password: String) async throws {
         isLoading = true
-    
+        
         guard !email.isEmpty, !password.isEmpty, !username.isEmpty, !displayName.isEmpty else {
             errorMessage = "all_fields_required"
             showError = true
@@ -257,12 +213,12 @@ struct RegisterView: View {
         let uid = response.id
         
         guard let uid = uid, !uid.isEmpty else {
-                throw NSError(
-                    domain: "RegisterError",
-                    code: 0,
-                    userInfo: [NSLocalizedDescriptionKey: "Failed to create user account"]
-                )
-            }
+            throw NSError(
+                domain: "RegisterError",
+                code: 0,
+                userInfo: [NSLocalizedDescriptionKey: "Failed to create user account"]
+            )
+        }
         
         let userData = User (
             username: finalUsername.lowercased(),
@@ -289,5 +245,5 @@ struct RegisterView: View {
 }
 
 #Preview {
-    RegisterView()
+    EditProfileView()
 }

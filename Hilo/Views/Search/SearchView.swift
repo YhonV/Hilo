@@ -8,8 +8,7 @@
 import SwiftUI
 
 struct SearchView: View {
-    @State private var books: [Book] = []
-    @State private var searchText: String = ""
+    @State private var searchViewModel = SearchViewModel()
     
     let columns = [
         GridItem(.flexible()),
@@ -24,8 +23,12 @@ struct SearchView: View {
                     .ignoresSafeArea()
                 ScrollView {
                     LazyVGrid(columns: columns, spacing: 26) {
-                        ForEach(books.indices, id: \.self) { index in
-                            BookCard(book: books[index])
+                        ForEach(searchViewModel.books.indices, id: \.self) { index in
+                            NavigationLink {
+                                BookDetailView(book: searchViewModel.books[index])
+                            } label: {
+                                BookCard(book: searchViewModel.books[index])
+                            }
                         }
                     }
                     .padding(.horizontal)
@@ -47,17 +50,15 @@ struct SearchView: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     .padding(.horizontal)
-
+                    
                 }
-                .searchable(text: $searchText)
+                .searchable(text: $searchViewModel.searchText)
                 .task {
-                    if let fetchBooks = try? await GoogleBooksService.shared.searchBook(query: "Harry Potter y la orden del fenix") {
-                        books = fetchBooks
-                        }
-                    }
+                    await searchViewModel.loadInitialBooks()
                 }
             }
         }
+    }
 }
 
 #Preview {

@@ -9,3 +9,5 @@
 // https://developer.apple.com/documentation/xcode/adding-a-build-configuration-file-to-your-project
 GOOGLE_BOOKS_API_KEY =
 GOOGLE_BOOKS_BASE_URL =
+SUPABASE_URL =
+SUPABASE_KEY

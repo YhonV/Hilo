@@ -40,8 +40,8 @@ class GoogleBooksService {
                 publishedDate: info.publishedDate,
                 numberOfPages: info.pageCount ?? 0,
                 isbn: info.industryIdentifiers?.first(where: { $0.type == "ISBN_13" })?.identifier,
-                averageRating: nil,
-                totalReviews: 0
+                averageRating: info.averageRating,
+                totalReviews: info.ratingsCount ?? 0
             )
         }
         return book

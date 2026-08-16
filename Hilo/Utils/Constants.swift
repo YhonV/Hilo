@@ -9,9 +9,14 @@ import SwiftUI
 
 struct AppColors {
     static let background = Color("color-background")
-    static let primary = Color("color-primary")
-    static let titles = Color("color-titles")
     static let surface = Color("color-surface")
-    static let secondaryText = Color("color-secondaryText")
     static let border = Color("color-border")
+    
+    static let primary = Color("color-primary")
+    static let primaryStrong = Color("color-primaryStrong")
+    static let secondary = Color("color-secondary")
+    static let accent = Color("color-accent")
+    
+    static let secondaryText = Color("color-secondaryText")
+    static let titles = Color("color-titles")
 }

@@ -37,7 +37,7 @@ struct ForgotPasswordView: View {
                         VStack (spacing: 12) {
                             HStack(spacing: 12) {
                                 Image(systemName: "envelope")
-                                    .foregroundColor(AppColors.secondaryText)
+                                    .foregroundColor(AppColors.primary)
                                     .frame(width: 20)
                                 
                                 TextField("form_email_placeholder", text: $email)
@@ -45,26 +45,17 @@ struct ForgotPasswordView: View {
                                     .textInputAutocapitalization(.never)
                             }
                             .padding()
-                            .background(AppColors.background)
+                            .background(AppColors.background.opacity(0.65))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(AppColors.border, lineWidth: 1.2)
+                            )
                             .cornerRadius(12)
                         }
-                        
-                        
-                        // LINK A LOGIN
-                        HStack(spacing: 4) {
-                            NavigationLink (destination: LoginView()){
-                                Text("wanna_go_back_to_login")
-                                    .font(.subheadline)
-                                    .foregroundColor(AppColors.primary)
-                                    .fontWeight(.semibold)
-                            }
-                        }
-                        .padding(.top, 20)
-                        .padding(.bottom, 8)
                     }
                     .padding(.horizontal, 24)
                     .padding(.vertical, 28)
-                    .background(Color.colorSurface)
+                    .background(AppColors.surface)
                     .cornerRadius(24)
                     .shadow(color: .black.opacity(0.06), radius: 16, x: 0, y: 8)
                     .padding(.horizontal, 20)
@@ -78,7 +69,7 @@ struct ForgotPasswordView: View {
                     HStack(spacing: 6) {
                         Image(systemName: "info.circle.fill")
                             .font(.system(size: 12))
-                            .foregroundColor(.orange)
+                            .foregroundColor(AppColors.primary)
                         
                         Text("forgot_password_disclaimer")
                             .font(.caption)
@@ -100,20 +91,21 @@ struct ForgotPasswordView: View {
                             }
                         }
                     } label: {
-                        if isLoading {
-                            ProgressView()
-                                .tint(.white)
-                        } else {
-                            Text("forgot_password_button")
-                                .font(.headline)
-                                .foregroundColor(.white)
+                        Group {
+                            if isLoading {
+                                ProgressView()
+                                    .tint(.white)
+                            } else {
+                                Text("forgot_password_button")
+                                    .font(.headline)
+                                    .foregroundColor(.white)
+                            }
                         }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 40)
                     }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 56)
-                    .background(AppColors.primary)
-                    .cornerRadius(16)
-                    .shadow(color: AppColors.primary.opacity(0.3), radius: 12, y: 6)
+                    .buttonStyle(.glassProminent)
+                    .tint(AppColors.primaryStrong)
                     .padding(.horizontal, 20)
                     .disabled(isLoading)
                 }

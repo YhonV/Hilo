@@ -53,3 +53,9 @@
 "read" = "Leído";
 "reading" = "Leyendo";
 "to_read" = "Por leer";
+
+/* ===== EditProfileView ==== */
+"edit_your_profile" = "Acá puedes editar tu nombre de usuario, correo y contraseña";
+"edit_password_placeholder" = "Ingresa una nueva contraseña";
+"edit_confirm_password_placeholder" = "Confirma tu nueva contraseña";
+"edit_profile_button" = "Guardar cambios";

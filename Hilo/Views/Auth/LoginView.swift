@@ -55,7 +55,7 @@ struct LoginView: View {
                                 // EMAIL
                                 HStack(spacing: 12) {
                                     Image(systemName: "envelope")
-                                        .foregroundColor(AppColors.secondaryText)
+                                        .foregroundColor(AppColors.primary)
                                         .frame(width: 20)
                                     
                                     TextField("form_email_placeholder", text: $email)
@@ -64,20 +64,28 @@ struct LoginView: View {
                                         .focused($isFocused)
                                 }
                                 .padding()
-                                .background(AppColors.background)
+                                .background(AppColors.background.opacity(0.65))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(AppColors.border, lineWidth: 1.2)
+                                )
                                 .cornerRadius(12)
                                 
                                 // PASSWORD
                                 HStack(spacing: 12) {
                                     Image(systemName: "lock")
-                                        .foregroundColor(AppColors.secondaryText)
+                                        .foregroundColor(AppColors.primary)
                                         .frame(width: 20)
                                     
                                     SecureField("form_password_placeholder", text: $password)
                                         .focused($isFocused)
                                 }
                                 .padding()
-                                .background(AppColors.background)
+                                .background(AppColors.background.opacity(0.65))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(AppColors.border, lineWidth: 1.2)
+                                )
                                 .cornerRadius(12)
                             }
                             
@@ -87,7 +95,7 @@ struct LoginView: View {
                                     Text("forgot_password_text")
                                         .font(.subheadline)
                                         .foregroundColor(AppColors.primary)
-                                        .fontWeight(.medium)
+                                        .fontWeight(.semibold)
                                 }
                                 Spacer()
                             }
@@ -98,13 +106,13 @@ struct LoginView: View {
                                 Text("not_registered_yet")
                                     .font(.subheadline)
                                     .foregroundColor(AppColors.secondaryText)
-                                    .fontWeight(.medium)
+                                    .fontWeight(.semibold)
                                 
                                 NavigationLink(destination: RegisterView()) {
                                     Text("sign_up")
                                         .font(.subheadline)
                                         .foregroundColor(AppColors.primary)
-                                        .fontWeight(.semibold)
+                                        .fontWeight(.bold)
                                 }
                                 Spacer()
                             }
@@ -122,29 +130,29 @@ struct LoginView: View {
                                     }
                                 }
                             } label: {
-                                if isLoading {
-                                    ProgressView()
-                                        .tint(.white)
-                                } else {
-                                    Text("log_in")
-                                        .font(.headline)
-                                        .fontWeight(.bold)
-                                        .foregroundColor(.white)
+                                Group {
+                                    if isLoading {
+                                        ProgressView()
+                                            .tint(.white)
+                                    } else {
+                                        Text("log_in")
+                                            .font(.headline)
+                                            .fontWeight(.bold)
+                                            .foregroundColor(.white)
+                                    }
                                 }
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 40)
                             }
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 56)
-                            .background(AppColors.primary)
-                            .cornerRadius(16)
-                            .shadow(color: AppColors.primary.opacity(0.3), radius: 12, y: 6)
+                            .buttonStyle(.glassProminent)
+                            .tint(AppColors.primaryStrong)
                             .padding(.horizontal, 20)
-//                            .padding(.bottom, 40)
                             .disabled(isLoading)
                             
                             VStack(spacing: 6) {
                                 Text("other_ways_to_sign_in")
                                     .font(.footnote)
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(AppColors.secondaryText)
 
                                 HStack(spacing: 28) {
                                     Button {
@@ -166,7 +174,7 @@ struct LoginView: View {
                                             .scaledToFit()
                                             .frame(width: 42, height: 42)
                                             .frame(width: 52, height: 52)
-                                            .foregroundStyle(.black)
+                                            .foregroundStyle(AppColors.titles)
                                     }
                                 }
                             }
@@ -175,7 +183,7 @@ struct LoginView: View {
                         .padding(.vertical, 28)
                         .background(AppColors.surface)
                         .cornerRadius(24)
-                        .shadow(color: .black.opacity(0.06), radius: 16, x: 0, y: 8)
+                        .shadow(color: .black.opacity(0.04), radius: 12, x: 0, y: 6)
                         .padding(.horizontal, 20)
                         .padding(.bottom, 100)
                     }
@@ -183,7 +191,7 @@ struct LoginView: View {
                 .onTapGesture {
                     isFocused = false
                 }
-//                .scrollDismissesKeyboard(.immediately) 
+//                .scrollDismissesKeyboard(.immediately)
                 .scrollIndicators(.hidden)
                 .alert("Error", isPresented: $showError) {
                     Button("OK", role: .cancel) { }

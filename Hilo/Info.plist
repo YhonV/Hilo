@@ -19,5 +19,9 @@
 	<string>$(GOOGLE_BOOKS_API_KEY)</string>
 	<key>GoogleBooksBaseURL</key>
 	<string>$(GOOGLE_BOOKS_BASE_URL)</string>
+	<key>supabaseUrL</key>
+	<string>$(SUPABASE_URL)</string>
+	<key>supabaseKey</key>
+	<string>$(SUPABASE_KEY)</string>
 </dict>
 </plist>

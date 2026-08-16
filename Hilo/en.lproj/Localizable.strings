@@ -54,3 +54,8 @@
 "reading" = "Reading";
 "to_read" = "To Read";
 
+/* ===== EditProfileView ==== */
+"edit_your_profile" = "Here you can edit your username, email and password";
+"edit_password_placeholder" = "Enter your new password";
+"edit_confirm_password_placeholder" = "Confirm your new password";
+"edit_profile_button" = "Save changes";
