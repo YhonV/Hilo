@@ -19,9 +19,9 @@ class FirestoreService {
         try db.collection("books").addDocument(from: book)
     }
     
-    func createUser(_ user: User, uid: String) async throws {
-        try db.collection("users").document(uid).setData(from: user)
-    }
+//    func createUser(_ user: User, uid: UUID) async throws {
+//        try db.collection("users").document(uid).setData(from: user)
+//    }
     
     func resetPassword(email: String) async throws {
         try await Auth.auth().sendPasswordReset(withEmail: email)

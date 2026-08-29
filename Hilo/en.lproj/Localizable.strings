@@ -59,3 +59,6 @@
 "edit_password_placeholder" = "Enter your new password";
 "edit_confirm_password_placeholder" = "Confirm your new password";
 "edit_profile_button" = "Save changes";
+"username_already_exists" = "This username is already in use!";
+"error_updating_profile" = "Error updating basic information";
+"error_unknown" = "Unknown Error, please try later";

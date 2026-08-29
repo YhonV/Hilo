@@ -13,7 +13,6 @@ struct LoginView: View {
     @State private var isLoading = false
     @State private var errorMessage : String?
     @State private var showError = false
-    @State private var navigateToHome = false
     
     @FocusState private var isFocused: Bool
     
@@ -32,10 +31,6 @@ struct LoginView: View {
                                 .resizable()
                                 .scaledToFit()
                                 .frame(width: 140, height: 140)
-                            
-                            Text("login_subtitle")
-                                .font(.subheadline)
-                                .foregroundColor(AppColors.secondaryText)
                         }
                         .padding(.top, 40)
                         .padding(.bottom, 40)
@@ -89,35 +84,35 @@ struct LoginView: View {
                                 .cornerRadius(12)
                             }
                             
-                            // FORGOT PASSWORD
-                            HStack {
-                                NavigationLink(destination: ForgotPasswordView()) {
-                                    Text("forgot_password_text")
-                                        .font(.subheadline)
-                                        .foregroundColor(AppColors.primary)
-                                        .fontWeight(.semibold)
+                            VStack(spacing: 6) {
+                                Text("other_ways_to_sign_in")
+                                    .font(.footnote)
+                                    .foregroundStyle(AppColors.secondaryText)
+
+                                HStack(spacing: 28) {
+                                    Button {
+                                        print("Google")
+                                    } label: {
+                                        Image("google-logo")
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(width: 36, height: 36) // logo
+                                            .offset(y: 2)
+                                            .frame(width: 52, height: 52) // area tactil boton
+                                    }
+
+                                    Button {
+                                        print("Apple")
+                                    } label: {
+                                        Image(systemName: "apple.logo")
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(width: 42, height: 42)
+                                            .frame(width: 52, height: 52)
+                                            .foregroundStyle(AppColors.titles)
+                                    }
                                 }
-                                Spacer()
                             }
-                            .padding(.top, 4)
-                            
-                            // REGISTER
-                            HStack {
-                                Text("not_registered_yet")
-                                    .font(.subheadline)
-                                    .foregroundColor(AppColors.secondaryText)
-                                    .fontWeight(.semibold)
-                                
-                                NavigationLink(destination: RegisterView()) {
-                                    Text("sign_up")
-                                        .font(.subheadline)
-                                        .foregroundColor(AppColors.primary)
-                                        .fontWeight(.bold)
-                                }
-                                Spacer()
-                            }
-                            .padding(.top, 8)
-                            .padding(.bottom, 8)
                             
                             // BOTÓN FIJO
                             Button {
@@ -149,35 +144,35 @@ struct LoginView: View {
                             .padding(.horizontal, 20)
                             .disabled(isLoading)
                             
-                            VStack(spacing: 6) {
-                                Text("other_ways_to_sign_in")
-                                    .font(.footnote)
-                                    .foregroundStyle(AppColors.secondaryText)
-
-                                HStack(spacing: 28) {
-                                    Button {
-                                        print("Google")
-                                    } label: {
-                                        Image("google-logo")
-                                            .resizable()
-                                            .scaledToFit()
-                                            .frame(width: 36, height: 36) // logo
-                                            .offset(y: 2)
-                                            .frame(width: 52, height: 52) // area tactil boton
-                                    }
-
-                                    Button {
-                                        print("Apple")
-                                    } label: {
-                                        Image(systemName: "apple.logo")
-                                            .resizable()
-                                            .scaledToFit()
-                                            .frame(width: 42, height: 42)
-                                            .frame(width: 52, height: 52)
-                                            .foregroundStyle(AppColors.titles)
-                                    }
+                            // REGISTER
+                            HStack {
+                                Text("not_registered_yet")
+                                    .font(.subheadline)
+                                    .foregroundColor(AppColors.secondaryText)
+                                    .fontWeight(.semibold)
+                                
+                                NavigationLink(destination: RegisterView()) {
+                                    Text("sign_up")
+                                        .font(.subheadline)
+                                        .foregroundColor(AppColors.primary)
+                                        .fontWeight(.bold)
                                 }
+                                Spacer()
                             }
+                            .padding(.top, 8)
+                            .padding(.bottom, 8)
+                            
+                            // FORGOT PASSWORD
+                            HStack {
+                                NavigationLink(destination: ForgotPasswordView()) {
+                                    Text("forgot_password_text")
+                                        .font(.subheadline)
+                                        .foregroundColor(AppColors.primary)
+                                        .fontWeight(.semibold)
+                                }
+                                Spacer()
+                            }
+                            .padding(.top, 4)
                         }
                         .padding(.horizontal, 24)
                         .padding(.vertical, 28)
@@ -191,15 +186,11 @@ struct LoginView: View {
                 .onTapGesture {
                     isFocused = false
                 }
-//                .scrollDismissesKeyboard(.immediately)
                 .scrollIndicators(.hidden)
                 .alert("Error", isPresented: $showError) {
                     Button("OK", role: .cancel) { }
                 } message: {
                     Text(LocalizedStringKey(errorMessage ?? "error_unknown"))
-                }
-                .navigationDestination(isPresented: $navigateToHome) {
-                    HomeView()
                 }
                 .navigationBarHidden(true)
             }
@@ -216,7 +207,6 @@ struct LoginView: View {
             return
         }
         try await AuthService.shared.signIn(email: email, password: password)
-        navigateToHome = true
         clearFields()
     }
     

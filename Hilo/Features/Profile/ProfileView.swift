@@ -10,27 +10,51 @@ import SwiftUI
 struct ProfileView: View {
     @Environment(AuthViewModel.self) private var authViewModel
     
+    private let storageService = StorageService()
+
+    @State private var avatarURL: URL?
+    
     var body: some View {
-        ZStack {
-            AppColors.background.ignoresSafeArea()
-            NavigationStack {
+        NavigationStack {
+            ZStack {
+                // FONDO
+                AppColors.background
+                    .ignoresSafeArea()
                 ScrollView {
                     VStack {
                         HStack {
-                            Image("edward_profile_pic")
-                                .resizable()
-                                .frame(width: 80, height: 80)
-                                .clipShape(.circle)
+                            AsyncImage(url: avatarURL) { phase in
+                                switch phase {
+
+                                case .empty:
+                                    ProgressView()
+
+                                case .success(let image):
+                                    image
+                                        .resizable()
+                                        .scaledToFill()
+
+                                case .failure:
+                                    Image(systemName: "person.crop.circle.fill")
+                                        .resizable()
+                                        .foregroundStyle(AppColors.secondaryText)
+
+                                @unknown default:
+                                    EmptyView()
+                                }
+                            }
+                            .frame(width: 80, height: 80)
+                            .clipShape(.circle)
                             
                             VStack(alignment: .leading) {
                                 Spacer()
                                 
-                                Text("Yhon Vivas")
+                                Text(authViewModel.currentUser?.displayName ?? "Loading...")
                                     .font(.title)
                                     .fontWeight(.bold)
                                     .foregroundStyle(AppColors.primary)
                                 
-                                Text("@yvivas")
+                                Text(authViewModel.currentUser?.username ?? "@username")
                                     .font(.callout)
                                     .fontWeight(.bold)
                                     .glassEffect()
@@ -38,9 +62,9 @@ struct ProfileView: View {
                                 
                                 Spacer()
                                 
-                                Text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.")
-                                    .font(.callout)
-                                    .foregroundColor(.secondary)
+//                                Text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.")
+//                                    .font(.callout)
+//                                    .foregroundColor(.secondary)
                             }
                         }
                         
@@ -199,7 +223,9 @@ struct ProfileView: View {
                         
                         
                         Button {
-                            authViewModel.singOut()
+                            Task {
+                                await authViewModel.signOut()
+                            }
                         } label: {
                             Text("Cierra sesión")
                         }
@@ -211,7 +237,29 @@ struct ProfileView: View {
                 }
             }
         }
+        .onAppear {
+            loadAvatar()
+        }   
     }
+    
+    func loadAvatar() {
+        guard let userId = authViewModel.currentUser?.id else {
+            return
+        }
+
+        do {
+            let url = try storageService.getAvatarURL(userId: userId)
+
+            // Evita mostrar una versión antigua por caché
+            avatarURL = URL(
+                string: "\(url.absoluteString)?v=\(Date().timeIntervalSince1970)"
+            )
+
+        } catch {
+            print("Error cargando avatar:", error)
+        }
+    }
+    
 }
 
 #Preview {

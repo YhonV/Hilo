@@ -15,10 +15,11 @@ struct RegisterView: View {
     
     @State private var isLoading = false
     @State private var navigateToLogin = false
-    @State private var navigateToHome = false
     @State private var errorMessage : String?
     @State private var showError = false
     @FocusState private var isFocused: Bool
+    
+    private let userService = UserService()
     
     var body: some View {
         NavigationStack {
@@ -212,70 +213,59 @@ struct RegisterView: View {
                 .onTapGesture {
                     isFocused = false
                 }
-//                .scrollDismissesKeyboard(.immediately)
             }
             .alert("Error", isPresented: $showError) {
                 Button("OK", role: .cancel) { }
             } message: {
                 Text(LocalizedStringKey(errorMessage ?? "error_unknown"))
             }
-            .navigationDestination(isPresented: $navigateToHome) {
-                HomeView()
-            }
-            //.navigationBarHidden(true)
         }
     }
     
-    func register(email: String, password: String) async throws {
-        isLoading = true
-    
+    func registerValidationForm(email: String, password: String) -> Bool {
         guard !email.isEmpty, !password.isEmpty, !username.isEmpty, !displayName.isEmpty else {
             errorMessage = "all_fields_required"
             showError = true
             isLoading = false
-            return
+            return false
         }
         
         guard password == confirmPassword else {
             errorMessage = "passwords_dont_match"
             showError = true
             isLoading = false
-            return
+            return false
         }
+        return true;
+    }
+    
+    func isUsernameTaken(username: String) async throws -> Bool {
+        return try await userService.isUsernameTaken(
+            username: username.lowercased()
+        )
+    }
+    
+    func register(email: String, password: String) async throws {
+        isLoading = true
         
+        let validationOutput: Bool = registerValidationForm(email: email, password: password)
+        if !validationOutput {
+            return;
+        }
         let finalUsername = username.hasPrefix("@") ? username : "@" + username
         
-        let usernameTaken = try await FirestoreService.shared.isUsernameTaken(finalUsername)
-        if usernameTaken {
-            isLoading = false
-            errorMessage = "username_not_available"
-            showError = true
-            return
-        }
+        let userId = try await AuthService.shared.singUp(email: email, password: password)
         
-        let response = try await AuthService.shared.register(email: email, password: password)
-        let uid = response.id
-        
-        guard let uid = uid, !uid.isEmpty else {
-                throw NSError(
-                    domain: "RegisterError",
-                    code: 0,
-                    userInfo: [NSLocalizedDescriptionKey: "Failed to create user account"]
-                )
-            }
-        
-        let userData = User (
-            username: finalUsername.lowercased(),
+        let userToBeCreate: CreateUserRequest = CreateUserRequest (
+            userId: userId,
+            userName: finalUsername,
             displayName: displayName,
-            email: email,
-            profilePic: "",
-            userBio: "",
-            createdAt: Date()
+            email: email
         )
         
-        try await FirestoreService.shared.createUser(userData, uid: uid)
-        isLoading = false
-        navigateToHome = true
+        try await userService.createUser(user: userToBeCreate)
+
+        defer { isLoading = false }
         clearFields()
     }
     
