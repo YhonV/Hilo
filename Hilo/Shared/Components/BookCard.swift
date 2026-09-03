@@ -36,7 +36,7 @@ struct BookCard: View {
                 .multilineTextAlignment(.center)
                 .frame(height: 20, alignment: .top)
             
-            Text(book.author)
+            Text(book.authors.first ?? "")
                 .font(.subheadline)
                 .lineLimit(1)
             

@@ -43,11 +43,11 @@
 "forgot_password_disclaimer" = "Revisa tu carpeta de spam en caso de que no veas el email";
 "username_not_available" = "Este nombre de usuario ya está ocupado";
 
-
 /* ===== MainTabView ==== */
 "home_text_tab" = "Inicio";
 "search_text_tab" = "Buscar";
 "profile_text_tab" = "Perfil";
+"library_text_tab" = "Biblioteca";
 
 /* ==== EnumRead ==== */
 "read" = "Leído";

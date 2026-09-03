@@ -48,6 +48,7 @@
 "home_text_tab" = "Home";
 "search_text_tab" = "Search";
 "profile_text_tab" = "Profile";
+"library_text_tab" = "Library";
 
 /* ==== EnumRead ==== */
 "read" = "Read";

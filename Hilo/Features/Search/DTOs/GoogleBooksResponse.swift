@@ -11,7 +11,8 @@ struct GoogleBooksResponse: Codable {
 }
 
 struct BookItem: Codable {
-    var volumeInfo: VolumeInfo
+    let id: String
+    let volumeInfo: VolumeInfo
 }
 
 struct VolumeInfo: Codable {
@@ -25,6 +26,8 @@ struct VolumeInfo: Codable {
     var industryIdentifiers:    [IndustryIdentifier]?
     var averageRating:          Double?
     var ratingsCount:           Int?
+    var publisher:              String?
+    var language:               String?
 }
 
 struct IndustryIdentifier: Codable {

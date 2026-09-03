@@ -5,12 +5,14 @@
 //  Created by Yhon Vivas on 01-02-26.
 //
 import Foundation
-import FirebaseFirestore
 
 struct Book: Codable, Identifiable {
-    @DocumentID var id: String?
+    var googleBookId: String
+    var id: String {
+            googleBookId
+        }
     var title: String
-    var author: String
+    var authors: [String]
     var cover: String
     var genre: [String]
     var description: String?
@@ -19,4 +21,6 @@ struct Book: Codable, Identifiable {
     var isbn: String?
     var averageRating: Double?
     var totalReviews: Int
+    var editorial: String
+    var language: String
 }

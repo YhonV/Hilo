@@ -15,10 +15,12 @@ struct MainTabView: View {
             Tab("home_text_tab", systemImage: "house.fill") {
                 HomeView()
             }
-            Tab("search_text_tab", systemImage: "magnifyingglass") {
+            Tab("search_text_tab", systemImage: "magnifyingglass", role: .search) {
                 SearchView()
             }
-            
+            Tab("library_text_tab", systemImage: "books.vertical.fill") {
+                LibraryView()
+            }
             Tab("profile_text_tab", systemImage: "person.fill") {
                 ProfileView()
             }

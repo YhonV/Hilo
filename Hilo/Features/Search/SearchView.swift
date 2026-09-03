@@ -9,6 +9,8 @@ import SwiftUI
 
 struct SearchView: View {
     @State private var searchViewModel = SearchViewModel()
+    @State private var booksIsLoading: Bool = false
+    @State private var showLoadError = false
     
     let columns = [
         GridItem(.flexible()),
@@ -22,16 +24,23 @@ struct SearchView: View {
                 AppColors.background
                     .ignoresSafeArea()
                 ScrollView {
-                    LazyVGrid(columns: columns, spacing: 26) {
-                        ForEach(searchViewModel.books.indices, id: \.self) { index in
-                            NavigationLink {
-                                BookDetailView(book: searchViewModel.books[index])
-                            } label: {
-                                BookCard(book: searchViewModel.books[index])
+                    if booksIsLoading {
+                        LazyVGrid(columns: columns, spacing: 26) {
+                            ForEach(0..<6, id: \.self) { _ in
+                                BookCardSkeleton()
+                            }
+                        }
+                    } else {
+                        LazyVGrid(columns: columns, spacing: 26) {
+                            ForEach(searchViewModel.books.indices, id: \.self) { index in
+                                NavigationLink {
+                                    BookDetailView(book: searchViewModel.books[index])
+                                } label: {
+                                    BookCard(book: searchViewModel.books[index])
+                                }
                             }
                         }
                     }
-                    .padding(.horizontal)
                     
                     VStack {
                         Text("Calificación")
@@ -50,11 +59,45 @@ struct SearchView: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     .padding(.horizontal)
-                    
                 }
-                .searchable(text: $searchViewModel.searchText)
+                .searchable(
+                    text: $searchViewModel.searchText,
+                    placement: .navigationBarDrawer(displayMode: .always)
+                )
                 .task {
-                    await searchViewModel.loadInitialBooks()
+                    booksIsLoading = true
+                    defer { booksIsLoading = false }
+                    
+                    do {
+                        try await searchViewModel.loadInitialBooks()
+                    } catch {
+                        showLoadError = true
+                    }
+                }
+                .onSubmit(of: .search) {
+                    Task {
+                        booksIsLoading = true
+                        defer { booksIsLoading = false }
+
+                        await searchViewModel.searchBooks()
+                    }
+                }
+                .alert("No se pudieron cargar los libros", isPresented: $showLoadError) {
+                    Button("Reintentar") {
+                        Task {
+                            booksIsLoading = true
+                            defer { booksIsLoading = false }
+                            
+                            do {
+                                try await searchViewModel.loadInitialBooks()
+                            } catch {
+                                showLoadError = true
+                            }
+                        }
+                    }
+                    Button("Cancelar", role: .cancel) { }
+                } message: {
+                    Text("Hubo un problema al conectarse con Google Books. Inténtalo nuevamente.")
                 }
             }
         }
