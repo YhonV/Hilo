@@ -12,111 +12,6 @@ enum BookStatus: String, Codable {
     case toRead
 }
 
-struct ReadingStatusSheet: View {
-
-    let currentStatus: BookStatus?
-    let onSelect: (BookStatus) -> Void
-
-    @Environment(\.dismiss) private var dismiss
-
-    var body: some View {
-
-        VStack(alignment: .leading, spacing: 20) {
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Estado de lectura")
-                    .font(.title2.bold())
-
-                Text("Selecciona dónde quieres guardar este libro.")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-
-            VStack(spacing: 10) {
-
-                statusButton(
-                    title: "Leyendo",
-                    subtitle: "Lo estoy leyendo actualmente",
-                    icon: "book.fill",
-                    status: .reading,
-                    color: AppColors.accent
-                )
-
-                statusButton(
-                    title: "Por leer",
-                    subtitle: "Quiero leerlo más adelante",
-                    icon: "bookmark.fill",
-                    status: .toRead,
-                    color: AppColors.secondaryText
-                )
-
-                statusButton(
-                    title: "Leído",
-                    subtitle: "Ya terminé este libro",
-                    icon: "checkmark.circle.fill",
-                    status: .read,
-                    color: AppColors.primary
-                )
-            }
-        }
-        .padding(20)
-        .background(AppColors.background)
-    }
-
-    private func statusButton(
-        title: String,
-        subtitle: String,
-        icon: String,
-        status: BookStatus,
-        color: Color
-    ) -> some View {
-
-        Button {
-            onSelect(status)
-            dismiss()
-        } label: {
-
-            HStack(spacing: 14) {
-
-                Image(systemName: icon)
-                    .font(.title3)
-                    .foregroundStyle(color)
-                    .frame(width: 30)
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
-                        .font(.headline)
-
-                    Text(subtitle)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-
-                Spacer()
-
-                if currentStatus == status {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(color)
-                }
-            }
-            .padding(14)
-            .background(
-                color.opacity(currentStatus == status ? 0.12 : 0.06),
-                in: RoundedRectangle(cornerRadius: 16)
-            )
-            .overlay {
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(
-                        color.opacity(currentStatus == status ? 0.30 : 0.10),
-                        lineWidth: 1
-                    )
-            }
-        }
-        .buttonStyle(.plain)
-        .foregroundStyle(AppColors.titles)
-    }
-}
-
 struct BookDetailView: View {
     let book: Book
     @State private var isLoading: Bool = false
@@ -131,13 +26,13 @@ struct BookDetailView: View {
     private var buttonTitle: String {
         switch bookDetailViewModel.bookStatus {
         case .reading:
-            return "Continuar leyendo"
+            return String(localized: "continue_reading")
         case .read:
-            return "Leído"
+            return String(localized: "read")
         case .toRead:
-            return "Por leer"
+            return String(localized: "to_read")
         case nil:
-            return "Agregar a mi lista"
+            return String(localized: "add_to_my_list")
         }
     }
     
@@ -222,33 +117,6 @@ struct BookDetailView: View {
                     }
                     .frame(maxWidth: .infinity)
                     
-                    
-//                    Image(uiImage: coverImage) { phase in
-//                        switch phase {
-//                        case .success(let image):
-//                            image
-//                                .resizable()
-//                                .scaledToFit()
-//                                .frame(width: 180, height: 260)
-//                                .clipShape(RoundedRectangle(cornerRadius: 20))
-//                                .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 4)
-//                                .padding(.bottom, 10)
-//                        case .failure:
-//                            Image(systemName: "photo")
-//                                .resizable()
-//                                .scaledToFit()
-//                                .foregroundStyle(.secondary)
-//                                .padding(30)
-//                                .frame(width: 180, height: 260)
-//                        case .empty:
-//                            ProgressView()
-//                                .frame(width: 180, height: 260)
-//                        @unknown default:
-//                            EmptyView()
-//                        }
-//                    }
-//                    .frame(maxWidth: .infinity)
-                    
                     VStack(alignment: .leading, spacing: 6) {
 
                         Text(book.title)
@@ -291,9 +159,12 @@ struct BookDetailView: View {
                                 .fixedSize()
                             }
 
-                            if book.numberOfPages > 0 {
+                            if let numberOfPages = book.numberOfPages, numberOfPages > 0 {
                                 Label(
-                                    "\(book.numberOfPages) páginas",
+                                    String(
+                                        format: String(localized: "book_pages_count"),
+                                        numberOfPages
+                                    ),
                                     systemImage: "book.pages"
                                 )
                                 .padding(.horizontal, 10)
@@ -407,19 +278,20 @@ struct BookDetailView: View {
                                 await saveBookToList(status: status)
                             }
                         }
-                        .presentationDetents([.height(330)])
+                        .presentationDetents([.height(300)])
                         .presentationDragIndicator(.visible)
                         .presentationCornerRadius(28)
+                        .presentationBackground(.ultraThinMaterial)
                     }
                     .sensoryFeedback(.selection, trigger: statusFeedbackTrigger)
                     
                     VStack(alignment: .leading, spacing: 10) {
 
-                        Text("Sinopsis")
+                        Text("synopsis")
                             .font(.title2.bold())
                             .foregroundStyle(.white)
 
-                        Text(book.description ?? "no-description")
+                        Text(book.description ?? "no_description")
                             .font(.body)
                             .foregroundStyle(.white.opacity(0.80))
                             .lineSpacing(2)
@@ -431,7 +303,7 @@ struct BookDetailView: View {
                                 isDescriptionExpanded.toggle()
                             }
                         } label: {
-                            Text(isDescriptionExpanded ? "Ver menos" : "Ver más")
+                            Text(isDescriptionExpanded ? "show_less" : "show_more")
                                 .font(.subheadline)
                                 .fontWeight(.semibold)
                                 .foregroundStyle(.white)

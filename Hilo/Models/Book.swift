@@ -17,7 +17,7 @@ struct Book: Codable, Identifiable {
     var genre: [String]
     var description: String?
     var publishedDate: String?
-    var numberOfPages: Int
+    var numberOfPages: Int?
     var isbn: String?
     var averageRating: Double?
     var totalReviews: Int

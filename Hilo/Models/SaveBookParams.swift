@@ -16,6 +16,6 @@ struct SaveBookParams: Encodable {
     let p_publisher: String?
     let p_language: String?
     let p_published_date: String?
-    let p_number_of_pages: Int
+    let p_number_of_pages: Int?
     let p_cover_url: String?
 }

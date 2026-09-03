@@ -13,7 +13,6 @@ class GoogleBooksService {
     private let API_KEY: String = Bundle.main.object(forInfoDictionaryKey: "GoogleBooksAPIKey") as? String ?? ""
     
     func searchBook(query: String) async throws -> [Book] {
-        print("Starting search book")
         
         var components = URLComponents(string: BASE_URL)
         components?.queryItems = [
@@ -46,7 +45,10 @@ class GoogleBooksService {
                         genre: info.categories ?? [],
                         description: info.description,
                         publishedDate: info.publishedDate,
-                        numberOfPages: info.pageCount ?? 0,
+                        numberOfPages: {
+                            guard let pages = info.pageCount, pages > 0 else { return nil }
+                            return pages
+                        }(),
                         isbn: info.industryIdentifiers?.first(where: { $0.type == "ISBN_13" })?.identifier,
                         averageRating: info.averageRating,
                         totalReviews: info.ratingsCount ?? 0,

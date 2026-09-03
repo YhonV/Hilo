@@ -62,3 +62,19 @@
 "username_already_exists" = "Ese nombre de usuario ya está en uso";
 "error_updating_profile" = "Error al actualizar datos básicos del perfil";
 "error_unknown" = "Error desconocido, intenta más tarde";
+
+/* ==== ReadingStatusSheet ==== */
+"reading_status_title" = "Estado de lectura";
+"reading_status_subtitle" = "¿Dónde quieres guardar este libro?";
+"read_status" = "Leído";
+"reading_status" = "Leyendo";
+"toRead_status" = "Por leer";
+
+/* ==== BookDetailView ==== */
+"continue_reading" = "Continuar leyendo";
+"add_to_my_list" = "Agregar a mi lista";
+"book_pages_count" = "%d páginas";
+"synopsis" = "Sinopsis";
+"no_description" = "No hay una descripción disponible.";
+"show_more" = "Ver más";
+"show_less" = "Ver menos";
