@@ -365,6 +365,5 @@ struct BookDetailView: View {
         } catch {
             print("Error descargando portada: \(error)")
         }
-        
     }
 }

@@ -70,16 +70,14 @@ struct EditProfileView: View {
                                             EmptyView()
                                         }
                                     }
-
                                 } else {
-
                                     Image(systemName: "person.crop.circle.fill")
                                         .resizable()
                                         .foregroundStyle(AppColors.secondaryText)
                                 }
                             }
                             .frame(width: 115, height: 115)
-                            .clipShape(.circle)
+                            .clipShape(.rect(cornerRadius: 20))
 
                             PhotosPicker(
                                 selection: $selectedPhoto,

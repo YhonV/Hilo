@@ -11,8 +11,8 @@ struct ProfileView: View {
     @Environment(AuthViewModel.self) private var authViewModel
     
     private let storageService = StorageService()
-
     @State private var avatarURL: URL?
+    @State private var coverImage: UIImage?
     
     var body: some View {
         NavigationStack {
@@ -21,245 +21,284 @@ struct ProfileView: View {
                 AppColors.background
                     .ignoresSafeArea()
                 ScrollView {
-                    VStack {
-                        HStack {
-                            AsyncImage(url: avatarURL) { phase in
-                                switch phase {
-
-                                case .empty:
-                                    ProgressView()
-
-                                case .success(let image):
-                                    image
-                                        .resizable()
-                                        .scaledToFill()
-
-                                case .failure:
-                                    Image(systemName: "person.crop.circle.fill")
-                                        .resizable()
-                                        .foregroundStyle(AppColors.secondaryText)
-
-                                @unknown default:
-                                    EmptyView()
-                                }
-                            }
-                            .frame(width: 80, height: 80)
-                            .clipShape(.circle)
-                            
-                            VStack(alignment: .leading) {
-                                Spacer()
-                                
-                                Text(authViewModel.currentUser?.displayName ?? "Loading...")
-                                    .font(.title)
-                                    .fontWeight(.bold)
-                                    .foregroundStyle(AppColors.primary)
-                                
-                                Text(authViewModel.currentUser?.username ?? "@username")
-                                    .font(.callout)
-                                    .fontWeight(.bold)
-                                    .glassEffect()
-                                    .foregroundColor(AppColors.secondaryText)
-                                
-                                Spacer()
-                                
-//                                Text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.")
-//                                    .font(.callout)
-//                                    .foregroundColor(.secondary)
-                            }
-                        }
+                    VStack (spacing: 16) {
                         
-                        NavigationLink(destination: EditProfileView()) {
-                            HStack {
-                                Image(systemName: "pencil")
-                                Text("Editar perfil")
+                        /// **Cabecera**
+                        
+                        VStack(alignment: .leading) {
+
+                            ZStack(alignment: .bottomLeading) {
+                                
+                                ImageGradient(
+                                    image: coverImage,
+                                    count: 3,
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing,
+                                    overlayOpacity: 0.18,
+                                    saturation: 0.8
+                                )
+                                .frame(height: 180)
+                                .frame(maxWidth: .infinity)
+                                .overlay(alignment: .topTrailing) {
+                                    Menu {
+                                        NavigationLink("Editar perfil") {
+                                            EditProfileView()
+                                        }
+                                        
+                                        Divider()
+                                        
+                                        Button("Cerrar sesión", role: .destructive) {
+                                            Task {
+                                                await authViewModel.signOut()
+                                            }
+                                        }
+                                    } label: {
+                                        Image(systemName: "gear")
+                                            .font(.title2)
+                                            .foregroundStyle(.white)
+                                            .fontWeight(.semibold)
+                                            .padding(20)
+                                            .padding(.top, 40)
+                                    }
+                                }
+
+                                AsyncImage(url: avatarURL) { phase in
+                                    switch phase {
+                                    case .empty:
+                                        ProgressView()
+
+                                    case .success(let image):
+                                        image
+                                            .resizable()
+                                            .scaledToFill()
+
+                                    case .failure:
+                                        Image(systemName: "person.crop.circle.fill")
+                                            .resizable()
+                                            .foregroundStyle(AppColors.secondaryText)
+
+                                    @unknown default:
+                                        EmptyView()
+                                    }
+                                }
+                                .frame(width: 110, height: 110)
+                                .clipShape(
+                                    RoundedRectangle(
+                                        cornerRadius: 20,
+                                        style: .continuous
+                                    )
+                                )
+                                .overlay {
+                                    RoundedRectangle(
+                                        cornerRadius: 20,
+                                        style: .continuous
+                                    )
+                                    .stroke(
+                                        AppColors.background,
+                                        lineWidth: 4
+                                    )
+                                }
+                                .offset(y: 40)
+                                .padding(.leading, 20)
+                            }
+
+                            HStack(alignment: .center) {
+
+                                VStack(alignment: .center, spacing: 6) {
+
+                                    Text(
+                                        authViewModel.currentUser?.displayName
+                                        ?? "Loading..."
+                                    )
+                                    .font(.title2)
+                                    .fontWeight(.bold)
+                                    .foregroundStyle(AppColors.primaryStrong)
+
+                                    Text(
+                                        authViewModel.currentUser?.username
+                                        ?? "@username"
+                                    )
+                                    .font(.subheadline)
+                                    .fontWeight(.bold)
+                                    .foregroundStyle(AppColors.secondaryText)
+                                }
+
+                                Spacer()
+
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.horizontal, 20)
+                            .padding(.top, 42)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        
+                        Divider()
+                    
+                        /// **Estadisticas básica**
+                        
+                        HStack {
+                            VStack(spacing: 5) {
+                                Image(systemName: "checkmark")
+                                    .foregroundStyle(AppColors.accent)
+                                    .fontWeight(.bold)
+                                Text("24")
+                                    .font(.title2)
+                                    .fontWeight(.bold)
+                                Text("Leídos")
+                                    .font(.callout)
+                                    .foregroundStyle(AppColors.secondaryText)
+                            }
+                            .frame(maxWidth: .infinity)
+                            
+                            Divider().frame(width: 1, height: 55)
+                            
+                            VStack(spacing: 5) {
+                                Image(systemName: "book")
+                                    .foregroundStyle(AppColors.accent)
+                                    .fontWeight(.bold)
+                                Text("2")
+                                    .font(.title2)
+                                    .fontWeight(.bold)
+                                Text("Leyendo")
+                                    .font(.callout)
+                                    .foregroundStyle(AppColors.secondaryText)
+                            }
+                            .frame(maxWidth: .infinity)
+                            
+                            Divider().frame(width: 1, height: 55)
+                            
+                            VStack(spacing: 5) {
+                                Image(systemName: "bookmark")
+                                    .foregroundStyle(AppColors.accent)
+                                    .fontWeight(.bold)
+                                Text("67")
+                                    .font(.title2)
+                                    .fontWeight(.bold)
+                                Text("Por leer")
+                                    .font(.callout)
+                                    .foregroundStyle(AppColors.secondaryText)
                             }
                             .frame(maxWidth: .infinity)
                         }
-                        .padding()
-                        .buttonStyle(.glass)
-                        .controlSize(.regular)
-                        .tint(AppColors.accent)
                         
-                        Divider()
+                        Spacer()
                         
-                        HStack {
-                            Button {
-                                
-                            } label: {
-                                VStack(spacing: 10) {
-                                    Image(systemName: "checkmark")
-                                        .foregroundStyle(AppColors.accent)
-                                        .fontWeight(.bold)
-                                    Text("24")
-                                        .font(.title2)
-                                        .fontWeight(.bold)
-                                    Text("Leídos")
-                                        .font(.callout)
-                                }
-                                .frame(maxWidth: .infinity)
-                            }
-                            .padding()
-                            .buttonStyle(.glass)
-                            .buttonBorderShape(.roundedRectangle(radius: 12))
-                            .controlSize(.regular)
+                        /// **Leyendo actualmente**
+                        
+                        VStack(spacing: 5) {
+                            Text("Leyendo actualmente")
+                                .font(.headline)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.bottom, 12)
+                            ReadingCard()
                             
-                            Button {
-                                
-                            } label: {
-                                VStack(spacing: 10) {
-                                    Image(systemName: "book")
-                                        .foregroundStyle(AppColors.accent)
-                                        .fontWeight(.bold)
-                                    Text("2")
-                                        .font(.title2)
-                                        .fontWeight(.bold)
-                                    Text("Leyendo")
-                                        .font(.callout)
-                                }
-                                .frame(maxWidth: .infinity)
-                            }
-                            .padding()
-                            .buttonStyle(.glass)
-                            .buttonBorderShape(.roundedRectangle(radius: 12))
-                            .controlSize(.regular)
-                            
-                            Button {
-                                
-                            } label: {
-                                VStack(spacing: 10) {
-                                    Image(systemName: "bookmark")
-                                        .foregroundStyle(AppColors.accent)
-                                        .fontWeight(.bold)
-                                    Text("67")
-                                        .font(.title2)
-                                        .fontWeight(.bold)
-                                    Text("Por leer")
-                                        .font(.callout)
-                                }
-                                .frame(maxWidth: .infinity)
-                            }
-                            .padding()
-                            .buttonStyle(.glass)
-                            .buttonBorderShape(.roundedRectangle(radius: 12))
-                            .controlSize(.regular)
                         }
+                        .padding(.horizontal, 20)
+                        
+                        /// **Citas del usuario**
+                        
+                        VStack(spacing: 5) {
+                            Text("Tus citas")
+                                .font(.headline)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.bottom, 12)
+                            
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 12) {
+                                    QuoteCard(
+                                        quote: "Este lugar inhumano hace monstruos humanos",
+                                        bookTitle: "El resplandor",
+                                        author: "Stephen King",
+                                        page: "82"
+                                    )
+                                    
+                                    QuoteCard(
+                                        quote: "Este lugar inhumano hace monstruos humanos",
+                                        bookTitle: "El resplandor",
+                                        author: "Stephen King",
+                                        page: "82"
+                                    )
+                                }
+                                
+                            }
+                        }
+                        .padding(.horizontal, 20)
+                        
+
+                        /// **Actividad del usuario**
                         
                         VStack(spacing: 5) {
                             Text("Tu actividad")
                                 .font(.headline)
                                 .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.bottom, 12)
                             
-                            HStack(spacing: 12) {
-                                Button {
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 12) {
+                                    ActivityCard(
+                                        icon: "book.closed.fill",
+                                        value: "6432",
+                                        title: "Páginas leídas",
+                                        subtitle: "Total",
+                                        coverImage: coverImage
+                                    )
                                     
-                                } label: {
-                                    VStack(spacing: 10) {
-                                        Text("Páginas leídas")
-                                            .font(.callout)
-                                            .multilineTextAlignment(.center)
-                                            .lineLimit(2)
-                                        
-                                        Text("6432")
-                                            .font(.title2)
-                                            .fontWeight(.bold)
-                                        
-                                        Text("Total")
-                                            .font(.callout)
-                                    }
-                                    .frame(maxWidth: .infinity)
-                                    .frame(height: 130)
-                                }
-                                .buttonStyle(.glass)
-                                .buttonBorderShape(.roundedRectangle(radius: 12))
-                                
-                                Button {
+                                    ActivityCard(
+                                        icon: "star",
+                                        value: "4.3",
+                                        title: "Rating promedio",
+                                        subtitle: "Total",
+                                        coverImage: coverImage
+                                    )
                                     
-                                } label: {
-                                    VStack(spacing: 10) {
-                                        Text("Rating promedio")
-                                            .font(.callout)
-                                            .multilineTextAlignment(.center)
-                                            .lineLimit(2)
-                                        
-                                        HStack {
-                                            Image(systemName: "star")
-                                            Text("4.3")
-                                                .font(.title2)
-                                                .fontWeight(.bold)
-                                        }
-                                        
-                                        Text("de 68 reseñas")
-                                            .font(.callout)
-                                    }
-                                    .frame(maxWidth: .infinity)
-                                    .frame(height: 130)
+                                    ActivityCard(
+                                        icon: "books.vertical",
+                                        value: "Fantasía",
+                                        title: "Género favorito",
+                                        subtitle: "Total",
+                                        coverImage: coverImage
+                                    )
                                 }
-                                .buttonStyle(.glass)
-                                .buttonBorderShape(.roundedRectangle(radius: 12))
-                                
-                                Button {
-                                    
-                                } label: {
-                                    VStack(spacing: 10) {
-                                        Text("Género favorito")
-                                            .font(.callout)
-                                            .multilineTextAlignment(.center)
-                                            .lineLimit(2)
-                                        
-                                        Image(systemName: "books.vertical")
-                                            .fontWeight(.bold)
-                                        
-                                        Text("Fantasía")
-                                            .font(.callout)
-                                    }
-                                    .frame(maxWidth: .infinity)
-                                    .frame(height: 130)
-                                }
-                                .buttonStyle(.glass)
-                                .buttonBorderShape(.roundedRectangle(radius: 12))
                             }
                         }
-                        .padding()
-                        
-                        
-                        Button {
-                            Task {
-                                await authViewModel.signOut()
-                            }
-                        } label: {
-                            Text("Cierra sesión")
-                        }
-                        .buttonStyle(.glassProminent)
-                        .tint(Color.red)
-                        
+                        .padding(.horizontal, 20)
                         
                     }
+                    .padding(.bottom, 10)
                 }
+                .ignoresSafeArea(edges: .top)
             }
         }
-        .onAppear {
-            loadAvatar()
-        }   
+        .task {
+            await loadAvatar()
+        }
     }
     
-    func loadAvatar() {
+    func loadAvatar() async {
         guard let userId = authViewModel.currentUser?.id else {
             return
         }
 
         do {
             let url = try storageService.getAvatarURL(userId: userId)
-
-            // Evita mostrar una versión antigua por caché
-            avatarURL = URL(
+            
+            guard let finalURL = URL(
                 string: "\(url.absoluteString)?v=\(Date().timeIntervalSince1970)"
-            )
+            ) else {
+                return
+            }
+            avatarURL = finalURL
+            
+            let (data, _) = try await URLSession.shared.data(from: finalURL)
 
+            guard let image = UIImage(data: data) else {
+                return
+            }
+            coverImage = image
         } catch {
             print("Error cargando avatar:", error)
         }
     }
-    
 }
 
 #Preview {
