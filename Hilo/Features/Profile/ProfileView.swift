@@ -13,6 +13,7 @@ struct ProfileView: View {
     private let storageService = StorageService()
     @State private var avatarURL: URL?
     @State private var coverImage: UIImage?
+    @State private var profileViewModel = ProfileViewModel()
     
     var body: some View {
         NavigationStack {
@@ -27,10 +28,10 @@ struct ProfileView: View {
                         
                         VStack(alignment: .leading) {
 
-                            ZStack(alignment: .bottomLeading) {
+                            ZStack(alignment: .bottom) {
                                 
                                 ImageGradient(
-                                    image: coverImage,
+                                    image: profileViewModel.coverImage,
                                     count: 3,
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing,
@@ -62,7 +63,7 @@ struct ProfileView: View {
                                     }
                                 }
 
-                                AsyncImage(url: avatarURL) { phase in
+                                AsyncImage(url: profileViewModel.avatarURL) { phase in
                                     switch phase {
                                     case .empty:
                                         ProgressView()
@@ -99,86 +100,45 @@ struct ProfileView: View {
                                     )
                                 }
                                 .offset(y: 40)
-                                .padding(.leading, 20)
                             }
 
-                            HStack(alignment: .center) {
 
-                                VStack(alignment: .center, spacing: 6) {
+                            VStack(alignment: .center, spacing: 6) {
 
-                                    Text(
-                                        authViewModel.currentUser?.displayName
-                                        ?? "Loading..."
-                                    )
-                                    .font(.title2)
-                                    .fontWeight(.bold)
-                                    .foregroundStyle(AppColors.primaryStrong)
+                                Text(
+                                    authViewModel.currentUser?.displayName
+                                    ?? "Loading..."
+                                )
+                                .font(.title2)
+                                .fontWeight(.bold)
+                                .foregroundStyle(AppColors.primaryStrong)
 
-                                    Text(
-                                        authViewModel.currentUser?.username
-                                        ?? "@username"
-                                    )
-                                    .font(.subheadline)
-                                    .fontWeight(.bold)
-                                    .foregroundStyle(AppColors.secondaryText)
-                                }
-
-                                Spacer()
-
+                                Text(
+                                    authViewModel.currentUser?.username
+                                    ?? "@username"
+                                )
+                                .font(.subheadline)
+                                .fontWeight(.bold)
+                                .foregroundStyle(AppColors.secondaryText)
                             }
+
                             .frame(maxWidth: .infinity)
-                            .padding(.horizontal, 20)
                             .padding(.top, 42)
                         }
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .frame(maxWidth: .infinity)
                         
                         Divider()
                     
                         /// **Estadisticas básica**
                         
                         HStack {
-                            VStack(spacing: 5) {
-                                Image(systemName: "checkmark")
-                                    .foregroundStyle(AppColors.accent)
-                                    .fontWeight(.bold)
-                                Text("24")
-                                    .font(.title2)
-                                    .fontWeight(.bold)
-                                Text("Leídos")
-                                    .font(.callout)
-                                    .foregroundStyle(AppColors.secondaryText)
-                            }
-                            .frame(maxWidth: .infinity)
-                            
+                            BasicStatisticCard(value: profileViewModel.readCount, icon: "checkmark", title: "Leídos")
                             Divider().frame(width: 1, height: 55)
                             
-                            VStack(spacing: 5) {
-                                Image(systemName: "book")
-                                    .foregroundStyle(AppColors.accent)
-                                    .fontWeight(.bold)
-                                Text("2")
-                                    .font(.title2)
-                                    .fontWeight(.bold)
-                                Text("Leyendo")
-                                    .font(.callout)
-                                    .foregroundStyle(AppColors.secondaryText)
-                            }
-                            .frame(maxWidth: .infinity)
-                            
+                            BasicStatisticCard(value: profileViewModel.readingCount, icon: "book", title: "Leyendo")
                             Divider().frame(width: 1, height: 55)
                             
-                            VStack(spacing: 5) {
-                                Image(systemName: "bookmark")
-                                    .foregroundStyle(AppColors.accent)
-                                    .fontWeight(.bold)
-                                Text("67")
-                                    .font(.title2)
-                                    .fontWeight(.bold)
-                                Text("Por leer")
-                                    .font(.callout)
-                                    .foregroundStyle(AppColors.secondaryText)
-                            }
-                            .frame(maxWidth: .infinity)
+                            BasicStatisticCard(value: profileViewModel.toReadCount, icon: "bookmark", title: "Por leer")
                         }
                         
                         Spacer()
@@ -186,12 +146,21 @@ struct ProfileView: View {
                         /// **Leyendo actualmente**
                         
                         VStack(spacing: 5) {
+
                             Text("Leyendo actualmente")
                                 .font(.headline)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .padding(.bottom, 12)
-                            ReadingCard()
-                            
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 12) {
+                                    ForEach(profileViewModel.currentlyReadingBooks, id: \.userBookId) { readingBook in
+
+                                        ReadingCard(
+                                            readingBook: readingBook
+                                        )
+                                    }
+                                }
+                            }
                         }
                         .padding(.horizontal, 20)
                         
@@ -270,7 +239,9 @@ struct ProfileView: View {
             }
         }
         .task {
-            await loadAvatar()
+            if let userId = authViewModel.currentUser?.id {
+                await profileViewModel.loadProfileData(userId: userId)
+            }
         }
     }
     

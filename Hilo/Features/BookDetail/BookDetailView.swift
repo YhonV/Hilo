@@ -6,12 +6,6 @@
 //
 import SwiftUI
 
-enum BookStatus: String, Codable {
-    case reading
-    case read
-    case toRead
-}
-
 struct BookDetailView: View {
     let book: Book
     @State private var isLoading: Bool = false

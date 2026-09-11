@@ -37,10 +37,6 @@ class SearchViewModel {
         } catch {
             print("Error cargando libros: \(error)")
         }
-        
-        do {
-            
-        }
     }
     
 }
