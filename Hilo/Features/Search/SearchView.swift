@@ -10,7 +10,14 @@ import SwiftUI
 struct SearchView: View {
     @State private var searchViewModel = SearchViewModel()
     @State private var booksIsLoading: Bool = false
-    @State private var showLoadError = false
+    @State private var showLoadError: Bool = false
+    @State private var showAllBooks: Bool = false
+    @State private var booksToShow: Int = 3
+    private var visibleBooks: [Book] {
+        showAllBooks
+            ? searchViewModel.books
+            : Array(searchViewModel.books.prefix(3))
+    }
     
     let columns = [
         GridItem(.flexible()),
@@ -25,40 +32,59 @@ struct SearchView: View {
                     .ignoresSafeArea()
                 ScrollView {
                     if booksIsLoading {
-                        LazyVGrid(columns: columns, spacing: 26) {
-                            ForEach(0..<6, id: \.self) { _ in
-                                BookCardSkeleton()
-                            }
+                        ForEach(0..<3, id: \.self) { _ in
+                            BookCardSkeleton()
+                            Divider()
                         }
+                        .padding(.horizontal)
                     } else {
-                        LazyVGrid(columns: columns, spacing: 26) {
-                            ForEach(searchViewModel.books.indices, id: \.self) { index in
-                                NavigationLink {
-                                    BookDetailView(book: searchViewModel.books[index])
-                                } label: {
-                                    BookCard(book: searchViewModel.books[index])
+                        LazyVStack(spacing: 0) {
+                                ForEach(visibleBooks.indices, id: \.self) { index in
+                                    NavigationLink {
+                                        BookDetailView(book: searchViewModel.books[index])
+                                    } label: {
+                                        BookSearchResultRow(
+                                            book: searchViewModel.books[index]
+                                        )
+                                    }
+                                    .buttonStyle(.plain)
+                                    Divider()
                                 }
                             }
+                            .padding(.horizontal)
+                        
+                        if searchViewModel.books.count > 3 {
+                            Button {
+                                showAllBooks.toggle()
+                            } label: {
+                                Text(showAllBooks ? "show_less" : "show_more")
+                                    .font(.subheadline)
+                                    .fontWeight(.semibold)
+                                    .foregroundStyle(AppColors.primaryStrong)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.top, 12)
+                            .padding(.horizontal, 20)
                         }
                     }
                     
-                    VStack {
-                        Text("Calificación")
-                            .font(.title2)
-                            .fontWeight(.bold)
-                            .foregroundStyle(AppColors.primary)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    .padding(.horizontal)
-                    
-                    VStack {
-                        Text("Géneros populares")
-                            .font(.title2)
-                            .fontWeight(.bold)
-                            .foregroundStyle(AppColors.primary)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    .padding(.horizontal)
+//                    VStack {
+//                        Text("Calificación")
+//                            .font(.title2)
+//                            .fontWeight(.bold)
+//                            .foregroundStyle(AppColors.primary)
+//                            .frame(maxWidth: .infinity, alignment: .leading)
+//                    }
+//                    .padding(.horizontal)
+//                    
+//                    VStack {
+//                        Text("Géneros populares")
+//                            .font(.title2)
+//                            .fontWeight(.bold)
+//                            .foregroundStyle(AppColors.primary)
+//                            .frame(maxWidth: .infinity, alignment: .leading)
+//                    }
+//                    .padding(.horizontal)
                 }
                 .searchable(
                     text: $searchViewModel.searchText,
