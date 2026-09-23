@@ -79,3 +79,24 @@
 "no_description" = "No description available.";
 "show_more" = "Show more";
 "show_less" = "Show less";
+
+/* ==== ReadingActionSheetView ==== */
+
+"reading_update_progress" = "Update progress";
+"reading_start_reading" = "Start reading";
+"reading_reread" = "Read again";
+
+"reading_current_page" = "Current page";
+"reading_page_placeholder" = "Page";
+
+"reading_progress_percentage" = "%d%% read";
+"reading_page_of_total" = "%d of %d pages";
+
+"reading_save_progress" = "Save progress";
+"reading_finish_reading" = "Finish reading";
+
+"reading_start_description" = "Your reading start date will be recorded.";
+"reading_reread_description" = "A new reading will start from the beginning.";
+
+"reading_page_error_negative" = "The page cannot be less than 0.";
+"reading_page_error_exceeds_total" = "The page cannot exceed the book's %d pages.";

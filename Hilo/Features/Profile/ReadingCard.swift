@@ -22,9 +22,7 @@ struct ReadingCard: View {
         return min(max(value, 0), 1)
     }
 
-    private var progressPercentage: Int {
-        Int(progress * 100)
-    }
+    private var progressPercentage: Int {Int(progress * 100)}
 
     private var authors: String {
         readingBook.book.authors

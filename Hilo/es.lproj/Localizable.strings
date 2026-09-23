@@ -78,3 +78,24 @@
 "no_description" = "No hay una descripción disponible.";
 "show_more" = "Ver más";
 "show_less" = "Ver menos";
+
+/* ==== ReadingActionSheetView ==== */
+
+"reading_update_progress" = "Actualizar progreso";
+"reading_start_reading" = "Comenzar lectura";
+"reading_reread" = "Volver a leer";
+
+"reading_current_page" = "Página actual";
+"reading_page_placeholder" = "Página";
+
+"reading_progress_percentage" = "%d%% leído";
+"reading_page_of_total" = "%d de %d páginas";
+
+"reading_save_progress" = "Guardar progreso";
+"reading_finish_reading" = "Terminar lectura";
+
+"reading_start_description" = "Se registrará la fecha de inicio de tu lectura.";
+"reading_reread_description" = "Se iniciará una nueva lectura desde el principio.";
+
+"reading_page_error_negative" = "La página no puede ser menor que 0.";
+"reading_page_error_exceeds_total" = "La página no puede superar las %d páginas del libro.";

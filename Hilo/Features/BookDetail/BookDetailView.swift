@@ -19,66 +19,42 @@ struct BookDetailView: View {
     
     private var buttonTitle: String {
         switch bookDetailViewModel.bookStatus {
-        case .reading:
-            return String(localized: "continue_reading")
-        case .read:
-            return String(localized: "read")
-        case .toRead:
-            return String(localized: "to_read")
-        case nil:
-            return String(localized: "add_to_my_list")
+        case .reading: return String(localized: "continue_reading")
+        case .read: return String(localized: "read")
+        case .toRead: return String(localized: "to_read")
+        case nil: return String(localized: "add_to_my_list")
         }
     }
     
     private var buttonIcon: String {
         switch bookDetailViewModel.bookStatus {
-        case .reading:
-            return "book.fill"
-
-        case .toRead:
-            return "bookmark.fill"
-
-        case .read:
-            return "checkmark.circle.fill"
-
-        case nil:
-            return "plus"
+        case .reading: return "book.fill"
+        case .toRead: return "bookmark.fill"
+        case .read: return "checkmark.circle.fill"
+        case nil: return "plus"
         }
     }
     
     private var buttonBackgroundColor: Color {
         switch bookDetailViewModel.bookStatus {
-        case .reading:
-            return AppColors.accent
-
-        case .toRead:
-            return AppColors.surface
-
-        case .read:
-            return AppColors.primary
-
-        case nil:
-            return AppColors.primaryStrong
+        case .reading: return AppColors.accent
+        case .toRead: return AppColors.surface
+        case .read: return AppColors.primary
+        case nil: return AppColors.primaryStrong
         }
     }
     
     private var buttonForegroundColor: Color {
         switch bookDetailViewModel.bookStatus {
-        case .toRead:
-            return AppColors.primaryStrong
-
-        default:
-            return .white
+        case .toRead: return AppColors.primaryStrong
+        default: return .white
         }
     }
     
     private var buttonBorderColor: Color {
         switch bookDetailViewModel.bookStatus {
-        case .toRead:
-            return AppColors.primary.opacity(0.25)
-
-        default:
-            return .clear
+        case .toRead: return AppColors.primary.opacity(0.25)
+        default: return .clear
         }
     }
     

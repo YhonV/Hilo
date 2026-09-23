@@ -115,11 +115,8 @@ final class ProfileViewModel {
 
     private func loadCurrentlyReading(userId: UUID) async {
         do {
-            print("UserID que está enviando la información")
-            print(userId)
             currentlyReadingBooks = try await profileService
                 .getCurrentReadingBooks(uid: userId)
-            print("Reading status ID:", BookStatus.reading.id)
         } catch {
             print("Error cargando libros actuales:", error)
         }
