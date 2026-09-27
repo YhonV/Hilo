@@ -12,29 +12,10 @@ struct QuoteCardView: View {
     let totalPages: Int?
     
     @State private var confirmationDelete: Bool = false
-    @State private var quoteText: String
-    @State private var pageText: String
-
-    @State private var isSaving: Bool = false
-    
-    @State private var validationMessage: String?
-    @State private var saveErrorMessage: String?
-    @State private var showSaveError: Bool = false
     @State private var showEditQuote = false
     
     @Environment(QuoteViewModel.self) private var quoteViewModel
     @Environment(\.dismiss) private var dismiss
-    
-    init(quote: Quote, totalPages: Int?) {
-        self.quote = quote
-        self.totalPages = totalPages
-
-        _quoteText = State(initialValue: quote.content)
-        _pageText = State(
-            initialValue: quote.pageNumber.map(String.init) ?? ""
-        )
-    }
-
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {

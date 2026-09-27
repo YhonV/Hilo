@@ -99,8 +99,8 @@ struct LibraryBookDetailView: View {
                         .foregroundStyle(.black)
                         .fontWeight(.semibold)
                         .sheet(isPresented: $showQuoteSheet) {
-                            QuotesSheetView(bookDetail: bookDetail, userBookId: currentBook.userBookId)
-                                .presentationDetents([.height(250)])
+                            QuotesSheetView(bookDetail: currentBook, userBookId: currentBook.userBookId)
+                                .presentationDetents([.height(250), .medium, .large])
                                 .presentationDragIndicator(.visible)
                         }
                     }
@@ -117,7 +117,7 @@ struct LibraryBookDetailView: View {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 12) {
                             ForEach(quoteViewModel.quotes, id: \.id) { quote in
-                                QuoteCardView(quote: quote, totalPages: bookDetail.edition.numberOfPages)
+                                QuoteCardView(quote: quote, totalPages: currentBook.edition.numberOfPages)
                                     .frame(width: 300)
                             }
                         }
@@ -136,14 +136,17 @@ struct LibraryBookDetailView: View {
     
     private func getQuotes() async {
         do {
-            try await quoteViewModel.getQuotes(userBookId: bookDetail.userBookId)
+            try await quoteViewModel.getQuotes(userBookId: currentBook.userBookId)
         } catch {
             print("Error trayendo las citas: \(error)")
         }
     }
     
     private func getCoverImage() async {
-        guard let url = URL(string: currentBook.edition.coverUrl!) else { return }
+        guard let coverUrl = currentBook.edition.coverUrl,
+              let url = URL(string: coverUrl) else {
+            return
+        }
         
         do {
             let (data, _) = try await URLSession.shared.data(from: url)

@@ -12,17 +12,13 @@ struct QuoteComposerView: View {
     var body: some View {
         VStack(spacing: 0) {
 
-            TextField(
-                "Escribe tu cita...",
-                text: $quoteText,
-                axis: .vertical
-            )
-            .lineLimit(1...5)
-            .textInputAutocapitalization(.sentences)
-            .padding(.horizontal, 16)
-            .padding(.top, 12)
+            TextEditor(text: $quoteText)
+                .scrollContentBackground(.hidden)
+                .textInputAutocapitalization(.sentences)
+                .padding(.horizontal, 12)
+                .padding(.top, 8)
+                .frame(maxHeight: .infinity)
 
-            Spacer(minLength: 12)
 
             if let validationMessage {
                 Text(validationMessage)

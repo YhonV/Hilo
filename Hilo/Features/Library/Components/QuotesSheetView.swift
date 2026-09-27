@@ -5,21 +5,35 @@
 //  Created by Cactu on 24-09-26.
 //
 import SwiftUI
+import UIKit
+
+enum OCRFlowStep {
+    case camera
+    case crop
+}
 
 struct QuotesSheetView: View {
+    
+    // MARK: - Servicios
+    private let ocrService = OCRService()
 
     // MARK: - Estado
     @State private var mode: QuoteSheetMode = .options
-
-    @State private var manualQuoteText: String = ""
-    @State private var numberOfPagesText: String = ""
+    @State private var sourceType: SourceTypeQuote = .manual
+    
+    @State private var quoteText: String = ""
+    @State private var pageText: String = ""
 
     @State private var isSaving: Bool = false
 
     @State private var validationMessage: String?
     @State private var saveErrorMessage: String?
     @State private var showSaveError: Bool = false
-
+    
+    @State private var showOCRFlow = false
+    @State private var ocrStep: OCRFlowStep = .camera
+    @State private var capturedImage: UIImage?
+    
     // MARK: - Datos
     let bookDetail: UserLibraryBook
     let userBookId: UUID
@@ -53,7 +67,49 @@ struct QuotesSheetView: View {
                 ?? "Ocurrió un error inesperado."
             )
         }
+        .fullScreenCover(isPresented: $showOCRFlow) {
+
+            switch ocrStep {
+
+            case .camera:
+
+                CameraPickerView(
+                    onCapture: { image in
+                        capturedImage = image
+                        ocrStep = .crop
+                    },
+                    onCancel: {
+                        showOCRFlow = false
+                    }
+                )
+                .ignoresSafeArea()
+
+            case .crop:
+
+                if let capturedImage {
+
+                    CropImageView(
+                        image: capturedImage,
+                        onCancel: {
+                            self.capturedImage = nil
+                            ocrStep = .camera
+                        },
+                        onCrop: { croppedImage in
+
+                            processOCR(from: croppedImage)
+
+                            showOCRFlow = false
+                            self.capturedImage = nil
+                        }
+                    )
+
+                } else {
+                    ProgressView()
+                }
+            }
+        }
     }
+    
 
     // MARK: - Selector de método
     private var quoteMethodSelector: some View {
@@ -70,6 +126,7 @@ struct QuotesSheetView: View {
 
             Button {
                 mode = .manual
+                sourceType = .manual
             } label: {
                 Label(
                     "Escribir manualmente",
@@ -82,7 +139,9 @@ struct QuotesSheetView: View {
             .tint(.colorPrimary)
 
             Button {
-                 mode = .ocr
+                capturedImage = nil
+                sourceType = .ocr
+                showOCRFlow = true
             } label: {
                 Label(
                     "Escanear con cámara",
@@ -99,8 +158,8 @@ struct QuotesSheetView: View {
     // MARK: - Compositor de cita manual
     private var quoteComposer: some View {
         QuoteComposerView(
-            quoteText: $manualQuoteText,
-            pageText: $numberOfPagesText,
+            quoteText: $quoteText,
+            pageText: $pageText,
             validationMessage: $validationMessage,
             isSaving: isSaving,
             onSave: {
@@ -110,6 +169,7 @@ struct QuotesSheetView: View {
                     } catch {
                         saveErrorMessage = "No se pudo guardar la cita. Inténtalo nuevamente."
                         showSaveError = true
+                        print("ERROR GUARDANDO CITA:", error)
                     }
                 }
             },
@@ -132,7 +192,7 @@ struct QuotesSheetView: View {
             userBookId: userBookId,
             content: input.content,
             pageNumber: input.pageNumber,
-            sourceType: .manual
+            sourceType: sourceType
         )
 
         dismiss()
@@ -142,8 +202,8 @@ struct QuotesSheetView: View {
     private func checkInput() -> (content: String, pageNumber: Int?)? {
         validationMessage = nil
 
-        let textoFormateado = manualQuoteText.trimmingCharacters(in: .whitespacesAndNewlines)
-        let paginaTexto = numberOfPagesText.trimmingCharacters(in: .whitespacesAndNewlines)
+        let textoFormateado = quoteText.trimmingCharacters(in: .whitespacesAndNewlines)
+        let paginaTexto = pageText.trimmingCharacters(in: .whitespacesAndNewlines)
 
         guard !textoFormateado.isEmpty else { return nil }
 
@@ -165,5 +225,20 @@ struct QuotesSheetView: View {
         }
 
         return (content: textoFormateado, pageNumber: pageNumber)
+    }
+    
+    private func processOCR(from image: UIImage) {
+        do {
+            let recognizedText = try ocrService.extraerTexto(
+                from: image
+            )
+
+            quoteText = recognizedText
+            sourceType = .ocr
+            mode = .manual
+
+        } catch {
+            print("Error realizando OCR: \(error)")
+        }
     }
 }
