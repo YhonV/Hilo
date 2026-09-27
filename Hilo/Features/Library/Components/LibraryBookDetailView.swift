@@ -11,9 +11,12 @@ struct LibraryBookDetailView: View {
     let bookDetail: UserLibraryBook
     @State private var coverImage: UIImage?
     @State private var showReadingStatusOptions: Bool = false
-    @State private var triggerSensoryFeedback = false
+    @State private var triggerSensoryFeedback: Bool  = false
+    @State private var showQuoteSheet: Bool = false
     
     @Environment(LibraryViewModel.self) private var libraryViewModel
+    @Environment(QuoteViewModel.self) private var quoteViewModel
+    
     private var currentBook: UserLibraryBook {
         libraryViewModel.userBooks.first {
             $0.userBookId == bookDetail.userBookId
@@ -80,25 +83,9 @@ struct LibraryBookDetailView: View {
                 VStack {
                     HStack(spacing: 12) {
                         
-                        // Cambiar estado
-                        Button {
-
-                        } label: {
-                            Label("Cambiar estado", systemImage: "arrow.triangle.2.circlepath")
-                                .font(.subheadline)
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.85)
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 44)
-                        }
-                        .buttonStyle(.glassProminent)
-                        .tint(.white)
-                        .foregroundStyle(.black)
-                        .fontWeight(.semibold)
-                        
                         // Agregar cita
                         Button {
-
+                            showQuoteSheet.toggle()
                         } label: {
                             Label("Agregar cita", systemImage: "quote.bubble")
                                 .font(.subheadline)
@@ -111,18 +98,47 @@ struct LibraryBookDetailView: View {
                         .tint(.white)
                         .foregroundStyle(.black)
                         .fontWeight(.semibold)
+                        .sheet(isPresented: $showQuoteSheet) {
+                            QuotesSheetView(bookDetail: bookDetail, userBookId: currentBook.userBookId)
+                                .presentationDetents([.height(250)])
+                                .presentationDragIndicator(.visible)
+                        }
                     }
                     .padding(.horizontal, 20)
                 }
                 
-                
-                
-                
                 // MARK: - Citas asociadas al libro
+                
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Tus citas")
+                        .font(.headline)
+                        .foregroundStyle(.colorTitles)
+
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 12) {
+                            ForEach(quoteViewModel.quotes, id: \.id) { quote in
+                                QuoteCardView(quote: quote, totalPages: bookDetail.edition.numberOfPages)
+                                    .frame(width: 300)
+                            }
+                        }
+
+                    }
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 8)
             }
             .task {
                 await getCoverImage()
+                await getQuotes()
             }
+        }
+    }
+    
+    private func getQuotes() async {
+        do {
+            try await quoteViewModel.getQuotes(userBookId: bookDetail.userBookId)
+        } catch {
+            print("Error trayendo las citas: \(error)")
         }
     }
     

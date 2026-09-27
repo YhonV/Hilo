@@ -52,7 +52,6 @@ struct ReadingActionSheetView: View {
         VStack(alignment: .leading, spacing: 24) {
 
             // MARK: - Cabecera
-
             VStack(alignment: .leading, spacing: 6) {
                 Text(title)
                     .font(.title2)

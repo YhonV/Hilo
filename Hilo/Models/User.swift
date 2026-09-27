@@ -7,7 +7,7 @@
 import Foundation
 import FirebaseFirestore
 
-struct User: Codable, Identifiable {
+nonisolated struct User: Codable, Identifiable {
 
     var id: UUID
     var username: String
