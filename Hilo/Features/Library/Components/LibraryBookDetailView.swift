@@ -114,11 +114,19 @@ struct LibraryBookDetailView: View {
                         .font(.title2.bold())
                         .foregroundStyle(.white)
 
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 12) {
-                            ForEach(quoteViewModel.quotes, id: \.id) { quote in
-                                QuoteCardView(quote: quote, totalPages: currentBook.edition.numberOfPages)
+                    if quoteViewModel.quotes.isEmpty {
+                        EmptyQuoteCard()
+                            .frame(maxWidth: .infinity)
+                    } else {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 12) {
+                                ForEach(quoteViewModel.quotes, id: \.id) { quote in
+                                    QuoteCardView(
+                                        quote: quote,
+                                        totalPages: currentBook.edition.numberOfPages
+                                    )
                                     .frame(width: 300)
+                                }
                             }
                         }
 
