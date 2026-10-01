@@ -111,8 +111,8 @@ struct LibraryBookDetailView: View {
                 
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Tus citas")
-                        .font(.headline)
-                        .foregroundStyle(.colorTitles)
+                        .font(.title2.bold())
+                        .foregroundStyle(.white)
 
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 12) {
@@ -126,11 +126,62 @@ struct LibraryBookDetailView: View {
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 8)
+                
+                // MARK: - Detalles del libro
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("Detalles del libro")
+                        .font(.title2.bold())
+                        .foregroundStyle(.white)
+
+                    VStack(spacing: 0) {
+
+                        if let publisher = currentBook.edition.publisher,
+                           !publisher.isEmpty {
+                            BookDetailRow(
+                                title: "Editorial",
+                                value: publisher,
+                                systemImage: "building.2"
+                            )
+                        }
+
+                        if let publishedDate = currentBook.edition.publishedDate,
+                           !publishedDate.isEmpty {
+                            BookDetailRow(
+                                title: "Fecha de publicación",
+                                value: publishedDate,
+                                systemImage: "calendar"
+                            )
+                        }
+
+                        if let numberOfPages = currentBook.edition.numberOfPages {
+                            BookDetailRow(
+                                title: "Páginas",
+                                value: "\(numberOfPages)",
+                                systemImage: "book.pages"
+                            )
+                        }
+
+                        if let isbn = currentBook.edition.isbn,
+                           !isbn.isEmpty {
+                            BookDetailRow(
+                                title: "ISBN",
+                                value: isbn,
+                                systemImage: "barcode"
+                            )
+                        }
+                    }
+                    .padding(.vertical, 8)
+                    .background(.ultraThinMaterial)
+                    .clipShape(RoundedRectangle(cornerRadius: 18))
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 20)
             }
             .task {
                 await getCoverImage()
                 await getQuotes()
             }
+            .toolbar(.hidden, for: .tabBar)
         }
     }
     
