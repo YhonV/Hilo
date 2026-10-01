@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string></string>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
+			<key>LSItemContentTypes</key>
+			<array/>
+			<key>UIUserInterfaceStyle</key>
+			<string>Light</string>
+		</dict>
+	</array>
+	<key>GoogleBooksAPIKey</key>
+	<string>$(GOOGLE_BOOKS_API_KEY)</string>
+	<key>GoogleBooksBaseURL</key>
+	<string>$(GOOGLE_BOOKS_BASE_URL)</string>
+	<key>supabaseKey</key>
+	<string>$(SUPABASE_KEY)</string>
+	<key>supabaseUrL</key>
+	<string>$(SUPABASE_URL)</string>
+</dict>
+</plist>

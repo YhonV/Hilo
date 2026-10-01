@@ -1,0 +1,141 @@
+//
+//  ForgotPasswordView.swift
+//  Hilo
+//
+//  Created by Yhon Vivas on 24-02-26.
+//
+import SwiftUI
+
+struct ForgotPasswordView: View {
+    @State private var email: String = ""
+    
+    @State private var isLoading = false
+    @State private var showError = false
+    @State private var errorMessage : String?
+    
+    var body: some View {
+        NavigationStack {
+            ZStack(alignment: .bottom) {
+                AppColors.background
+                    .ignoresSafeArea()
+
+                ScrollView{
+                    VStack(spacing: 0) {
+                        VStack(spacing: 0) {
+                            Image("hilo-logo")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 140, height: 140)
+                            
+                            Text("forgot_password_subtitle")
+                                .font(.subheadline)
+                                .foregroundColor(AppColors.secondaryText)
+                        }
+                        .padding(.bottom, 5)
+                        
+                        // ==== FORM PARA RECUPERAR CONTRASEÑA ==== //
+                        VStack (spacing: 12) {
+                            HStack(spacing: 12) {
+                                Image(systemName: "envelope")
+                                    .foregroundColor(AppColors.primary)
+                                    .frame(width: 20)
+                                
+                                TextField("form_email_placeholder", text: $email)
+                                    .keyboardType(.emailAddress)
+                                    .textInputAutocapitalization(.never)
+                            }
+                            .padding()
+                            .background(AppColors.background.opacity(0.65))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(AppColors.border, lineWidth: 1.2)
+                            )
+                            .cornerRadius(12)
+                        }
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 28)
+                    .background(AppColors.surface)
+                    .cornerRadius(24)
+                    .shadow(color: .black.opacity(0.06), radius: 16, x: 0, y: 8)
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 100)
+                }
+                .scrollIndicators(.hidden)
+                
+                /// DISCLAIMER + BOTÓN
+                VStack(spacing: 12) {
+                    // DISCLAIMER
+                    HStack(spacing: 6) {
+                        Image(systemName: "info.circle.fill")
+                            .font(.system(size: 12))
+                            .foregroundColor(AppColors.primary)
+                        
+                        Text("forgot_password_disclaimer")
+                            .font(.caption)
+                            .foregroundColor(AppColors.secondaryText)
+                            .multilineTextAlignment(.leading)
+                        
+                        Spacer()
+                    }
+                    .padding(.horizontal, 20)
+                    
+                    // BOTÓN FIJO
+                    Button {
+                        Task {
+                            do {
+                                try await forgotPassword(email: email)
+                            } catch {
+                                errorMessage = error.localizedDescription
+                                showError = true
+                            }
+                        }
+                    } label: {
+                        Group {
+                            if isLoading {
+                                ProgressView()
+                                    .tint(.white)
+                            } else {
+                                Text("forgot_password_button")
+                                    .font(.headline)
+                                    .foregroundColor(.white)
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 40)
+                    }
+                    .buttonStyle(.glassProminent)
+                    .tint(AppColors.primaryStrong)
+                    .padding(.horizontal, 20)
+                    .disabled(isLoading)
+                }
+                .padding(.bottom, 40)
+            }
+            .alert("Error", isPresented: $showError) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(LocalizedStringKey(errorMessage ?? "error_unknown"))
+            }
+        }
+    }
+    
+    
+    func forgotPassword(email: String) async throws {
+        isLoading = true
+        
+        guard !email.isEmpty else {
+            errorMessage = "all_fields_required"
+            showError = true
+            isLoading = false
+            return
+        }
+        
+        try await FirestoreService.shared.resetPassword(email: email)
+        isLoading = false
+        clearFields()
+    }
+    
+    func clearFields() {
+        email = ""
+    }
+}

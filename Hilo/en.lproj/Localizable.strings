@@ -1,0 +1,102 @@
+/* 
+  Localizable.strings
+  Hilo
+
+  Created by Yhon Vivas on 08-02-26.
+  
+*/
+
+/* ==== RegisterView ==== */
+"join_readers_community" = "Join the readers community";
+
+"form_name_placeholder" = "Enter your name";
+"form_username_placeholder" = "'@user'";
+"form_email_placeholder" = "Enter your email";
+
+"personal_data_section" = "Personal information";
+
+"password_placeholder" = "Create your password";
+"confirm_password_placeholder" = "Confirm your password";
+
+"password_section" = "Password";
+
+"register_button" = "Sign up";
+
+"passwords_dont_match" = "Passwords doesn't match";
+"all_fields_required" = "All fields are required";
+"already_have_an_account" = "Already have an account?";
+
+/* ==== LoginView ==== */
+"login_subtitle" = "Follow the thread of everything you read";
+"login_into_your_account" = "Log in into your account";
+"form_password_placeholder" = "Enter yor password";
+"not_registered_yet" = "Not registered yet?";
+"log_in" = "Log in";
+"sign_up" = "Sign Up!";
+"type_your_credentials" = "Type your credentials";
+"forgot_password_text" = "Did you forgot your password?";
+"forgot_password_subtitle" = "Type your email to recover your password";
+"other_ways_to_sign_in" = "Or sign in with:";
+
+/* ==== ForgetPasswordView ==== */
+"wanna_go_back_to_login" = "Want to go back to login?";
+"forgot_password_button" = "Send recovery email";
+"forgot_password_disclaimer" = "Check your spam folder if you don't see the email";
+"username_not_available" = "This username is already taken";
+
+/* ===== MainTabView ==== */
+"home_text_tab" = "Home";
+"search_text_tab" = "Search";
+"profile_text_tab" = "Profile";
+"library_text_tab" = "Library";
+
+/* ==== EnumRead ==== */
+"read" = "Read";
+"reading" = "Reading";
+"to_read" = "To Read";
+
+/* ===== EditProfileView ==== */
+"edit_your_profile" = "Here you can edit your username, email and password";
+"edit_password_placeholder" = "Enter your new password";
+"edit_confirm_password_placeholder" = "Confirm your new password";
+"edit_profile_button" = "Save changes";
+"username_already_exists" = "This username is already in use!";
+"error_updating_profile" = "Error updating basic information";
+"error_unknown" = "Unknown Error, please try later";
+
+/* ==== ReadingStatusSheet ==== */
+"reading_status_title" = "Reading status";
+"reading_status_subtitle" = "Where do you want to save this book?";
+"read_status" = "Read";
+"reading_status" = "Reading";
+"toRead_status" = "To Read";
+
+/* ==== BookDetailView ==== */
+"continue_reading" = "Continue reading";
+"add_to_my_list" = "Add to my list";
+"book_pages_count" = "%d pages";
+"synopsis" = "Synopsis";
+"no_description" = "No description available.";
+"show_more" = "Show more";
+"show_less" = "Show less";
+
+/* ==== ReadingActionSheetView ==== */
+
+"reading_update_progress" = "Update progress";
+"reading_start_reading" = "Start reading";
+"reading_reread" = "Read again";
+
+"reading_current_page" = "Current page";
+"reading_page_placeholder" = "Page";
+
+"reading_progress_percentage" = "%d%% read";
+"reading_page_of_total" = "%d of %d pages";
+
+"reading_save_progress" = "Save progress";
+"reading_finish_reading" = "Finish reading";
+
+"reading_start_description" = "Your reading start date will be recorded.";
+"reading_reread_description" = "A new reading will start from the beginning.";
+
+"reading_page_error_negative" = "The page cannot be less than 0.";
+"reading_page_error_exceeds_total" = "The page cannot exceed the book's %d pages.";
