@@ -27,7 +27,7 @@ struct LibraryStatus: Decodable {
     let name: String
 }
 
-struct UserLibraryBook: Decodable {
+nonisolated struct UserLibraryBook: Decodable {
     let userBookId: UUID
     let userId: UUID
     let bookId: UUID
@@ -96,10 +96,14 @@ struct LibraryBookEdition: Decodable {
 }
 
 struct UpdateBookProgressParams: Encodable {
-    let currentPage: Int
+    let userBookId: UUID
+    let newPage: Int
+    let logDate: String
 
     enum CodingKeys: String, CodingKey {
-        case currentPage = "current_page"
+        case userBookId = "p_user_book_id"
+        case newPage = "p_new_page"
+        case logDate = "p_log_date"
     }
 }
 
@@ -264,12 +268,24 @@ final class LibraryService {
     }
     
     // MARK: - Actualizar progreso de libros
-    func updateBookProgress(userBookId: UUID,currentPage: Int) async throws {
-        let params = UpdateBookProgressParams(currentPage: currentPage)
+    func updateBookProgress(userBookId: UUID, currentPage: Int) async throws {
+
+        let formatter = DateFormatter()
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = .current
+        formatter.dateFormat = "yyyy-MM-dd"
+
+        let logDate = formatter.string(from: Date())
+
+        let params = UpdateBookProgressParams(
+            userBookId: userBookId,
+            newPage: currentPage,
+            logDate: logDate
+        )
+
         try await supabase
-            .from("user_book")
-            .update(params)
-            .eq("user_book_id", value: userBookId)
+            .rpc("update_book_progress", params: params)
             .execute()
     }
     
@@ -301,6 +317,47 @@ final class LibraryService {
                     "p_timezone": TimeZone.current.identifier
                 ]
             )
+            .single()
+            .execute()
+            .value
+
+        return response
+    }
+    
+    //MARK: - Obtener libro de un usuario 
+    func getUserBook(userBookId: UUID) async throws -> UserLibraryBook {
+
+        let response: UserLibraryBook = try await supabase
+            .from("user_book")
+            .select("""
+                user_book_id,
+                user_id,
+                book_id,
+                edition_id,
+                status_id,
+                current_page,
+                started_at,
+                finished_at,
+                books (
+                    title,
+                    book_authors (
+                        authors (
+                            name
+                        )
+                    )
+                ),
+                book_editions (
+                    isbn,
+                    number_of_pages,
+                    publisher,
+                    published_date,
+                    cover_url
+                ),
+                status (
+                    name
+                )
+            """)
+            .eq("user_book_id", value: userBookId)
             .single()
             .execute()
             .value

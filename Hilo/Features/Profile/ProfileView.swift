@@ -14,6 +14,8 @@ struct ProfileView: View {
     @State private var avatarURL: URL?
     @State private var coverImage: UIImage?
     @State private var profileViewModel = ProfileViewModel()
+    @Environment(QuoteViewModel.self) private var quoteViewModel
+    @Environment(LibraryViewModel.self) private var libraryViewModel
     
     var body: some View {
         NavigationStack {
@@ -155,9 +157,16 @@ struct ProfileView: View {
                                 HStack(spacing: 12) {
                                     ForEach(profileViewModel.currentlyReadingBooks, id: \.userBookId) { readingBook in
 
-                                        ReadingCard(
-                                            readingBook: readingBook
-                                        )
+                                        if let book = libraryViewModel.userBooks.first(where: {
+                                            $0.userBookId == readingBook.userBookId
+                                        }) {
+                                            NavigationLink {
+                                                LibraryBookDetailView(bookDetail: book)
+                                            } label: {
+                                                ReadingCard(readingBook: readingBook)
+                                            }
+                                            .buttonStyle(.plain)
+                                        }
                                     }
                                 }
                             }
@@ -166,72 +175,31 @@ struct ProfileView: View {
                         
                         /// **Citas del usuario**
                         
-                        VStack(spacing: 5) {
+                        VStack(alignment: .leading, spacing: 12) {
                             Text("Tus citas")
                                 .font(.headline)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .padding(.bottom, 12)
-                            
-                            ScrollView(.horizontal, showsIndicators: false) {
-                                HStack(spacing: 12) {
-                                    QuoteCard(
-                                        quote: "Este lugar inhumano hace monstruos humanos",
-                                        bookTitle: "El resplandor",
-                                        author: "Stephen King",
-                                        page: "82"
-                                    )
-                                    
-                                    QuoteCard(
-                                        quote: "Este lugar inhumano hace monstruos humanos",
-                                        bookTitle: "El resplandor",
-                                        author: "Stephen King",
-                                        page: "82"
-                                    )
-                                }
-                                
-                            }
-                        }
-                        .padding(.horizontal, 20)
-                        
 
-                        /// **Actividad del usuario**
-                        
-                        VStack(spacing: 5) {
-                            Text("Tu actividad")
-                                .font(.headline)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.bottom, 12)
-                            
-                            ScrollView(.horizontal, showsIndicators: false) {
-                                HStack(spacing: 12) {
-                                    ActivityCard(
-                                        icon: "book.closed.fill",
-                                        value: "6432",
-                                        title: "Páginas leídas",
-                                        subtitle: "Total",
-                                        coverImage: coverImage
-                                    )
-                                    
-                                    ActivityCard(
-                                        icon: "star",
-                                        value: "4.3",
-                                        title: "Rating promedio",
-                                        subtitle: "Total",
-                                        coverImage: coverImage
-                                    )
-                                    
-                                    ActivityCard(
-                                        icon: "books.vertical",
-                                        value: "Fantasía",
-                                        title: "Género favorito",
-                                        subtitle: "Total",
-                                        coverImage: coverImage
-                                    )
+                            if quoteViewModel.userQuotes.isEmpty {
+                                EmptyQuoteCard(style: .surface)
+                                    .frame(maxWidth: .infinity)
+                            } else {
+                                ScrollView(.horizontal, showsIndicators: false) {
+                                    HStack(spacing: 12) {
+                                        ForEach(quoteViewModel.userQuotes, id: \.id) { quote in
+                                            QuoteCardView(
+                                                quote: quote,
+                                                totalPages: quote.pageNumber
+                                            )
+                                            .frame(width: 300)
+                                        }
+                                    }
                                 }
                             }
                         }
                         .padding(.horizontal, 20)
-                        
+                        .padding(.top, 8)                        
                     }
                     .padding(.bottom, 10)
                 }
@@ -240,7 +208,15 @@ struct ProfileView: View {
         }
         .task {
             if let userId = authViewModel.currentUser?.id {
+
                 await profileViewModel.loadProfileData(userId: userId)
+
+                do {
+                    try await libraryViewModel.getUserBooks(userId: userId)
+                    try await quoteViewModel.getAllQuotes(userId: userId)
+                } catch {
+                    print("Error cargando perfil: \(error)")
+                }
             }
         }
     }
@@ -270,9 +246,4 @@ struct ProfileView: View {
             print("Error cargando avatar:", error)
         }
     }
-}
-
-#Preview {
-    ProfileView()
-        .environment(AuthViewModel())
 }

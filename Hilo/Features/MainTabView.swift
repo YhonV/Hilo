@@ -9,6 +9,8 @@ import SwiftUI
 
 struct MainTabView: View {
     @State private var selectedTab = 0;
+    @State private var quoteViewModel = QuoteViewModel()
+    @State private var libraryViewModel = LibraryViewModel()
     
     var body: some View {
         TabView() {
@@ -25,5 +27,7 @@ struct MainTabView: View {
                 ProfileView()
             }
         }
+        .environment(quoteViewModel)
+        .environment(libraryViewModel)
     }
 }

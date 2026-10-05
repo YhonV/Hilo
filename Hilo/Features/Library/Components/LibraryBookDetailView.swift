@@ -115,7 +115,7 @@ struct LibraryBookDetailView: View {
                         .foregroundStyle(.white)
 
                     if quoteViewModel.quotes.isEmpty {
-                        EmptyQuoteCard()
+                        EmptyQuoteCard(style: .overlay)
                             .frame(maxWidth: .infinity)
                     } else {
                         ScrollView(.horizontal, showsIndicators: false) {

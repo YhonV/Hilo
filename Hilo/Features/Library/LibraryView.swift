@@ -3,8 +3,8 @@ import SwiftUI
 struct LibraryView: View {
 
     @Environment(AuthViewModel.self) private var authViewModel
-    @State private var quoteViewModel = QuoteViewModel()
-    @State private var libraryViewModel = LibraryViewModel()
+    @Environment(QuoteViewModel.self) private var quoteViewModel
+    @Environment(LibraryViewModel.self) private var libraryViewModel
 
     var body: some View {
         NavigationStack {
@@ -38,6 +38,5 @@ struct LibraryView: View {
             }
         }
         .environment(libraryViewModel)
-        .environment(quoteViewModel)
     }
 }
