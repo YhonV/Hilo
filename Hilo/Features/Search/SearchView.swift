@@ -4,7 +4,6 @@
 //
 //  Created by Yhon Vivas on 24-02-26.
 //
-
 import SwiftUI
 
 struct SearchView: View {
@@ -12,18 +11,12 @@ struct SearchView: View {
     @State private var booksIsLoading: Bool = false
     @State private var showLoadError: Bool = false
     @State private var showAllBooks: Bool = false
-    @State private var booksToShow: Int = 3
+    
     private var visibleBooks: [Book] {
         showAllBooks
             ? searchViewModel.books
             : Array(searchViewModel.books.prefix(3))
     }
-    
-    let columns = [
-        GridItem(.flexible()),
-        GridItem(.flexible()),
-        GridItem(.flexible())
-    ]
     
     var body: some View {
         NavigationStack {
@@ -39,15 +32,14 @@ struct SearchView: View {
                         .padding(.horizontal)
                     } else {
                         LazyVStack(spacing: 0) {
-                                ForEach(visibleBooks.indices, id: \.self) { index in
+                            ForEach(visibleBooks, id: \.externalId) { book in
                                     NavigationLink {
-                                        BookDetailView(book: searchViewModel.books[index])
+                                        BookDetailView(book: book)
                                     } label: {
-                                        BookSearchResultRow(
-                                            book: searchViewModel.books[index]
-                                        )
+                                        BookSearchResultRow(book: book)
                                     }
                                     .buttonStyle(.plain)
+
                                     Divider()
                                 }
                             }
@@ -68,44 +60,36 @@ struct SearchView: View {
                         }
                     }
                     
-//                    VStack {
-//                        Text("Calificación")
-//                            .font(.title2)
-//                            .fontWeight(.bold)
-//                            .foregroundStyle(AppColors.primary)
-//                            .frame(maxWidth: .infinity, alignment: .leading)
-//                    }
-//                    .padding(.horizontal)
-//                    
-//                    VStack {
-//                        Text("Géneros populares")
-//                            .font(.title2)
-//                            .fontWeight(.bold)
-//                            .foregroundStyle(AppColors.primary)
-//                            .frame(maxWidth: .infinity, alignment: .leading)
-//                    }
-//                    .padding(.horizontal)
                 }
                 .searchable(
                     text: $searchViewModel.searchText,
                     placement: .navigationBarDrawer(displayMode: .always)
                 )
-                .task {
-                    booksIsLoading = true
-                    defer { booksIsLoading = false }
-                    
-                    do {
-                        try await searchViewModel.loadInitialBooks()
-                    } catch {
-                        showLoadError = true
+                .task(id: searchViewModel.searchText) {
+
+                    let query = searchViewModel.searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+
+                    if query.isEmpty {
+                        searchViewModel.restoreInitialBooks()
+                        return
                     }
-                }
-                .onSubmit(of: .search) {
-                    Task {
+
+                    guard query.count >= 2 else { return }
+
+                    do {
+                        try await Task.sleep(for: .milliseconds(400))
+
+                        try Task.checkCancellation()
+
                         booksIsLoading = true
                         defer { booksIsLoading = false }
 
                         await searchViewModel.searchBooks()
+
+                    } catch is CancellationError {
+                        // El usuario siguió escribiendo
+                    } catch {
+                        print("Error debounce búsqueda:", error)
                     }
                 }
                 .alert("No se pudieron cargar los libros", isPresented: $showLoadError) {
@@ -128,8 +112,4 @@ struct SearchView: View {
             }
         }
     }
-}
-
-#Preview {
-    SearchView()
 }

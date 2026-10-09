@@ -7,9 +7,9 @@
 import Foundation
 
 struct Book: Codable, Identifiable {
-    var googleBookId: String
+    var externalId: String
     var id: String {
-            googleBookId
+        externalId
         }
     var title: String
     var authors: [String]

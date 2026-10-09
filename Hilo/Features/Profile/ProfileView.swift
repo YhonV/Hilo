@@ -10,9 +10,6 @@ import SwiftUI
 struct ProfileView: View {
     @Environment(AuthViewModel.self) private var authViewModel
     
-    private let storageService = StorageService()
-    @State private var avatarURL: URL?
-    @State private var coverImage: UIImage?
     @State private var profileViewModel = ProfileViewModel()
     @Environment(QuoteViewModel.self) private var quoteViewModel
     @Environment(LibraryViewModel.self) private var libraryViewModel
@@ -21,8 +18,7 @@ struct ProfileView: View {
         NavigationStack {
             ZStack {
                 // FONDO
-                AppColors.background
-                    .ignoresSafeArea()
+                AppColors.background.ignoresSafeArea()
                 ScrollView {
                     VStack (spacing: 16) {
                         
@@ -218,32 +214,6 @@ struct ProfileView: View {
                     print("Error cargando perfil: \(error)")
                 }
             }
-        }
-    }
-    
-    func loadAvatar() async {
-        guard let userId = authViewModel.currentUser?.id else {
-            return
-        }
-
-        do {
-            let url = try storageService.getAvatarURL(userId: userId)
-            
-            guard let finalURL = URL(
-                string: "\(url.absoluteString)?v=\(Date().timeIntervalSince1970)"
-            ) else {
-                return
-            }
-            avatarURL = finalURL
-            
-            let (data, _) = try await URLSession.shared.data(from: finalURL)
-
-            guard let image = UIImage(data: data) else {
-                return
-            }
-            coverImage = image
-        } catch {
-            print("Error cargando avatar:", error)
         }
     }
 }

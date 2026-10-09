@@ -151,7 +151,7 @@ final class LibraryService {
     func saveBookToLibrary(book: Book, status: BookStatus) async throws {
 
         let params = SaveBookParams(
-            p_google_books_id: book.googleBookId,
+            p_external_books_id: book.externalId,
             p_title: book.title,
             p_status: status.rawValue,
             p_description: book.description,
@@ -177,9 +177,9 @@ final class LibraryService {
             .from("book_editions")
             .select("edition_id")
 
-        if !book.googleBookId.isEmpty {
+        if !book.externalId.isEmpty {
             editionQuery = editionQuery
-                .eq("google_books_id", value: book.googleBookId)
+                .eq("external_id", value: book.externalId)
         } else if let isbn = book.isbn {
             editionQuery = editionQuery
                 .eq("isbn", value: isbn)
