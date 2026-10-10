@@ -35,17 +35,6 @@ class SearchViewModel {
 
         do {
             let fetchedBooks = try await OpenLibraryService.shared.searchBooks(query: query)
-            for book in fetchedBooks.prefix(10) {
-                print(
-                    "RAW:",
-                    book.title,
-                    "| SCORE:",
-                    titleMatchScore(
-                        title: book.title,
-                        query: query
-                    )
-                )
-            }
 
             let sortedBooks = fetchedBooks.sorted { firstBook, secondBook in
 
@@ -95,13 +84,6 @@ class SearchViewModel {
                     book: originalBook,
                     query: query
                 )
-
-            print(
-                "ENRICH:",
-                originalBook.title,
-                "→",
-                enrichedBook.title
-            )
 
             enrichedBooks[index] = enrichedBook
         }

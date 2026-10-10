@@ -11,6 +11,7 @@ struct SearchView: View {
     @State private var booksIsLoading: Bool = false
     @State private var showLoadError: Bool = false
     @State private var showAllBooks: Bool = false
+    @State private var showScrollToTop = false
     
     private var visibleBooks: [Book] {
         showAllBooks
@@ -23,43 +24,71 @@ struct SearchView: View {
             ZStack {
                 AppColors.background
                     .ignoresSafeArea()
-                ScrollView {
-                    if booksIsLoading {
-                        ForEach(0..<3, id: \.self) { _ in
-                            BookCardSkeleton()
-                            Divider()
-                        }
-                        .padding(.horizontal)
-                    } else {
-                        LazyVStack(spacing: 0) {
-                            ForEach(visibleBooks, id: \.externalId) { book in
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        Color.clear
+                            .frame(height: 0)
+                            .id("top")
+                        
+                        if booksIsLoading {
+                            ForEach(0..<3, id: \.self) { _ in
+                                BookCardSkeleton()
+                                Divider()
+                            }
+                            .padding(.horizontal)
+                        } else {
+                            LazyVStack(spacing: 0) {
+                                ForEach(visibleBooks, id: \.externalId) { book in
                                     NavigationLink {
                                         BookDetailView(book: book)
                                     } label: {
                                         BookSearchResultRow(book: book)
                                     }
                                     .buttonStyle(.plain)
-
+                                    
                                     Divider()
                                 }
                             }
                             .padding(.horizontal)
-                        
-                        if searchViewModel.books.count > 3 {
-                            Button {
-                                showAllBooks.toggle()
-                            } label: {
-                                Text(showAllBooks ? "show_less" : "show_more")
-                                    .font(.subheadline)
-                                    .fontWeight(.semibold)
-                                    .foregroundStyle(AppColors.primaryStrong)
+                            
+                            if searchViewModel.books.count > 3 {
+                                Button {
+                                    showAllBooks.toggle()
+                                } label: {
+                                    Text(showAllBooks ? "show_less" : "show_more")
+                                        .font(.subheadline)
+                                        .fontWeight(.semibold)
+                                        .foregroundStyle(AppColors.primaryStrong)
+                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.top, 12)
+                                .padding(.horizontal, 20)
                             }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.top, 12)
-                            .padding(.horizontal, 20)
                         }
                     }
-                    
+                    .onScrollGeometryChange(for: Bool.self) { geometry in
+                        geometry.contentOffset.y > 300
+                    } action: { _, isScrolled in
+                        showScrollToTop = isScrolled
+                    }
+                    .overlay(alignment: .bottomTrailing) {
+                        if showScrollToTop {
+                            Button {
+                                withAnimation(.smooth) {
+                                    proxy.scrollTo("top", anchor: .top)
+                                }
+                            } label: {
+                                Image(systemName: "arrow.up")
+                                    .font(.headline)
+                                    .foregroundStyle(AppColors.primaryStrong)
+                                    .frame(width: 48, height: 48)
+                                    .glassEffect(.regular.interactive(), in: .circle)
+                            }
+                            .padding(.trailing, 20)
+                            .padding(.bottom, 20)
+                            .transition(.opacity)
+                        }
+                    }
                 }
                 .searchable(
                     text: $searchViewModel.searchText,

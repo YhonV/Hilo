@@ -4,20 +4,25 @@
 //
 //  Created by Yhon Vivas on 08-03-26.
 //
+
 import Foundation
 
 final class GoogleBooksService {
-    
+
     static let shared = GoogleBooksService()
-    
+
     private init() {}
-    
+
     private let BASE_URL = "https://www.googleapis.com/books/v1/volumes"
-    
+
     private let API_KEY =
-    Bundle.main.object(forInfoDictionaryKey: "GoogleBooksAPIKey") as? String ?? ""
-    
-    
+        Bundle.main.object(
+            forInfoDictionaryKey: "GoogleBooksAPIKey"
+        ) as? String ?? ""
+
+
+    // MARK: - Obtener descripción
+
     func getDescription(
         title: String,
         authors: [String],
@@ -27,21 +32,31 @@ final class GoogleBooksService {
 
         var components = URLComponents(string: BASE_URL)
 
-        let query = allowAlternativeSearch
-            ? title
-            : "\(title) \(authors.joined(separator: " "))"
+        // Siempre buscamos usando título + autor para reducir resultados irrelevantes.
+        let query = "\(title) \(authors.joined(separator: " "))"
 
         components?.queryItems = [
-            URLQueryItem(name: "q", value: query),
-            URLQueryItem(name: "key", value: API_KEY),
-            URLQueryItem(name: "maxResults", value: "20")
+            URLQueryItem(
+                name: "q",
+                value: query
+            ),
+            URLQueryItem(
+                name: "key",
+                value: API_KEY
+            ),
+            URLQueryItem(
+                name: "maxResults",
+                value: "20"
+            )
         ]
 
         guard let url = components?.url else {
             throw URLError(.badURL)
         }
 
-        let (data, urlResponse) = try await URLSession.shared.data(from: url)
+        let (data, urlResponse) = try await URLSession.shared.data(
+            from: url
+        )
 
         guard let httpResponse = urlResponse as? HTTPURLResponse else {
             throw URLError(.badServerResponse)
@@ -59,18 +74,21 @@ final class GoogleBooksService {
             from: data
         )
 
-        let expectedTitle = normalize(title)
+        let items = response.items ?? []
 
-        let expectedAuthors = authors.map {
-            normalize($0)
-        }
+        let expectedLanguage = googleLanguageCode(
+            from: language
+        )
 
-        let expectedLanguage = googleLanguageCode(from: language)
+        let normalizedExpectedTitle = normalize(title)
 
         var alternativeTitle: String?
-        var candidates: [GoogleBooksMetadataItem] = []
 
-        let items = response.items ?? []
+        var bestMatch: GoogleBooksMetadataItem?
+        var bestScore = Int.min
+
+
+        // MARK: Evaluar resultados
 
         for item in items {
 
@@ -80,54 +98,90 @@ final class GoogleBooksService {
                 continue
             }
 
-            let normalizedGoogleTitle = normalize(googleTitle)
+            let normalizedGoogleTitle = normalize(
+                googleTitle
+            )
 
-            let authorMatches = info.authors?.contains { googleAuthor in
-                expectedAuthors.contains {
-                    normalize(googleAuthor).contains($0)
-                    || $0.contains(normalize(googleAuthor))
+
+            // MARK: Detectar título alternativo
+
+            let authorMatches = info.authors?.contains {
+                googleAuthor in
+
+                authors.contains { expectedAuthor in
+
+                    let normalizedGoogleAuthor =
+                        normalize(googleAuthor)
+
+                    let normalizedExpectedAuthor =
+                        normalize(expectedAuthor)
+
+                    return normalizedGoogleAuthor.contains(
+                        normalizedExpectedAuthor
+                    )
+                    ||
+                    normalizedExpectedAuthor.contains(
+                        normalizedGoogleAuthor
+                    )
                 }
+
             } ?? false
 
+
+            /*
+             Ejemplo:
+
+             Open Library:
+             "Amanecer rojo 2. Hijo dorado"
+
+             Google:
+             "Hijo dorado"
+
+             Si pertenece al mismo autor, podemos usar
+             "Hijo dorado" para una segunda búsqueda.
+             */
+
             if authorMatches,
-               normalizedGoogleTitle != expectedTitle,
-               expectedTitle.contains(normalizedGoogleTitle),
+               normalizedGoogleTitle != normalizedExpectedTitle,
+               normalizedExpectedTitle.contains(
+                    normalizedGoogleTitle
+               ),
                alternativeTitle == nil {
 
                 alternativeTitle = googleTitle
             }
 
-            let titleMatches =
-                normalizedGoogleTitle == expectedTitle
 
-            guard
-                titleMatches,
-                authorMatches,
-                let description = info.description,
-                !description.isEmpty
-            else {
+            // MARK: Puntuar candidato
+
+            guard let score = metadataScore(
+                info: info,
+                expectedTitle: title,
+                expectedAuthors: authors,
+                preferredLanguage: expectedLanguage
+            ) else {
                 continue
             }
 
-            candidates.append(item)
-        }
 
-        let match: GoogleBooksMetadataItem?
-
-        if let expectedLanguage {
-            match = candidates.first {
-                $0.volumeInfo.language == expectedLanguage
-            }
-        } else {
-            match = candidates.first {
-                $0.volumeInfo.language == "es"
-                || $0.volumeInfo.language == "en"
+            if score > bestScore {
+                bestScore = score
+                bestMatch = item
             }
         }
 
-        if let description = match?.volumeInfo.description {
+
+        // MARK: Usar mejor resultado
+
+        if bestScore >= 120,
+           let description =
+                bestMatch?.volumeInfo.description {
+
             return description
         }
+
+
+        // MARK: Segundo intento con título alternativo
 
         if allowAlternativeSearch,
            let alternativeTitle {
@@ -140,11 +194,167 @@ final class GoogleBooksService {
             )
         }
 
+
         return nil
     }
-    
-    private func googleLanguageCode(from language: String) -> String? {
+
+
+    // MARK: - Puntuar metadata de Google Books
+
+    private func metadataScore(
+        info: GoogleBooksMetadataVolumeInfo,
+        expectedTitle: String,
+        expectedAuthors: [String],
+        preferredLanguage: String?
+    ) -> Int? {
+
+        guard
+            let googleTitle = info.title,
+            let description = info.description,
+            !description
+                .trimmingCharacters(
+                    in: .whitespacesAndNewlines
+                )
+                .isEmpty
+        else {
+            return nil
+        }
+
+
+        // Hilo solo utilizará sinopsis en español o inglés.
+        if let language = info.language,
+           language != "es",
+           language != "en" {
+
+            return nil
+        }
+
+
+        let normalizedTitle = normalize(
+            googleTitle
+        )
+
+        let normalizedExpectedTitle = normalize(
+            expectedTitle
+        )
+
+        var score = 0
+
+
+        // MARK: Título
+
+        if normalizedTitle == normalizedExpectedTitle {
+
+            score += 100
+
+        } else if
+            normalizedTitle.contains(
+                normalizedExpectedTitle
+            )
+            ||
+            normalizedExpectedTitle.contains(
+                normalizedTitle
+            ) {
+
+            score += 50
+
+        } else {
+
+            // El título no parece corresponder al libro.
+            return nil
+        }
+
+
+        // MARK: Autor
+
+        if let googleAuthors = info.authors,
+           !googleAuthors.isEmpty {
+
+            let authorMatches = googleAuthors.contains {
+                googleAuthor in
+
+                expectedAuthors.contains {
+                    expectedAuthor in
+
+                    let normalizedGoogleAuthor =
+                        normalize(googleAuthor)
+
+                    let normalizedExpectedAuthor =
+                        normalize(expectedAuthor)
+
+                    return normalizedGoogleAuthor.contains(
+                        normalizedExpectedAuthor
+                    )
+                    ||
+                    normalizedExpectedAuthor.contains(
+                        normalizedGoogleAuthor
+                    )
+                }
+            }
+
+
+            if authorMatches {
+
+                score += 80
+
+            } else {
+
+                score -= 80
+            }
+        }
+
+
+        // MARK: Idioma
+
+        if let preferredLanguage {
+
+            if info.language == preferredLanguage {
+
+                score += 30
+
+            } else if
+                info.language == "es"
+                || info.language == "en" {
+
+                score -= 10
+            }
+        }
+
+
+        // MARK: Penalizar packs / colecciones completas
+
+        let unwantedTerms = [
+            "pack",
+            "bundle",
+            "box set",
+            "coleccion",
+            "trilogia",
+            "saga"
+        ]
+
+        let isPack = unwantedTerms.contains { term in
+            normalizedTitle.contains(term)
+        }
+
+        if isPack,
+           normalizedTitle != normalizedExpectedTitle {
+
+            score -= 100
+        }
+
+
+        return score
+    }
+
+
+    // MARK: - Convertir idioma Open Library -> Google
+
+    private func googleLanguageCode(
+        from language: String
+    ) -> String? {
+
         switch language {
+
         case "spa", "es":
             return "es"
 
@@ -155,17 +365,27 @@ final class GoogleBooksService {
             return nil
         }
     }
-    
-    private func normalize(_ text: String) -> String {
+
+
+    // MARK: - Normalizar texto
+
+    private func normalize(
+        _ text: String
+    ) -> String {
+
         text
             .lowercased()
-            .folding(options: .diacriticInsensitive, locale: .current)
+            .folding(
+                options: .diacriticInsensitive,
+                locale: .current
+            )
             .replacingOccurrences(
                 of: "[^a-z0-9]+",
                 with: " ",
                 options: .regularExpression
             )
-            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .trimmingCharacters(
+                in: .whitespacesAndNewlines
+            )
     }
-    
 }
