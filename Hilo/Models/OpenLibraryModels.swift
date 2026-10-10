@@ -88,3 +88,40 @@ struct OpenLibraryEditionDTO: Decodable {
 struct OpenLibraryLanguageDTO: Decodable {
     let key: String
 }
+
+struct OpenLibraryWorkDTO: Decodable {
+    let description: OpenLibraryDescription?
+    let subjects: [String]?
+}
+
+enum OpenLibraryDescription: Decodable {
+
+    case text(String)
+
+    var value: String {
+        switch self {
+        case .text(let value):
+            return value
+        }
+    }
+
+    init(from decoder: Decoder) throws {
+
+        let container = try decoder.singleValueContainer()
+
+        // A veces viene directamente como String
+        if let string = try? container.decode(String.self) {
+            self = .text(string)
+            return
+        }
+
+        // Otras veces viene como { "type": "...", "value": "..." }
+        let object = try container.decode(OpenLibraryDescriptionObject.self)
+
+        self = .text(object.value)
+    }
+}
+
+struct OpenLibraryDescriptionObject: Decodable {
+    let value: String
+}

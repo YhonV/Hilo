@@ -89,12 +89,12 @@ struct BookDetailView: View {
                     
                     VStack(alignment: .leading, spacing: 6) {
 
-                        Text(book.title)
+                        Text(bookDetailViewModel.book.title)
                             .font(.title.bold())
                             .lineLimit(3)
                             .foregroundStyle(.white)
 
-                        Text(book.authors.first ?? "")
+                        Text(bookDetailViewModel.book.authors.first ?? "")
                             .font(.subheadline)
                             .foregroundStyle(.white.opacity(0.75))
                     }
@@ -106,7 +106,7 @@ struct BookDetailView: View {
                         // Métricas
                         HStack(spacing: 8) {
 
-                            if let rating = book.averageRating {
+                            if let rating = bookDetailViewModel.book.averageRating {
                                 Label(
                                     String(format: "%.1f", rating),
                                     systemImage: "star.fill"
@@ -129,7 +129,7 @@ struct BookDetailView: View {
                                 .fixedSize()
                             }
 
-                            if let numberOfPages = book.numberOfPages, numberOfPages > 0 {
+                            if let numberOfPages = bookDetailViewModel.book.numberOfPages, numberOfPages > 0 {
                                 Label(
                                     String(
                                         format: String(localized: "book_pages_count"),
@@ -155,7 +155,7 @@ struct BookDetailView: View {
                                 .fixedSize()
                             }
 
-                            if let publishedDate = book.publishedDate {
+                            if let publishedDate = bookDetailViewModel.book.publishedDate {
                                 Label(
                                     publishedDate,
                                     systemImage: "calendar"
@@ -182,10 +182,10 @@ struct BookDetailView: View {
                         .fontWeight(.bold)
 
                         // Géneros
-                        if !book.genre.isEmpty {
+                        if !bookDetailViewModel.book.genre.isEmpty {
                             HStack(spacing: 8) {
-                                ForEach(book.genre, id: \.self) { genre in
-                                    Text(genre)
+                                ForEach(bookDetailViewModel.book.genre, id: \.self) { genre in
+                                    Text(genre.localizedName)
                                         .font(.caption)
                                         .fontWeight(.semibold)
                                         .padding(.horizontal, 12)
@@ -261,7 +261,7 @@ struct BookDetailView: View {
                             .font(.title2.bold())
                             .foregroundStyle(.white)
 
-                        Text(book.description ?? "no_description")
+                        Text(bookDetailViewModel.book.description ?? "no_description")
                             .font(.body)
                             .foregroundStyle(.white.opacity(0.80))
                             .lineSpacing(2)
@@ -292,6 +292,7 @@ struct BookDetailView: View {
             .toolbar(.hidden, for: .tabBar)
             .task {
                 do {
+                    try await bookDetailViewModel.loadBookDetails()
                     await getCoverImage()
                     try await getUserBook()
                 } catch {

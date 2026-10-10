@@ -9,7 +9,10 @@ final class OpenLibraryService {
     private let baseURL = "https://openlibrary.org/search.json"
     
     // MARK: - Aplicar mejor edición a un Book
-    func enrichBookWithBestEdition(book: Book, query: String) async throws -> Book {
+    func enrichBookWithBestEdition(
+        book: Book,
+        query: String
+    ) async throws -> Book {
 
         guard let edition = try await getBestEdition(
             workId: book.externalId,
@@ -19,39 +22,37 @@ final class OpenLibraryService {
             return book
         }
 
+        print("EDITION KEY:", edition.key)
+        print("ISBN 13:", edition.isbn13 ?? [])
+        print("ISBN 10:", edition.isbn10 ?? [])
+        print("TÍTULO:", edition.title)
+
         var enrichedBook = book
 
-        // Título
         enrichedBook.title = edition.title
 
-        // Portada
         if let coverId = edition.covers?.first {
             enrichedBook.cover =
                 "https://covers.openlibrary.org/b/id/\(coverId)-L.jpg"
         }
 
-        // ISBN
         enrichedBook.isbn =
             edition.isbn13?.first
             ?? edition.isbn10?.first
             ?? book.isbn
 
-        // Editorial
         enrichedBook.editorial =
             edition.publishers?.first
             ?? book.editorial
 
-        // Número de páginas
         enrichedBook.numberOfPages =
             edition.numberOfPages
             ?? book.numberOfPages
 
-        // Fecha de publicación
         enrichedBook.publishedDate =
             edition.publishDate
             ?? book.publishedDate
 
-        // Idioma
         if let languageKey = edition.languages?.first?.key {
             enrichedBook.language = languageKey
                 .replacingOccurrences(
@@ -429,5 +430,159 @@ final class OpenLibraryService {
                 ?? "Editorial desconocida",
             language: language
         )
+    }
+    
+    // MARK: - Obtener detalle de una obra
+    func getWorkDetails(
+        workId: String
+    ) async throws -> OpenLibraryWorkDTO {
+
+        let cleanWorkId = workId.trimmingCharacters(
+            in: .whitespacesAndNewlines
+        )
+
+        guard !cleanWorkId.isEmpty else {
+            throw URLError(.badURL)
+        }
+
+        let workPath: String
+
+        if cleanWorkId.hasPrefix("/works/") {
+            workPath = cleanWorkId
+        } else {
+            workPath = "/works/\(cleanWorkId)"
+        }
+
+        guard let url = URL(
+            string: "https://openlibrary.org\(workPath).json"
+        ) else {
+            throw URLError(.badURL)
+        }
+
+        var request = URLRequest(url: url)
+
+        request.setValue(
+            "application/json",
+            forHTTPHeaderField: "Accept"
+        )
+
+        request.setValue(
+            "Hilo/1.0",
+            forHTTPHeaderField: "User-Agent"
+        )
+
+        let (data, response) = try await URLSession.shared.data(
+            for: request
+        )
+
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw URLError(.badServerResponse)
+        }
+
+        guard (200...299).contains(httpResponse.statusCode) else {
+            throw NSError(
+                domain: "OpenLibrary",
+                code: httpResponse.statusCode
+            )
+        }
+
+        return try JSONDecoder().decode(
+            OpenLibraryWorkDTO.self,
+            from: data
+        )
+    }
+    
+    // MARK: - Obtener sinopsis
+    func getDescription(
+        workId: String
+    ) async throws -> String? {
+
+        let work = try await getWorkDetails(
+            workId: workId
+        )
+
+        let description = work.description?.value
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        guard let description,
+              !description.isEmpty else {
+            return nil
+        }
+
+        return description
+    }
+    
+    // MARK: - Convertir subjects en géneros
+    func extractGenres(
+        from subjects: [String]
+    ) -> [BookGenre] {
+
+        let normalizedSubjects = subjects.map {
+            normalize($0)
+        }
+
+        let genreRules: [(keywords: [String], genre: BookGenre)] = [
+            (
+                ["horror", "terror", "horror fiction", "horror stories"],
+                .horror
+            ),
+            (
+                ["thriller", "thrillers", "suspense"],
+                .thriller
+            ),
+            (
+                ["science fiction", "ciencia ficcion", "sci fi"],
+                .scienceFiction
+            ),
+            (
+                ["fantasy", "fantasia"],
+                .fantasy
+            ),
+            (
+                ["romance", "romantic fiction"],
+                .romance
+            ),
+            (
+                ["mystery", "mysteries"],
+                .mystery
+            ),
+            (
+                ["crime", "detective"],
+                .crime
+            ),
+            (
+                ["dystopia", "dystopian", "distopia"],
+                .dystopia
+            ),
+            (
+                ["adventure", "aventura"],
+                .adventure
+            ),
+            (
+                ["historical fiction", "ficcion historica"],
+                .historicalFiction
+            ),
+            (
+                ["young adult", "juvenile fiction"],
+                .youngAdult
+            )
+        ]
+
+        var result: [BookGenre] = []
+
+        for rule in genreRules {
+
+            let matches = normalizedSubjects.contains { subject in
+                rule.keywords.contains { keyword in
+                    subject.contains(keyword)
+                }
+            }
+
+            if matches && !result.contains(rule.genre) {
+                result.append(rule.genre)
+            }
+        }
+
+        return Array(result.prefix(3))
     }
 }

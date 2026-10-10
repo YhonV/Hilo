@@ -99,3 +99,16 @@
 
 "reading_page_error_negative" = "La página no puede ser menor que 0.";
 "reading_page_error_exceeds_total" = "La página no puede superar las %d páginas del libro.";
+
+/* ===== book genres ===== */
+"genre_horror" = "Terror";
+"genre_thriller" = "Suspenso";
+"genre_science_fiction" = "Ciencia ficción";
+"genre_fantasy" = "Fantasía";
+"genre_romance" = "Romance";
+"genre_mystery" = "Misterio";
+"genre_crime" = "Crimen";
+"genre_dystopia" = "Distopía";
+"genre_adventure" = "Aventura";
+"genre_historical_fiction" = "Ficción histórica";
+"genre_young_adult" = "Juvenil";

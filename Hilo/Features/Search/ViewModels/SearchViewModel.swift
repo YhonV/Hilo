@@ -35,6 +35,7 @@ class SearchViewModel {
             let fetchedBooks = try await OpenLibraryService.shared.searchBooks(query: query)
 
             let enrichedBooks = try await enrichFirstBooks(fetchedBooks, query: query)
+            
 
             try Task.checkCancellation()
 

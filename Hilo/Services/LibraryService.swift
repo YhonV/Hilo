@@ -156,7 +156,7 @@ final class LibraryService {
             p_status: status.rawValue,
             p_description: book.description,
             p_authors: book.authors,
-            p_genres: book.genre,
+            p_genres: book.genre.map(\.rawValue),
             p_isbn: book.isbn,
             p_publisher: book.editorial,
             p_language: book.language,
