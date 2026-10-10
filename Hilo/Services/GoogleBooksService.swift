@@ -21,24 +21,20 @@ final class GoogleBooksService {
     func getDescription(
         title: String,
         authors: [String],
-        language: String
+        language: String,
+        allowAlternativeSearch: Bool = true
     ) async throws -> String? {
 
         var components = URLComponents(string: BASE_URL)
 
+        let query = allowAlternativeSearch
+            ? title
+            : "\(title) \(authors.joined(separator: " "))"
+
         components?.queryItems = [
-            URLQueryItem(
-                name: "q",
-                value: "intitle:\(title)"
-            ),
-            URLQueryItem(
-                name: "key",
-                value: API_KEY
-            ),
-            URLQueryItem(
-                name: "maxResults",
-                value: "20"
-            )
+            URLQueryItem(name: "q", value: query),
+            URLQueryItem(name: "key", value: API_KEY),
+            URLQueryItem(name: "maxResults", value: "20")
         ]
 
         guard let url = components?.url else {
@@ -71,20 +67,20 @@ final class GoogleBooksService {
 
         let expectedLanguage = googleLanguageCode(from: language)
 
-        let match = response.items?.first { item in
+        var alternativeTitle: String?
+        var candidates: [GoogleBooksMetadataItem] = []
+
+        let items = response.items ?? []
+
+        for item in items {
 
             let info = item.volumeInfo
 
-            guard
-                let googleTitle = info.title,
-                let description = info.description,
-                !description.isEmpty
-            else {
-                return false
+            guard let googleTitle = info.title else {
+                continue
             }
 
-            let titleMatches =
-                normalize(googleTitle) == expectedTitle
+            let normalizedGoogleTitle = normalize(googleTitle)
 
             let authorMatches = info.authors?.contains { googleAuthor in
                 expectedAuthors.contains {
@@ -93,40 +89,70 @@ final class GoogleBooksService {
                 }
             } ?? false
 
-            let languageMatches =
-                info.language == expectedLanguage
+            if authorMatches,
+               normalizedGoogleTitle != expectedTitle,
+               expectedTitle.contains(normalizedGoogleTitle),
+               alternativeTitle == nil {
 
-            return titleMatches
-                && authorMatches
-                && languageMatches
+                alternativeTitle = googleTitle
+            }
+
+            let titleMatches =
+                normalizedGoogleTitle == expectedTitle
+
+            guard
+                titleMatches,
+                authorMatches,
+                let description = info.description,
+                !description.isEmpty
+            else {
+                continue
+            }
+
+            candidates.append(item)
         }
 
-        return match?.volumeInfo.description
+        let match: GoogleBooksMetadataItem?
+
+        if let expectedLanguage {
+            match = candidates.first {
+                $0.volumeInfo.language == expectedLanguage
+            }
+        } else {
+            match = candidates.first {
+                $0.volumeInfo.language == "es"
+                || $0.volumeInfo.language == "en"
+            }
+        }
+
+        if let description = match?.volumeInfo.description {
+            return description
+        }
+
+        if allowAlternativeSearch,
+           let alternativeTitle {
+
+            return try await getDescription(
+                title: alternativeTitle,
+                authors: authors,
+                language: language,
+                allowAlternativeSearch: false
+            )
+        }
+
+        return nil
     }
     
-    private func googleLanguageCode(from openLibraryCode: String) -> String {
-
-        switch openLibraryCode {
-        case "spa":
+    private func googleLanguageCode(from language: String) -> String? {
+        switch language {
+        case "spa", "es":
             return "es"
 
-        case "eng":
+        case "eng", "en":
             return "en"
 
-        case "fre":
-            return "fr"
-
-        case "ger":
-            return "de"
-
-        case "ita":
-            return "it"
-
-        case "por":
-            return "pt"
-
         default:
-            return openLibraryCode
+            return nil
         }
     }
     

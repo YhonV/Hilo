@@ -5,10 +5,12 @@ class BookDetailViewModel {
 
     var book: Book
     var bookStatus: BookStatus?
-
+    var isInitialLoading: Bool = true
+    
     private var libraryService = LibraryService.shared
     private var openLibraryService = OpenLibraryService.shared
     private var googleBooksService = GoogleBooksService.shared
+    
     init(book: Book) {
         self.book = book
     }
@@ -49,9 +51,7 @@ class BookDetailViewModel {
         }
 
         // Sinopsis de la edición seleccionada
-        if book.description?.isEmpty != false,
-           let _ = book.isbn {
-
+        if book.description?.isEmpty != false {
             do {
                 let googleDescription = try await googleBooksService.getDescription(
                     title: book.title,
@@ -60,9 +60,7 @@ class BookDetailViewModel {
                 )
 
                 if let googleDescription {
-                    print("DESCRIPCIÓN GOOGLE:")
-                    print(googleDescription)
-
+                    print("USANDO DESCRIPCIÓN GOOGLE")
                     book.description = googleDescription
                 }
 

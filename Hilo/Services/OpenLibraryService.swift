@@ -9,10 +9,7 @@ final class OpenLibraryService {
     private let baseURL = "https://openlibrary.org/search.json"
     
     // MARK: - Aplicar mejor edición a un Book
-    func enrichBookWithBestEdition(
-        book: Book,
-        query: String
-    ) async throws -> Book {
+    func enrichBookWithBestEdition(book: Book, query: String) async throws -> Book {
 
         guard let edition = try await getBestEdition(
             workId: book.externalId,
@@ -22,18 +19,12 @@ final class OpenLibraryService {
             return book
         }
 
-        print("EDITION KEY:", edition.key)
-        print("ISBN 13:", edition.isbn13 ?? [])
-        print("ISBN 10:", edition.isbn10 ?? [])
-        print("TÍTULO:", edition.title)
-
         var enrichedBook = book
 
         enrichedBook.title = edition.title
 
         if let coverId = edition.covers?.first {
-            enrichedBook.cover =
-                "https://covers.openlibrary.org/b/id/\(coverId)-L.jpg"
+            enrichedBook.cover = "https://covers.openlibrary.org/b/id/\(coverId)-L.jpg"
         }
 
         enrichedBook.isbn =
@@ -59,6 +50,8 @@ final class OpenLibraryService {
                     of: "/languages/",
                     with: ""
                 )
+        } else {
+            enrichedBook.language = ""
         }
 
         return enrichedBook
@@ -151,9 +144,7 @@ final class OpenLibraryService {
     }
 
     // MARK: - Obtener todas las ediciones de una obra
-    func getEditions(
-        workId: String
-    ) async throws -> [OpenLibraryEditionDTO] {
+    func getEditions(workId: String) async throws -> [OpenLibraryEditionDTO] {
 
         let cleanWorkId = workId.trimmingCharacters(
             in: .whitespacesAndNewlines
@@ -178,7 +169,7 @@ final class OpenLibraryService {
         }
 
         components.queryItems = [
-            URLQueryItem(name: "limit", value: "20")
+            URLQueryItem(name: "limit", value: "100")
         ]
 
         guard let url = components.url else {
@@ -239,16 +230,20 @@ final class OpenLibraryService {
     }
 
     // MARK: - Seleccionar mejor edición
-    private func selectBestEdition(
-        from editions: [OpenLibraryEditionDTO],
-        query: String,
-        authors: [String]
-    ) -> OpenLibraryEditionDTO? {
+    private func selectBestEdition(from editions: [OpenLibraryEditionDTO], query: String, authors: [String]) -> OpenLibraryEditionDTO? {
 
         let cleanQuery = removeAuthors(
             from: query,
             authors: authors
         )
+
+        for edition in editions {
+
+            let score = titleMatchScore(
+                title: edition.title,
+                query: cleanQuery
+            )
+        }
 
         return editions.max { first, second in
 

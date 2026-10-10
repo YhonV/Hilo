@@ -67,240 +67,253 @@ struct BookDetailView: View {
     
     var body: some View {
         ZStack {
-            ImageGradient(image: coverImage).ignoresSafeArea()
-            
-            ScrollView {
-                VStack(spacing: 16) {
-                    Group {
-                        if let coverImage {
-                            Image(uiImage: coverImage)
+            if bookDetailViewModel.isInitialLoading {
+                BookDetailLoadingView()
+            } else {
+                ImageGradient(image: coverImage).ignoresSafeArea()
+                
+                ScrollView {
+                    VStack(spacing: 16) {
+                        Group {
+                            if let coverImage {
+                                Image(uiImage: coverImage)
                                     .resizable()
                                     .scaledToFit()
                                     .frame(width: 180, height: 260)
                                     .clipShape(RoundedRectangle(cornerRadius: 20))
                                     .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 4)
                                     .padding(.bottom, 10)
-                        } else {
-                            ProgressView()
-                                .frame(width: 180, height: 260)
-                        }
-                    }
-                    .frame(maxWidth: .infinity)
-                    
-                    VStack(alignment: .leading, spacing: 6) {
-
-                        Text(bookDetailViewModel.book.title)
-                            .font(.title.bold())
-                            .lineLimit(3)
-                            .foregroundStyle(.white)
-
-                        Text(bookDetailViewModel.book.authors.first ?? "")
-                            .font(.subheadline)
-                            .foregroundStyle(.white.opacity(0.75))
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal)
-                    
-                    VStack(alignment: .leading, spacing: 8) {
-
-                        // Métricas
-                        HStack(spacing: 8) {
-
-                            if let rating = bookDetailViewModel.book.averageRating {
-                                Label(
-                                    String(format: "%.1f", rating),
-                                    systemImage: "star.fill"
-                                )
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 6)
-                                .background(
-                                    .white.opacity(0.12),
-                                    in: Capsule()
-                                )
-                                .overlay {
-                                    Capsule()
-                                        .stroke(
-                                            .white.opacity(0.20),
-                                            lineWidth: 1
-                                        )
-                                }
-                                .foregroundStyle(.white)
-                                .fontWeight(.semibold)
-                                .fixedSize()
-                            }
-
-                            if let numberOfPages = bookDetailViewModel.book.numberOfPages, numberOfPages > 0 {
-                                Label(
-                                    String(
-                                        format: String(localized: "book_pages_count"),
-                                        numberOfPages
-                                    ),
-                                    systemImage: "book.pages"
-                                )
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 6)
-                                .background(
-                                    .white.opacity(0.12),
-                                    in: Capsule()
-                                )
-                                .overlay {
-                                    Capsule()
-                                        .stroke(
-                                            .white.opacity(0.20),
-                                            lineWidth: 1
-                                        )
-                                }
-                                .foregroundStyle(.white)
-                                .fontWeight(.semibold)
-                                .fixedSize()
-                            }
-
-                            if let publishedDate = bookDetailViewModel.book.publishedDate {
-                                Label(
-                                    publishedDate,
-                                    systemImage: "calendar"
-                                )
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 6)
-                                .background(
-                                    .white.opacity(0.12),
-                                    in: Capsule()
-                                )
-                                .overlay {
-                                    Capsule()
-                                        .stroke(
-                                            .white.opacity(0.20),
-                                            lineWidth: 1
-                                        )
-                                }
-                                .foregroundStyle(.white)
-                                .fontWeight(.semibold)
-                                .fixedSize()
-                            }
-                        }
-                        .font(.caption)
-                        .fontWeight(.bold)
-
-                        // Géneros
-                        if !bookDetailViewModel.book.genre.isEmpty {
-                            HStack(spacing: 8) {
-                                ForEach(bookDetailViewModel.book.genre, id: \.self) { genre in
-                                    Text(genre.localizedName)
-                                        .font(.caption)
-                                        .fontWeight(.semibold)
-                                        .padding(.horizontal, 12)
-                                        .padding(.vertical, 7)
-                                        .background(
-                                            .white.opacity(0.12),
-                                            in: Capsule()
-                                        )
-                                        .overlay {
-                                            Capsule()
-                                                .stroke(
-                                                    .white.opacity(0.20),
-                                                    lineWidth: 1
-                                                )
-                                        }
-                                        .foregroundStyle(.white)
-                                        .fontWeight(.semibold)
-                                }
-                            }
-                        }
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 20)
-                                        
-                    Button {
-                        showReadingStatusOptions = true
-                    } label: {
-                        Group {
-                            if isCheckingBookStatus {
-                                ProgressView()
-                                    .tint(.white)
-                            } else if isLoading {
-                                ProgressView()
-                                    .tint(.white)
                             } else {
-                                Label(
-                                    buttonTitle,
-                                    systemImage: buttonIcon
-                                )
-                                .font(.headline)
-                                .fontWeight(.semibold)
+                                ProgressView()
+                                    .frame(width: 180, height: 260)
                             }
                         }
                         .frame(maxWidth: .infinity)
-                        .frame(height: 44)
-                    }
-                    .buttonStyle(.glassProminent)
-                    .foregroundStyle(buttonForegroundColor)
-                    .tint(buttonBackgroundColor)
-                    .padding(.horizontal, 20)
-                    .disabled(isLoading)
-                    .sheet(isPresented: $showReadingStatusOptions) {
-                        ReadingStatusSheet(
-                            currentStatus: bookDetailViewModel.bookStatus
-                        ) { status in
-
-                            statusFeedbackTrigger += 1
-
-                            Task {
-                                await saveBookToList(status: status)
-                            }
-                        }
-                        .presentationDetents([.height(300)])
-                        .presentationDragIndicator(.visible)
-                        .presentationCornerRadius(28)
-                        .presentationBackground(.ultraThinMaterial)
-                    }
-                    .sensoryFeedback(.selection, trigger: statusFeedbackTrigger)
-                    
-                    VStack(alignment: .leading, spacing: 10) {
-
-                        Text("synopsis")
-                            .font(.title2.bold())
-                            .foregroundStyle(.white)
-
-                        Text(bookDetailViewModel.book.description ?? "no_description")
-                            .font(.body)
-                            .foregroundStyle(.white.opacity(0.80))
-                            .lineSpacing(2)
-                            .lineLimit(isDescriptionExpanded ? nil : 5)
-                            .animation(.easeInOut(duration: 0.2), value: isDescriptionExpanded)
-
-                        Button {
-                            withAnimation(.easeInOut(duration: 0.2)) {
-                                isDescriptionExpanded.toggle()
-                            }
-                        } label: {
-                            Text(isDescriptionExpanded ? "show_less" : "show_more")
-                                .font(.subheadline)
-                                .fontWeight(.semibold)
+                        
+                        VStack(alignment: .leading, spacing: 6) {
+                            
+                            Text(bookDetailViewModel.book.title)
+                                .font(.title.bold())
+                                .lineLimit(3)
                                 .foregroundStyle(.white)
+                            
+                            Text(bookDetailViewModel.book.authors.first ?? "")
+                                .font(.subheadline)
+                                .foregroundStyle(.white.opacity(0.75))
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.top, 12)
+                        .padding(.horizontal)
+                        
+                        VStack(alignment: .leading, spacing: 8) {
+                            
+                            // Métricas
+                            HStack(spacing: 8) {
+                                
+                                if let rating = bookDetailViewModel.book.averageRating {
+                                    Label(
+                                        String(format: "%.1f", rating),
+                                        systemImage: "star.fill"
+                                    )
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 6)
+                                    .background(
+                                        .white.opacity(0.12),
+                                        in: Capsule()
+                                    )
+                                    .overlay {
+                                        Capsule()
+                                            .stroke(
+                                                .white.opacity(0.20),
+                                                lineWidth: 1
+                                            )
+                                    }
+                                    .foregroundStyle(.white)
+                                    .fontWeight(.semibold)
+                                    .fixedSize()
+                                }
+                                
+                                if let numberOfPages = bookDetailViewModel.book.numberOfPages, numberOfPages > 0 {
+                                    Label(
+                                        String(
+                                            format: String(localized: "book_pages_count"),
+                                            numberOfPages
+                                        ),
+                                        systemImage: "book.pages"
+                                    )
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 6)
+                                    .background(
+                                        .white.opacity(0.12),
+                                        in: Capsule()
+                                    )
+                                    .overlay {
+                                        Capsule()
+                                            .stroke(
+                                                .white.opacity(0.20),
+                                                lineWidth: 1
+                                            )
+                                    }
+                                    .foregroundStyle(.white)
+                                    .fontWeight(.semibold)
+                                    .fixedSize()
+                                }
+                                
+                                if let publishedDate = bookDetailViewModel.book.publishedDate {
+                                    Label(
+                                        publishedDate,
+                                        systemImage: "calendar"
+                                    )
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 6)
+                                    .background(
+                                        .white.opacity(0.12),
+                                        in: Capsule()
+                                    )
+                                    .overlay {
+                                        Capsule()
+                                            .stroke(
+                                                .white.opacity(0.20),
+                                                lineWidth: 1
+                                            )
+                                    }
+                                    .foregroundStyle(.white)
+                                    .fontWeight(.semibold)
+                                    .fixedSize()
+                                }
+                            }
+                            .font(.caption)
+                            .fontWeight(.bold)
+                            
+                            // Géneros
+                            if !bookDetailViewModel.book.genre.isEmpty {
+                                HStack(spacing: 8) {
+                                    ForEach(bookDetailViewModel.book.genre, id: \.self) { genre in
+                                        Text(genre.localizedName)
+                                            .font(.caption)
+                                            .fontWeight(.semibold)
+                                            .padding(.horizontal, 12)
+                                            .padding(.vertical, 7)
+                                            .background(
+                                                .white.opacity(0.12),
+                                                in: Capsule()
+                                            )
+                                            .overlay {
+                                                Capsule()
+                                                    .stroke(
+                                                        .white.opacity(0.20),
+                                                        lineWidth: 1
+                                                    )
+                                            }
+                                            .foregroundStyle(.white)
+                                            .fontWeight(.semibold)
+                                    }
+                                }
+                            }
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal, 20)
+                        
+                        Button {
+                            showReadingStatusOptions = true
+                        } label: {
+                            Group {
+                                if isCheckingBookStatus {
+                                    ProgressView()
+                                        .tint(.white)
+                                } else if isLoading {
+                                    ProgressView()
+                                        .tint(.white)
+                                } else {
+                                    Label(
+                                        buttonTitle,
+                                        systemImage: buttonIcon
+                                    )
+                                    .font(.headline)
+                                    .fontWeight(.semibold)
+                                }
+                            }
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 44)
+                        }
+                        .buttonStyle(.glassProminent)
+                        .foregroundStyle(buttonForegroundColor)
+                        .tint(buttonBackgroundColor)
+                        .padding(.horizontal, 20)
+                        .disabled(isLoading)
+                        .sheet(isPresented: $showReadingStatusOptions) {
+                            ReadingStatusSheet(
+                                currentStatus: bookDetailViewModel.bookStatus
+                            ) { status in
+                                
+                                statusFeedbackTrigger += 1
+                                
+                                Task {
+                                    await saveBookToList(status: status)
+                                }
+                            }
+                            .presentationDetents([.height(300)])
+                            .presentationDragIndicator(.visible)
+                            .presentationCornerRadius(28)
+                            .presentationBackground(.ultraThinMaterial)
+                        }
+                        .sensoryFeedback(.selection, trigger: statusFeedbackTrigger)
+                        
+                        VStack(alignment: .leading, spacing: 10) {
+                            
+                            Text("synopsis")
+                                .font(.title2.bold())
+                                .foregroundStyle(.white)
+                            
+                            Text(bookDetailViewModel.book.description ?? "no_description")
+                                .font(.body)
+                                .foregroundStyle(.white.opacity(0.80))
+                                .lineSpacing(2)
+                                .lineLimit(isDescriptionExpanded ? nil : 5)
+                                .animation(.easeInOut(duration: 0.2), value: isDescriptionExpanded)
+                            
+                            Button {
+                                withAnimation(.easeInOut(duration: 0.2)) {
+                                    isDescriptionExpanded.toggle()
+                                }
+                            } label: {
+                                Text(isDescriptionExpanded ? "show_less" : "show_more")
+                                    .font(.subheadline)
+                                    .fontWeight(.semibold)
+                                    .foregroundStyle(.white)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.top, 12)
+                            .padding(.horizontal, 20)
+                        }
+                        
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal)
+                        
                     }
-
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal)
-                    
-                }
-                .navigationBarTitleDisplayMode(.inline)
-            }
-            .toolbar(.hidden, for: .tabBar)
-            .task {
-                do {
-                    try await bookDetailViewModel.loadBookDetails()
-                    await getCoverImage()
-                    try await getUserBook()
-                } catch {
-                    print("Error al obtener el libro: \(error)")
+                    .navigationBarTitleDisplayMode(.inline)
                 }
             }
         }
+        .toolbar(.hidden, for: .tabBar)
+        .task {
+            
+            bookDetailViewModel.isInitialLoading = true
+            
+            defer {
+                bookDetailViewModel.isInitialLoading = false
+            }
+            
+            do {
+                try await bookDetailViewModel.loadBookDetails()
+                await getCoverImage()
+                try await getUserBook()
+                
+            } catch {
+                print("Error al obtener el libro: \(error)")
+            }
+        }
     }
+        
     
     func saveBookToList(status: BookStatus) async {
         isLoading = true

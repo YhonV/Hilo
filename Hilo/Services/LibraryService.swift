@@ -151,7 +151,7 @@ final class LibraryService {
     func saveBookToLibrary(book: Book, status: BookStatus) async throws {
 
         let params = SaveBookParams(
-            p_external_books_id: book.externalId,
+            p_external_id: book.externalId,
             p_title: book.title,
             p_status: status.rawValue,
             p_description: book.description,

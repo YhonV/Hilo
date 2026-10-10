@@ -6,7 +6,7 @@
 //
 
 struct SaveBookParams: Encodable {
-    let p_external_books_id: String
+    let p_external_id: String
     let p_title: String
     let p_status: String
     let p_description: String?
