@@ -8,6 +8,16 @@
 import Foundation
 
 enum BookGenre: String, Codable, Hashable {
+    
+    var searchTerm: String {
+        switch self {
+        case .scienceFiction: "science fiction"
+        case .historicalFiction: "historical fiction"
+        case .youngAdult: "young adult"
+        default: rawValue
+        }
+    }
+
     case horror
     case thriller
     case scienceFiction

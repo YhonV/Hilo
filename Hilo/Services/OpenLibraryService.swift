@@ -8,6 +8,8 @@ final class OpenLibraryService {
 
     private let baseURL = "https://openlibrary.org/search.json"
     
+    
+    
     // MARK: - Aplicar mejor edición a un Book
     func enrichBookWithBestEdition(book: Book, query: String) async throws -> Book {
 
@@ -78,7 +80,7 @@ final class OpenLibraryService {
                 value: """
                 key,title,author_name,cover_i,first_publish_year,\
                 language,edition_key,isbn,publisher,number_of_pages_median,\
-                editions,editions.key,editions.title,editions.cover_i,editions.language
+                subject,editions,editions.key,editions.title,editions.cover_i,editions.language
                 """
             )
         ]
@@ -377,6 +379,12 @@ final class OpenLibraryService {
 
         let title: String
         let coverId: Int?
+        
+        if dto.title.localizedCaseInsensitiveContains("Amanecer rojo") {
+            print("Título:", dto.title)
+            print("Subjects:", dto.subjects ?? [])
+            print("Géneros:", extractGenres(from: dto.subjects ?? []))
+        }
 
         if useEdition, let edition = preferredEdition {
 
@@ -414,7 +422,7 @@ final class OpenLibraryService {
             title: title,
             authors: dto.authorName ?? [],
             cover: cover,
-            genre: [],
+            genre: extractGenres(from: dto.subjects ?? []),
             description: nil,
             publishedDate: dto.firstPublishYear.map(String.init),
             numberOfPages: dto.numberOfPagesMedian,

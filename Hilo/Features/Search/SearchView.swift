@@ -10,13 +10,14 @@ struct SearchView: View {
     @State private var searchViewModel = SearchViewModel()
     @State private var booksIsLoading: Bool = false
     @State private var showLoadError: Bool = false
-    @State private var showAllBooks: Bool = false
     @State private var showScrollToTop = false
     
-    private var visibleBooks: [Book] {
-        showAllBooks
-            ? searchViewModel.books
-            : Array(searchViewModel.books.prefix(3))
+    private var bestMatches: [Book] {
+        Array(searchViewModel.books.prefix(3))
+    }
+
+    private var otherResults: [Book] {
+        Array(searchViewModel.books.dropFirst(3))
     }
     
     var body: some View {
@@ -24,21 +25,36 @@ struct SearchView: View {
             ZStack {
                 AppColors.background
                     .ignoresSafeArea()
+                
                 ScrollViewReader { proxy in
                     ScrollView {
                         Color.clear
                             .frame(height: 0)
                             .id("top")
-                        
                         if booksIsLoading {
                             ForEach(0..<3, id: \.self) { _ in
                                 BookCardSkeleton()
                                 Divider()
                             }
                             .padding(.horizontal)
-                        } else {
+                        } else if !searchViewModel.books.isEmpty {
+
+                            HStack(spacing: 8) {
+                                Image(systemName: "book.closed")
+                                    .foregroundStyle(AppColors.primaryStrong)
+                                Text("Mejores coincidencias")
+                                    .font(.headline)
+                                Spacer()
+                                Text("Top \(bestMatches.count)")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            .padding(.horizontal)
+                            .padding(.bottom, 12)
+
+                        
                             LazyVStack(spacing: 0) {
-                                ForEach(visibleBooks, id: \.externalId) { book in
+                                ForEach(bestMatches, id: \.externalId) { book in
                                     NavigationLink {
                                         BookDetailView(book: book)
                                     } label: {
@@ -51,18 +67,18 @@ struct SearchView: View {
                             }
                             .padding(.horizontal)
                             
-                            if searchViewModel.books.count > 3 {
-                                Button {
-                                    showAllBooks.toggle()
-                                } label: {
-                                    Text(showAllBooks ? "show_less" : "show_more")
-                                        .font(.subheadline)
-                                        .fontWeight(.semibold)
-                                        .foregroundStyle(AppColors.primaryStrong)
-                                }
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.top, 12)
-                                .padding(.horizontal, 20)
+                            if !otherResults.isEmpty {
+                                AdditionalSearchResultsView(books: otherResults)
+                                    .padding(.horizontal)
+                                    .padding(.top, 24)
+                            }
+                            
+                            if !searchViewModel.recommendedBooks.isEmpty {
+                                RecommendedBooksSectionView(
+                                    books: searchViewModel.recommendedBooks,
+                                    title: "Más libros del mismo autor"
+                                )
+                                .padding(.top, 24)
                             }
                         }
                     }

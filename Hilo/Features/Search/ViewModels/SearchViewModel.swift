@@ -13,6 +13,8 @@ class SearchViewModel {
     var hasLoadedInitialBooks: Bool = false
     private var initialBooks: [Book] = []
     private var lastSearchQuery: String?
+    var recommendedBooks: [Book] = []
+    var recommendationsIsLoading = false
     
     // MARK: - Función cargar libros iniciales (Luego será mejorada, enviando generos favoritos del usuario)
     func loadInitialBooks() async throws {
@@ -21,7 +23,7 @@ class SearchViewModel {
         let query = "Harry Potter"
 
         let fetchedBooks = try await OpenLibraryService.shared.searchBooks(query: query)
-
+        
         books = try await enrichFirstBooks(fetchedBooks, query: query)
 
         hasLoadedInitialBooks = true
@@ -54,6 +56,9 @@ class SearchViewModel {
 
             books = enrichedBooks
             lastSearchQuery = query
+            Task {
+                await getRecommendedBooks()
+            }
 
         } catch is CancellationError {
             return
@@ -65,6 +70,7 @@ class SearchViewModel {
     
     func restoreInitialBooks() {
         books = initialBooks
+        recommendedBooks = []
     }
     
     private func enrichFirstBooks(_ books: [Book], query: String) async throws -> [Book] {
@@ -109,5 +115,46 @@ class SearchViewModel {
         }
 
         return 0
+    }
+    
+    // MARK: - Recomendación de libros
+    func getRecommendedBooks() async {
+        guard let mainBook = books.first,
+              let author = mainBook.authors.first,
+              !author.isEmpty else {
+            recommendedBooks = []
+            return
+        }
+        
+        recommendationsIsLoading = true
+        defer { recommendationsIsLoading = false }
+
+        do {
+            let fetchedBooks = try await OpenLibraryService.shared.searchBooks(
+                query: "author:\"\(author)\""
+            )
+
+            try Task.checkCancellation()
+
+            let existingIds = Set(books.map(\.externalId))
+
+            recommendedBooks = Array(
+                fetchedBooks.filter { book in
+                    !existingIds.contains(book.externalId)
+                    && book.authors.contains {
+                        $0.compare(author, options: [.caseInsensitive, .diacriticInsensitive]) == .orderedSame
+                    }
+                }
+                .prefix(8)
+            )
+
+        } catch is CancellationError {
+            return
+        } catch let error as URLError where error.code == .cancelled {
+            return
+        } catch {
+            recommendedBooks = []
+            print("Error cargando recomendaciones: \(error)")
+        }
     }
 }

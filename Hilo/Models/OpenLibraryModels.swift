@@ -23,6 +23,7 @@ struct OpenLibraryBookDTO: Decodable {
     let publishers: [String]?
     let numberOfPagesMedian: Int?
     let editions: OpenLibrarySearchEditionsResponse?
+    let subjects: [String]?
 
     enum CodingKeys: String, CodingKey {
         case key
@@ -36,6 +37,7 @@ struct OpenLibraryBookDTO: Decodable {
         case publishers = "publisher"
         case numberOfPagesMedian = "number_of_pages_median"
         case editions
+        case subjects = "subjects"
     }
 }
 
