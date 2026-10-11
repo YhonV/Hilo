@@ -1,9 +1,3 @@
-//
-//  AdditionalSearchResultsView.swift
-//  Hilo
-//
-//  Created by Cactu on 11-10-26.
-//
 
 import SwiftUI
 
@@ -19,7 +13,7 @@ struct AdditionalSearchResultsView: View {
                 Image(systemName: "books.vertical")
                     .foregroundStyle(AppColors.primaryStrong)
 
-                Text("Explorar más libros")
+                Text("search_explore_more")
                     .font(.headline)
             }
 
@@ -29,12 +23,17 @@ struct AdditionalSearchResultsView: View {
                 }
             } label: {
                 HStack {
-                    Text("\(books.count) resultados adicionales")
-                        .foregroundStyle(.secondary)
+                    Text(
+                        String(
+                            format: String(localized: "search_additional_results"),
+                            books.count
+                        )
+                    )
+                    .foregroundStyle(.secondary)
 
                     Spacer()
 
-                    Text(isExpanded ? "Ver menos" : "Ver todos")
+                    Text(isExpanded ? "search_show_less" : "search_show_all")
                         .foregroundStyle(AppColors.primaryStrong)
                         .fontWeight(.semibold)
 

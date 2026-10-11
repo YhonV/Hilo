@@ -112,3 +112,15 @@
 "genre_adventure" = "Aventura";
 "genre_historical_fiction" = "Ficción histórica";
 "genre_young_adult" = "Juvenil";
+
+/* ===== Search: Additional Results ===== */
+"search_explore_more" = "Explorar más libros";
+"search_additional_results" = "%d resultados adicionales";
+"search_show_less" = "Ver menos";
+"search_show_all" = "Ver todos";
+
+/* ===== SearchView ===== */
+"search_same_author" = "Más libros del mismo autor";
+"search_best_matches" = "Mejores coincidencias";
+"search_no_results_title" = "No encontramos libros";
+"search_no_results_description" = "No encontramos resultados para «%@». Prueba con otro título o autor.";

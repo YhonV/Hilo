@@ -32,17 +32,19 @@ struct SearchView: View {
                             .frame(height: 0)
                             .id("top")
                         if booksIsLoading {
-                            ForEach(0..<3, id: \.self) { _ in
-                                BookCardSkeleton()
-                                Divider()
-                            }
-                            .padding(.horizontal)
+                            SearchResultsSkeletonView()
+                            AdditionalSearchResultsSkeletonView()
+                                    .padding(.horizontal)
+                                    .padding(.top, 24)
+                            RecommendedBooksSkeletonView()
+                                    .padding(.top, 24)
+
                         } else if !searchViewModel.books.isEmpty {
 
                             HStack(spacing: 8) {
                                 Image(systemName: "book.closed")
                                     .foregroundStyle(AppColors.primaryStrong)
-                                Text("Mejores coincidencias")
+                                Text("search_best_matches")
                                     .font(.headline)
                                 Spacer()
                                 Text("Top \(bestMatches.count)")
@@ -73,13 +75,23 @@ struct SearchView: View {
                                     .padding(.top, 24)
                             }
                             
-                            if !searchViewModel.recommendedBooks.isEmpty {
+                            if searchViewModel.recommendationsIsLoading {
+                                RecommendedBooksSkeletonView()
+                                    .padding(.top, 24)
+
+                            } else if !searchViewModel.recommendedBooks.isEmpty {
                                 RecommendedBooksSectionView(
                                     books: searchViewModel.recommendedBooks,
-                                    title: "Más libros del mismo autor"
+                                    title: String(localized: "search_same_author")
                                 )
                                 .padding(.top, 24)
                             }
+                        } else if searchViewModel.hasSearched &&
+                                searchViewModel.books.isEmpty {
+
+                            EmptySearchResultsView(
+                                searchText: searchViewModel.searchText
+                            )
                         }
                     }
                     .onScrollGeometryChange(for: Bool.self) { geometry in

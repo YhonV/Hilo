@@ -15,6 +15,7 @@ class SearchViewModel {
     private var lastSearchQuery: String?
     var recommendedBooks: [Book] = []
     var recommendationsIsLoading = false
+    var hasSearched = false
     
     // MARK: - Función cargar libros iniciales (Luego será mejorada, enviando generos favoritos del usuario)
     func loadInitialBooks() async throws {
@@ -34,7 +35,9 @@ class SearchViewModel {
         let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !query.isEmpty else { return }
         guard query != lastSearchQuery else { return }
-
+        hasSearched = false
+        books = []
+        recommendedBooks = []
         do {
             let fetchedBooks = try await OpenLibraryService.shared.searchBooks(query: query)
 
@@ -56,6 +59,7 @@ class SearchViewModel {
 
             books = enrichedBooks
             lastSearchQuery = query
+            hasSearched = true
             Task {
                 await getRecommendedBooks()
             }
@@ -71,6 +75,7 @@ class SearchViewModel {
     func restoreInitialBooks() {
         books = initialBooks
         recommendedBooks = []
+        hasSearched = false
     }
     
     private func enrichFirstBooks(_ books: [Book], query: String) async throws -> [Book] {
