@@ -124,3 +124,9 @@
 "search_best_matches" = "Mejores coincidencias";
 "search_no_results_title" = "No encontramos libros";
 "search_no_results_description" = "No encontramos resultados para «%@». Prueba con otro título o autor.";
+"search_recent_title" = "Búsquedas recientes";
+"search_clear_history" = "Borrar historial";
+"search_discover_books" = "Descubre tu próxima lectura";
+"search_discover_refresh" = "Descubrir otros libros";
+"search_explore_genres" = "Explorar por género";
+"genre_load_more" = "Cargar más libros";

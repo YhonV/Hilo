@@ -5,6 +5,7 @@
 //  Created by Cactu on 09-08-26.
 //
 import SwiftUI
+import Nuke
 
 struct BookDetailView: View {
     let book: Book
@@ -295,23 +296,34 @@ struct BookDetailView: View {
             }
         }
         .toolbar(.hidden, for: .tabBar)
+        
         .task {
-            
+            let start = Date()
+
             bookDetailViewModel.isInitialLoading = true
-            
             defer {
                 bookDetailViewModel.isInitialLoading = false
+                print("TIEMPO TOTAL:", Date().timeIntervalSince(start))
             }
-            
+
             do {
-                try await bookDetailViewModel.loadBookDetails()
-                await getCoverImage()
+                async let cover: Void = getCoverImage()
+                async let details: Void = bookDetailViewModel.loadBookDetails()
+
+                try await details
+                print("DETALLES:", Date().timeIntervalSince(start))
+
+                await cover
+                print("PORTADA:", Date().timeIntervalSince(start))
+
                 try await getUserBook()
-                
+                print("SUPABASE:", Date().timeIntervalSince(start))
+
             } catch {
-                print("Error al obtener el libro: \(error)")
+                print("Error:", error)
             }
         }
+
     }
         
     
@@ -339,15 +351,20 @@ struct BookDetailView: View {
         )
     }
     
+    
     private func getCoverImage() async {
-        guard let url = URL(string: book.cover) else { return }
-        
+        guard let url = URL(string: book.cover) else {
+            return
+        }
+
         do {
-            let (data, _) = try await URLSession.shared.data(from: url)
-            guard let image = UIImage(data: data) else { return }
+            let image = try await ImagePipeline.shared.image(for: url)
             coverImage = image
+
         } catch {
             print("Error descargando portada: \(error)")
         }
     }
+
+
 }

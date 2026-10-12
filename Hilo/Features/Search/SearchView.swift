@@ -11,6 +11,7 @@ struct SearchView: View {
     @State private var booksIsLoading: Bool = false
     @State private var showLoadError: Bool = false
     @State private var showScrollToTop = false
+    @State private var selectedGenre: BookGenre?
     
     private var bestMatches: [Book] {
         Array(searchViewModel.books.prefix(3))
@@ -31,13 +32,64 @@ struct SearchView: View {
                         Color.clear
                             .frame(height: 0)
                             .id("top")
-                        if booksIsLoading {
+                        
+                        
+                        if searchViewModel.searchText
+                            .trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+
+                            if !searchViewModel.recentSearches.isEmpty {
+                                RecentSearchesView(
+                                    searches: searchViewModel.recentSearches,
+                                    onSearchSelected: { query in
+                                        searchViewModel.searchText = query
+                                    },
+                                    onClearHistory: {
+                                        searchViewModel.clearRecentSearches()
+                                    }
+                                )
+                            }
+                            
+                            
+                            if !searchViewModel.discoveryBooks.isEmpty {
+                                DiscoveryBooksSectionView(
+                                    books: searchViewModel.discoveryBooks,
+                                    isLoading: searchViewModel.discoveryIsLoading,
+                                    onRefresh: {
+                                        Task {
+                                            await searchViewModel.loadDiscoveryBooks(
+                                                forceRefresh: true
+                                            )
+                                        }
+                                    }
+                                )
+                                .padding(.top, 24)
+
+                            } else if searchViewModel.discoveryIsLoading {
+                                RecommendedBooksSkeletonView(
+                                    title: String(localized: "search_discover_books")
+                                )
+                                .padding(.top, 24)
+                            }
+                            
+                            ExploreGenresView { genre in
+                                selectedGenre = genre
+                            }
+                            .padding(.top, 24)
+                            .padding(.bottom, 32)
+                            .navigationDestination(item: $selectedGenre) { genre in
+                                GenreBooksView(genre: genre)
+                            }
+                            .padding(.top, 24)
+                            .padding(.bottom, 32)
+
+                        } else if booksIsLoading {
                             SearchResultsSkeletonView()
                             AdditionalSearchResultsSkeletonView()
                                     .padding(.horizontal)
                                     .padding(.top, 24)
-                            RecommendedBooksSkeletonView()
-                                    .padding(.top, 24)
+                            RecommendedBooksSkeletonView(
+                                title: String(localized: "search_same_author")
+                            )
 
                         } else if !searchViewModel.books.isEmpty {
 
@@ -76,8 +128,9 @@ struct SearchView: View {
                             }
                             
                             if searchViewModel.recommendationsIsLoading {
-                                RecommendedBooksSkeletonView()
-                                    .padding(.top, 24)
+                                RecommendedBooksSkeletonView(
+                                    title: String(localized: "search_same_author")
+                                )
 
                             } else if !searchViewModel.recommendedBooks.isEmpty {
                                 RecommendedBooksSectionView(
@@ -142,7 +195,6 @@ struct SearchView: View {
                         defer { booksIsLoading = false }
 
                         await searchViewModel.searchBooks()
-
                     } catch is CancellationError {
                         // El usuario siguió escribiendo
                     } catch {
@@ -167,6 +219,10 @@ struct SearchView: View {
                     Text("Hubo un problema al conectarse con Google Books. Inténtalo nuevamente.")
                 }
             }
+        }
+        .task {
+            searchViewModel.loadRecentSearches()
+            await searchViewModel.loadDiscoveryBooks()
         }
     }
 }

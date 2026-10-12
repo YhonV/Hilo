@@ -39,41 +39,47 @@ class BookDetailViewModel {
     // MARK: - Obtener detalles del libro
     func loadBookDetails() async throws {
 
-        let work = try await openLibraryService.getWorkDetails(
+        let needsDescription = book.description?.isEmpty != false
+
+        async let workTask = openLibraryService.getWorkDetails(
             workId: book.externalId
         )
 
-        // Géneros
+        async let googleTask: String? = {
+            guard needsDescription else { return nil }
+
+            do {
+                return try await googleBooksService.getDescription(
+                    title: book.title,
+                    authors: book.authors,
+                    language: book.language
+                )
+            } catch {
+                print("Error Google Books:", error)
+                return nil
+            }
+        }()
+
+        let work = try await workTask
+        let googleDescription = await googleTask
+
         if book.genre.isEmpty {
             book.genre = openLibraryService.extractGenres(
                 from: work.subjects ?? []
             )
         }
 
-        // Sinopsis de la edición seleccionada
-        if book.description?.isEmpty != false {
-            do {
-                let googleDescription = try await googleBooksService.getDescription(
-                    title: book.title,
-                    authors: book.authors,
-                    language: book.language
-                )
-
-                if let googleDescription {
-                    print("USANDO DESCRIPCIÓN GOOGLE")
-                    book.description = googleDescription
-                }
-
-            } catch {
-                print("Error Google Books:", error)
+        if needsDescription {
+            if let googleDescription, !googleDescription.isEmpty {
+                print("USANDO DESCRIPCIÓN GOOGLE")
+                book.description = googleDescription
+            } else {
+                print("USANDO DESCRIPCIÓN OPEN LIBRARY")
+                book.description = work.description?.value
             }
         }
-
-        if book.description?.isEmpty != false {
-            print("USANDO DESCRIPCIÓN OPEN LIBRARY")
-            book.description = work.description?.value
-        }
     }
+
 
     // MARK: - Guardar libro
     func saveBook(status: BookStatus) async throws {

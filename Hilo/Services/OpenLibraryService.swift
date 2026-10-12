@@ -60,7 +60,7 @@ final class OpenLibraryService {
     }
 
     // MARK: - Buscar libros
-    func searchBooks(query: String) async throws -> [Book] {
+    func searchBooks(query: String, offset: Int = 0) async throws -> [Book] {
 
         let cleanQuery = query.trimmingCharacters(
             in: .whitespacesAndNewlines
@@ -74,7 +74,7 @@ final class OpenLibraryService {
 
         var queryItems: [URLQueryItem] = [
             URLQueryItem(name: "limit", value: "20"),
-
+            URLQueryItem(name: "offset", value: String(max(0, offset))),
             URLQueryItem(
                 name: "fields",
                 value: """

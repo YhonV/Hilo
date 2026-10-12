@@ -15,33 +15,11 @@ struct BookSearchResultRow: View {
 
         HStack(alignment: .top, spacing: 14) {
 
-            AsyncImage(url: URL(string: book.cover)) { phase in
-                switch phase {
-
-                case .empty:
-                    Image("no-cover")
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 85, height: 120)
-                        .clipShape(.rect(cornerRadius: 8))
-
-                case .success(let image):
-                    image
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 85, height: 120)
-                        .clipShape(.rect(cornerRadius: 8))
-
-                case .failure:
-                    Rectangle()
-                        .fill(AppColors.secondary.opacity(0.2))
-                        .frame(width: 75, height: 110)
-                        .clipShape(.rect(cornerRadius: 8))
-
-                @unknown default:
-                    EmptyView()
-                }
-            }
+            BookCoverView(
+                url: book.cover,
+                width: 85,
+                height: 120
+            )
 
             VStack(alignment: .leading, spacing: 4) {
 

@@ -125,3 +125,9 @@
 "search_best_matches" = "Best matches";
 "search_no_results_title" = "No books found";
 "search_no_results_description" = "No results found for “%@”. Try another title or author.";
+"search_recent_title" = "Recent searches";
+"search_clear_history" = "Clear history";
+"search_discover_books" = "Discover your next read";
+"search_discover_refresh" = "Discover other books";
+"search_explore_genres" = "Explore by genre";
+"genre_load_more" = "Load more books";

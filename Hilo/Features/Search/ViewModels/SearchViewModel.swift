@@ -16,6 +16,9 @@ class SearchViewModel {
     var recommendedBooks: [Book] = []
     var recommendationsIsLoading = false
     var hasSearched = false
+    var recentSearches: [String] = []
+    var discoveryBooks: [Book] = []
+    var discoveryIsLoading = false
     
     // MARK: - Función cargar libros iniciales (Luego será mejorada, enviando generos favoritos del usuario)
     func loadInitialBooks() async throws {
@@ -60,6 +63,9 @@ class SearchViewModel {
             books = enrichedBooks
             lastSearchQuery = query
             hasSearched = true
+            SearchHistoryService.shared.saveSearch(query)
+            loadRecentSearches()
+            
             Task {
                 await getRecommendedBooks()
             }
@@ -76,6 +82,7 @@ class SearchViewModel {
         books = initialBooks
         recommendedBooks = []
         hasSearched = false
+        lastSearchQuery = nil
     }
     
     private func enrichFirstBooks(_ books: [Book], query: String) async throws -> [Book] {
@@ -162,4 +169,94 @@ class SearchViewModel {
             print("Error cargando recomendaciones: \(error)")
         }
     }
+    
+    // MARK: - Obtener búsquedas recientes
+    func loadRecentSearches() {
+        recentSearches = SearchHistoryService.shared.getRecentSearches()
+    }
+    
+    // MARK: - Eliminar historial de búsquedas
+    func clearRecentSearches() {
+        SearchHistoryService.shared.clearHistory()
+        recentSearches = []
+    }
+    
+    
+    // MARK: - Descubrir libros
+    
+    func loadDiscoveryBooks(forceRefresh: Bool = false) async {
+        guard !discoveryIsLoading else { return }
+        guard forceRefresh || discoveryBooks.isEmpty else { return }
+
+
+        discoveryIsLoading = true
+        defer { discoveryIsLoading = false }
+
+        let queries = [
+            "subject:fantasy",
+            "subject:science_fiction",
+            "subject:mystery",
+            "subject:romance",
+            "subject:horror",
+            "subject:adventure",
+            "subject:thriller",
+            "subject:historical_fiction",
+            "subject:dystopian_fiction",
+            "subject:young_adult_fiction"
+        ]
+
+        let selectedQueries = Array(queries.shuffled().prefix(4))
+
+        do {
+            let results = await withTaskGroup(of: [Book].self) { group in
+
+                for query in selectedQueries {
+                    group.addTask {
+                        do {
+                            return try await OpenLibraryService.shared.searchBooks(
+                                query: query,
+                                offset: Int.random(in: 0...5) * 20
+                            )
+                        } catch {
+                            return []
+                        }
+                    }
+                }
+
+                var allResults: [[Book]] = []
+
+                for await books in group {
+                    allResults.append(books)
+                }
+
+                return allResults
+            }
+
+            try Task.checkCancellation()
+
+            var discoveredBooks: [Book] = []
+            var existingIds = Set<String>()
+
+            for books in results {
+                let candidates = books.filter {
+                    !$0.cover.isEmpty &&
+                    !existingIds.contains($0.externalId)
+                }
+
+                for book in candidates.prefix(2) {
+                    discoveredBooks.append(book)
+                    existingIds.insert(book.externalId)
+                }
+            }
+
+            discoveryBooks = discoveredBooks
+
+        } catch is CancellationError {
+            return
+        } catch {
+            print("Error cargando libros para descubrir:", error)
+        }
+    }
+
+
 }

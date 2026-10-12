@@ -11,7 +11,9 @@ import SwiftUI
 struct HiloApp: App {
 
     @State private var authViewModel = AuthViewModel()
-    
+    init() {
+        BookImagePipeline.configure()
+    }
     var body: some Scene {
         WindowGroup {
             Group {

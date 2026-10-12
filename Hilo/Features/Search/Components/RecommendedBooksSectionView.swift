@@ -25,16 +25,11 @@ struct RecommendedBooksSectionView: View {
                             BookDetailView(book: book)
                         } label: {
                             VStack(alignment: .leading, spacing: 8) {
-                                AsyncImage(url: URL(string: book.cover)) { image in
-                                    image
-                                        .resizable()
-                                        .scaledToFill()
-                                } placeholder: {
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .fill(AppColors.primaryStrong.opacity(0.08))
-                                }
-                                .frame(width: 115, height: 165)
-                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                                BookCoverView(
+                                    url: book.cover,
+                                    width: 115,
+                                    height: 165
+                                )
 
                                 Text(book.title)
                                     .font(.subheadline)

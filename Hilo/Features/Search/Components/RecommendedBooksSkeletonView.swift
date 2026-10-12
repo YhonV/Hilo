@@ -8,11 +8,12 @@
 import SwiftUI
 
 struct RecommendedBooksSkeletonView: View {
-
+    let title: String
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
 
-            Text("search_same_author")
+            Text(title)
                 .font(.headline)
                 .padding(.horizontal)
 
@@ -41,8 +42,4 @@ struct RecommendedBooksSkeletonView: View {
             .scrollDisabled(true)
         }
     }
-}
-
-#Preview {
-    RecommendedBooksSkeletonView()
 }
