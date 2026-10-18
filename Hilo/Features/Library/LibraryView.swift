@@ -22,6 +22,8 @@ struct LibraryView: View {
                             LibraryBooksSectionView(userLibraryBooks: libraryViewModel.userBooks)
                         }
                         .padding(.horizontal, 20)
+                        
+                        CalendarView()
                     }
                 }
             }

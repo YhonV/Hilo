@@ -12,7 +12,7 @@ final class CalendarService {
 
     static let shared = CalendarService()
 
-    private init() {}
+    init() {}
 
     //MARK: - Obtener actividad del calendario
     func getCalendarActivities(startDate: Date, endDate: Date) async throws -> [CalendarActivity] {
