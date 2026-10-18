@@ -20,10 +20,10 @@ struct LibraryView: View {
                                 .padding(.bottom, 12)
                                          
                             LibraryBooksSectionView(userLibraryBooks: libraryViewModel.userBooks)
+                            
+                            CalendarView()
                         }
                         .padding(.horizontal, 20)
-                        
-                        CalendarView()
                     }
                 }
             }

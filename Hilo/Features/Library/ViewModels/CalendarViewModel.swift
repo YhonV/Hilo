@@ -4,6 +4,7 @@
 //
 //  Created by Cactu on 17-10-26.
 //
+
 import Foundation
 import Combine
 
@@ -13,6 +14,7 @@ final class CalendarViewModel: ObservableObject {
     @Published private(set) var activities: [CalendarActivity] = []
     @Published var displayedMonth: Date
     @Published var selectedDate: Date?
+    @Published var isExpanded = true
 
     @Published private(set) var isLoading = false
     @Published var errorMessage: String?
@@ -20,25 +22,28 @@ final class CalendarViewModel: ObservableObject {
     private let service: CalendarService
     private let calendar: Calendar
 
+    // Fecha que determina la semana visible
+    private var referenceDate: Date
+
     init(service: CalendarService? = nil) {
+
         self.service = service ?? CalendarService.shared
 
-        var calendar = Calendar.autoupdatingCurrent
-        calendar.locale = .autoupdatingCurrent
-        calendar.timeZone = .current
-
+        let calendar = Calendar.autoupdatingCurrent
         self.calendar = calendar
 
         let today = Date()
 
-        self.displayedMonth = calendar.date(
-            from: calendar.dateComponents([.year, .month], from: today)
-        ) ?? today
+        self.referenceDate = today
+        self.displayedMonth = calendar.dateInterval(
+            of: .month,
+            for: today
+        )?.start ?? today
 
         self.selectedDate = today
     }
 
-    // MARK: - Cargar mes
+    // MARK: - Cargar actividades
 
     func loadMonth() async {
 
@@ -57,16 +62,48 @@ final class CalendarViewModel: ObservableObject {
             return
         }
 
+        await loadActivities(
+            startDate: interval.start,
+            endDate: endDate
+        )
+    }
+
+    private func loadWeek() async {
+
+        guard let interval = calendar.dateInterval(
+            of: .weekOfYear,
+            for: referenceDate
+        ) else {
+            return
+        }
+
+        guard let endDate = calendar.date(
+            byAdding: .day,
+            value: -1,
+            to: interval.end
+        ) else {
+            return
+        }
+
+        await loadActivities(
+            startDate: interval.start,
+            endDate: endDate
+        )
+    }
+
+    private func loadActivities(
+        startDate: Date,
+        endDate: Date
+    ) async {
+
         isLoading = true
         errorMessage = nil
 
         do {
-
             activities = try await service.getCalendarActivities(
-                startDate: interval.start,
+                startDate: startDate,
                 endDate: endDate
             )
-
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -75,6 +112,15 @@ final class CalendarViewModel: ObservableObject {
     }
 
     // MARK: - Navegación
+
+    func navigate(by value: Int) async {
+
+        if isExpanded {
+            await changeMonth(by: value)
+        } else {
+            await changeWeek(by: value)
+        }
+    }
 
     func changeMonth(by value: Int) async {
 
@@ -87,42 +133,96 @@ final class CalendarViewModel: ObservableObject {
         }
 
         displayedMonth = newMonth
+        referenceDate = newMonth
         selectedDate = nil
 
         await loadMonth()
+    }
+
+    func changeWeek(by value: Int) async {
+
+        guard let newDate = calendar.date(
+            byAdding: .weekOfYear,
+            value: value,
+            to: referenceDate
+        ) else {
+            return
+        }
+
+        referenceDate = newDate
+        displayedMonth = calendar.dateInterval(
+            of: .month,
+            for: newDate
+        )?.start ?? newDate
+
+        selectedDate = nil
+
+        await loadWeek()
+    }
+
+    // MARK: - Expandir / contraer
+
+    func toggleExpanded() async {
+
+        isExpanded.toggle()
+
+        if isExpanded {
+            await loadMonth()
+        } else {
+            await loadWeek()
+        }
+    }
+
+    // MARK: - Volver a hoy
+
+    func goToToday() async {
+
+        let today = Date()
+
+        referenceDate = today
+        selectedDate = today
+
+        displayedMonth = calendar.dateInterval(
+            of: .month,
+            for: today
+        )?.start ?? today
+
+        if isExpanded {
+            await loadMonth()
+        } else {
+            await loadWeek()
+        }
     }
 
     // MARK: - Días del mes
 
     var monthDays: [Date?] {
 
-        guard
-            let monthInterval = calendar.dateInterval(
-                of: .month,
-                for: displayedMonth
-            ),
-            let dayRange = calendar.range(
-                of: .day,
-                in: .month,
-                for: displayedMonth
-            )
-        else {
+        guard let interval = calendar.dateInterval(
+            of: .month,
+            for: displayedMonth
+        ),
+        let dayRange = calendar.range(
+            of: .day,
+            in: .month,
+            for: displayedMonth
+        ) else {
             return []
         }
 
-        let firstDay = monthInterval.start
+        let firstDay = interval.start
 
         let weekday = calendar.component(
             .weekday,
             from: firstDay
         )
 
-        let leadingEmptyDays =
+        let leadingDays =
             (weekday - calendar.firstWeekday + 7) % 7
 
         var days: [Date?] = Array(
             repeating: nil,
-            count: leadingEmptyDays
+            count: leadingDays
         )
 
         for offset in 0..<dayRange.count {
@@ -139,12 +239,41 @@ final class CalendarViewModel: ObservableObject {
         return days
     }
 
+    // MARK: - Días de la semana
+
+    var weekDays: [Date?] {
+
+        guard let interval = calendar.dateInterval(
+            of: .weekOfYear,
+            for: referenceDate
+        ) else {
+            return []
+        }
+
+        return (0..<7).map { offset in
+            calendar.date(
+                byAdding: .day,
+                value: offset,
+                to: interval.start
+            )
+        }
+    }
+
+    // MARK: - Días visibles
+
+    var visibleDays: [Date?] {
+        isExpanded ? monthDays : weekDays
+    }
+
     // MARK: - Actividades
 
     func activities(on date: Date) -> [CalendarActivity] {
 
         activities.filter {
-            calendar.isDate($0.date, inSameDayAs: date)
+            calendar.isDate(
+                $0.date,
+                inSameDayAs: date
+            )
         }
     }
 
@@ -164,35 +293,11 @@ final class CalendarViewModel: ObservableObject {
         )
     }
 
-    // MARK: - Textos
+    // MARK: - Libros únicos
 
-    var monthTitle: String {
-
-        let formatter = DateFormatter()
-        formatter.locale = .autoupdatingCurrent
-        formatter.dateFormat = "LLLL yyyy"
-
-        return formatter
-            .string(from: displayedMonth)
-            .capitalized
-    }
-
-    func dayTitle(_ date: Date) -> String {
-
-        let formatter = DateFormatter()
-        formatter.locale = .autoupdatingCurrent
-        formatter.dateStyle = .full
-
-        return formatter
-            .string(from: date)
-            .capitalized
-    }
-    
-    // MARK: - Obtener libros únicos de un día
     func books(on date: Date) -> [CalendarBook] {
 
         let dayActivities = activities(on: date)
-
         var bookIds = Set<UUID>()
 
         return dayActivities.compactMap { activity in
@@ -205,5 +310,33 @@ final class CalendarViewModel: ObservableObject {
 
             return book
         }
+    }
+
+    // MARK: - Textos
+
+    var monthTitle: String {
+
+        let formatter = DateFormatter()
+        formatter.locale = .autoupdatingCurrent
+        formatter.calendar = calendar
+        formatter.setLocalizedDateFormatFromTemplate("LLLL yyyy")
+
+        let date = isExpanded ? displayedMonth : referenceDate
+
+        return formatter
+            .string(from: date)
+            .capitalized
+    }
+
+    func dayTitle(_ date: Date) -> String {
+
+        let formatter = DateFormatter()
+        formatter.locale = .autoupdatingCurrent
+        formatter.calendar = calendar
+        formatter.dateStyle = .full
+
+        return formatter
+            .string(from: date)
+            .capitalized
     }
 }

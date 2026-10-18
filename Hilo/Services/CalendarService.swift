@@ -32,7 +32,6 @@ final class CalendarService {
             .rpc("get_calendar_activities", params: params)
             .execute()
             .value
-
         return activities
     }
 }

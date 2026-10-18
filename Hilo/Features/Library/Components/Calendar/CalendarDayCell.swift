@@ -10,6 +10,7 @@ struct CalendarDayCell: View {
 
     let date: Date
     let books: [CalendarBook]
+    let activityCount: Int
     let action: () -> Void
     private var isToday: Bool {
         Calendar.autoupdatingCurrent.isDateInToday(date)
@@ -60,14 +61,17 @@ struct CalendarDayCell: View {
                     .frame(width: 28, height: 38)
                     .clipShape(RoundedRectangle(cornerRadius: 5))
                     .overlay(alignment: .bottomTrailing) {
-                        if books.count > 1 {
-                            Text("+\(books.count - 1)")
+                        if activityCount > 1 {
+                            Text("+\(activityCount - 1)")
                                 .font(.system(size: 9, weight: .semibold))
-                                .foregroundStyle(.primary)
+                                .foregroundStyle(.white)
                                 .padding(.horizontal, 5)
                                 .padding(.vertical, 3)
-                                .glassEffect(.regular, in: .capsule)
-                                .offset(x: 8, y: 4)
+                                .background(
+                                    AppColors.primary.opacity(0.85),
+                                    in: Capsule()
+                                )
+                                .offset(x: 5, y: 3)
                         }
                     }
 
@@ -78,7 +82,7 @@ struct CalendarDayCell: View {
                 }
             }
             .frame(maxWidth: .infinity)
-            .frame(height: 62)
+            .frame(height: 58)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
