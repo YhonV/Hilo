@@ -214,6 +214,52 @@ struct BookDetailView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal, 20)
                         
+                        // MARK: - Ediciones disponibles
+
+                        if bookDetailViewModel.isLoadingEditions {
+
+                            ProgressView()
+                                .tint(.white)
+                                .padding()
+
+                        } else if !bookDetailViewModel.editions.isEmpty {
+
+                            VStack(alignment: .leading, spacing: 12) {
+
+                                Text("Otras ediciones")
+                                    .font(.title2.bold())
+                                    .foregroundStyle(.white)
+                                    .padding(.horizontal, 20)
+
+                                ScrollView(.horizontal, showsIndicators: false) {
+
+                                    LazyHStack(alignment: .top, spacing: 12) {
+
+                                        ForEach(
+                                            bookDetailViewModel.editions,
+                                            id: \.key
+                                        ) { edition in
+
+                                            BookEditionCard(
+                                                edition: edition,
+                                                isSelected:
+                                                    bookDetailViewModel.selectedEdition?.key
+                                                    == edition.key
+                                            ) {
+                                                bookDetailViewModel.selectEdition(edition)
+                                                statusFeedbackTrigger += 1
+                                            }
+                                        }
+                                    }
+                                    .padding(.horizontal, 20)
+                                }
+                            }
+                            .sensoryFeedback(
+                                .selection,
+                                trigger: statusFeedbackTrigger
+                            )
+                        }
+                        
                         Button {
                             showReadingStatusOptions = true
                         } label: {
@@ -240,7 +286,12 @@ struct BookDetailView: View {
                         .foregroundStyle(buttonForegroundColor)
                         .tint(buttonBackgroundColor)
                         .padding(.horizontal, 20)
-                        .disabled(isLoading)
+                        .disabled(
+                            isLoading ||
+                            isCheckingBookStatus ||
+                            bookDetailViewModel.isLoadingEditions ||
+                            bookDetailViewModel.book.editionId == nil
+                        )
                         .sheet(isPresented: $showReadingStatusOptions) {
                             ReadingStatusSheet(
                                 currentStatus: bookDetailViewModel.bookStatus
@@ -298,29 +349,43 @@ struct BookDetailView: View {
         .toolbar(.hidden, for: .tabBar)
         
         .task {
-            let start = Date()
-
             bookDetailViewModel.isInitialLoading = true
-            defer {
-                bookDetailViewModel.isInitialLoading = false
-                print("TIEMPO TOTAL:", Date().timeIntervalSince(start))
+
+            // Las ediciones se cargan independientemente.
+            let editionsTask = Task {
+                await bookDetailViewModel.loadEditions()
             }
 
+            // Cargar portada y detalles en paralelo.
+            async let cover: Void = getCoverImage()
+            async let details: Void = bookDetailViewModel.loadBookDetails()
+
             do {
-                async let cover: Void = getCoverImage()
-                async let details: Void = bookDetailViewModel.loadBookDetails()
-
                 try await details
-                print("DETALLES:", Date().timeIntervalSince(start))
-
-                await cover
-                print("PORTADA:", Date().timeIntervalSince(start))
-
-                try await getUserBook()
-                print("SUPABASE:", Date().timeIntervalSince(start))
-
             } catch {
-                print("Error:", error)
+                print("Error cargando detalles:", error)
+            }
+
+            await cover
+
+            // Mostrar la pantalla principal.
+            bookDetailViewModel.isInitialLoading = false
+
+            // Consultar el estado sin bloquear toda la pantalla.
+            do {
+                try await getUserBook()
+            } catch {
+                print("Error consultando biblioteca:", error)
+            }
+
+            // No necesitamos esperar las ediciones para mostrar la vista.
+            _ = editionsTask
+        }
+        .onChange(of: bookDetailViewModel.book.cover) {
+            _, _ in
+
+            Task {
+                await getCoverImage()
             }
         }
 
@@ -353,7 +418,7 @@ struct BookDetailView: View {
     
     
     private func getCoverImage() async {
-        guard let url = URL(string: book.cover) else {
+        guard let url = URL(string: bookDetailViewModel.book.cover) else {
             return
         }
 

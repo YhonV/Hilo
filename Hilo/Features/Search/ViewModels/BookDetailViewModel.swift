@@ -11,6 +11,12 @@ class BookDetailViewModel {
     private var openLibraryService = OpenLibraryService.shared
     private var googleBooksService = GoogleBooksService.shared
     
+    // MARK: - Ediciones
+    var editions: [OpenLibraryEditionDTO] = []
+    var selectedEdition: OpenLibraryEditionDTO?
+    var isLoadingEditions = false
+    var editionsError: String?
+    
     init(book: Book) {
         self.book = book
     }
@@ -97,6 +103,73 @@ class BookDetailViewModel {
             bookStatus = previousStatus
             throw error
         }
+    }
+    
+    // MARK: - Obtener ediciones
+    func loadEditions() async {
+
+        guard !isLoadingEditions else { return }
+
+        isLoadingEditions = true
+        editionsError = nil
+
+        defer { isLoadingEditions = false }
+
+        do {
+            let availableEditions = try await openLibraryService.getEditions(
+                workId: book.externalId
+            )
+
+            // Priorizar ediciones que tengan portada
+            editions = availableEditions.sorted {
+                ($0.covers?.isEmpty == false ? 1 : 0) >
+                ($1.covers?.isEmpty == false ? 1 : 0)
+            }
+
+            // Si ya existe una edición seleccionada, conservarla.
+            if let editionId = book.editionId,
+               let edition = editions.first(where: { $0.key == editionId }) {
+
+                selectedEdition = edition
+                return
+            }
+
+            // Seleccionar inicialmente una edición con portada.
+            if let firstEdition = editions.first {
+                selectEdition(firstEdition)
+            }
+
+        } catch {
+            editionsError = error.localizedDescription
+        }
+    }
+    
+    // MARK: - Seleccionar edición
+    func selectEdition(_ edition: OpenLibraryEditionDTO) {
+
+        selectedEdition = edition
+
+        book.editionId = edition.key
+        book.title = edition.title
+
+        if let coverId = edition.covers?.first {
+            book.cover = "https://covers.openlibrary.org/b/id/\(coverId)-L.jpg"
+        }
+
+        book.isbn = edition.isbn13?.first
+            ?? edition.isbn10?.first
+
+        book.editorial = edition.publishers?.first
+            ?? "Editorial desconocida"
+
+        book.numberOfPages = edition.numberOfPages
+        book.publishedDate = edition.publishDate
+
+        book.language = edition.languages?.first?.key
+            .replacingOccurrences(
+                of: "/languages/",
+                with: ""
+            ) ?? "unknown"
     }
     
 }

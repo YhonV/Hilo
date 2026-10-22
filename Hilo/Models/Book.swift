@@ -23,4 +23,5 @@ struct Book: Codable, Identifiable {
     var totalReviews: Int
     var editorial: String
     var language: String
+    var editionId: String?
 }

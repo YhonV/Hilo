@@ -100,4 +100,13 @@ final class LibraryViewModel {
 
         return book
     }
+    
+    // MARK: - Quitar libro de la biblioteca
+    func removeBook(userBookId: UUID) async throws {
+        try await libraryService.removeBookFromLibrary(userBookId: userBookId)
+
+        userBooks.removeAll {
+            $0.userBookId == userBookId
+        }
+    }
 }

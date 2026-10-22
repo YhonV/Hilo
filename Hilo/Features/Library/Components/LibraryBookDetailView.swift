@@ -16,6 +16,11 @@ struct LibraryBookDetailView: View {
     
     @Environment(LibraryViewModel.self) private var libraryViewModel
     @Environment(QuoteViewModel.self) private var quoteViewModel
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var showRemoveConfirmation = false
+    @State private var isRemovingBook = false
+    @State private var removeError: String?
     
     private var currentBook: UserLibraryBook {
         libraryViewModel.userBooks.first {
@@ -189,7 +194,43 @@ struct LibraryBookDetailView: View {
                 await getCoverImage()
                 await getQuotes()
             }
-            .toolbar(.hidden, for: .tabBar)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        showRemoveConfirmation = true
+                    } label: {
+                        Image(systemName: "ellipsis")
+                    }
+                    .disabled(isRemovingBook)
+                }
+            }
+            .alert(
+                "¿Quitar este libro de tu biblioteca?",
+                isPresented: $showRemoveConfirmation
+            ) {
+                Button("Cancelar", role: .cancel) {}
+
+                Button("Quitar libro", role: .destructive) {
+                    Task {
+                        await removeBook()
+                    }
+                }
+            } message: {
+                Text("El libro dejará de aparecer en tu biblioteca, pero conservaremos tus citas y progreso de lectura.")
+            }
+            .alert(
+                "No se pudo quitar el libro",
+                isPresented: Binding(
+                    get: { removeError != nil },
+                    set: { if !$0 { removeError = nil } }
+                )
+            ) {
+                Button("Aceptar", role: .cancel) {
+                    removeError = nil
+                }
+            } message: {
+                Text(removeError ?? "")
+            }
         }
     }
     
@@ -362,4 +403,22 @@ struct LibraryBookDetailView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 20)
     }
+    
+    private func removeBook() async {
+        guard !isRemovingBook else { return }
+
+        isRemovingBook = true
+        defer { isRemovingBook = false }
+
+        do {
+            try await libraryViewModel.removeBook(
+                userBookId: currentBook.userBookId
+            )
+            dismiss()
+        } catch {
+            removeError = error.localizedDescription
+        }
+    }
+    
+    
 }

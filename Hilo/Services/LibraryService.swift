@@ -143,13 +143,29 @@ nonisolated struct FinishReadingResponse: Decodable {
     }
 }
 
+enum BookSaveError: LocalizedError {
+    case missingEdition
+
+    var errorDescription: String? {
+        switch self {
+        case .missingEdition:
+            return "Debes seleccionar una edición antes de guardar el libro."
+        }
+    }
+}
+
 final class LibraryService {
     static let shared = LibraryService()
     init() {}
     
     // MARK: - Guardar libro del usuario
     func saveBookToLibrary(book: Book, status: BookStatus) async throws {
-
+        guard let editionId = book.editionId,
+              editionId.hasPrefix("/books/OL"),
+              editionId.hasSuffix("M") else {
+            throw BookSaveError.missingEdition
+        }
+        
         let params = SaveBookParams(
             p_external_id: book.externalId,
             p_title: book.title,
@@ -162,7 +178,8 @@ final class LibraryService {
             p_language: book.language,
             p_published_date: book.publishedDate,
             p_number_of_pages: book.numberOfPages,
-            p_cover_url: book.cover
+            p_cover_url: book.cover,
+            p_edition_id: editionId,
         )
 
         try await supabase
@@ -202,6 +219,7 @@ final class LibraryService {
             .select("status_id")
             .eq("user_id", value: userId.uuidString)
             .eq("edition_id", value: edition.editionId.uuidString)
+            .is("deleted_at", value: nil)
             .limit(1)
             .execute()
             .value
@@ -262,6 +280,7 @@ final class LibraryService {
                 )
             """)
             .eq("user_id", value: userId)
+            .is("deleted_at", value: nil)
             .execute()
             .value
         return response
@@ -358,11 +377,25 @@ final class LibraryService {
                 )
             """)
             .eq("user_book_id", value: userBookId)
+            .is("deleted_at", value: nil)
             .single()
             .execute()
             .value
 
         return response
+    }
+    
+    // MARK: - Quitar libro de la biblioteca
+    func removeBookFromLibrary(userBookId: UUID) async throws {
+        try await supabase
+            .from("user_book")
+            .update([
+                "deleted_at": ISO8601DateFormatter().string(from: Date())
+            ])
+            .eq("user_book_id", value: userBookId)
+            .eq("user_id", value: supabase.auth.currentUser?.id ?? UUID())
+            .is("deleted_at", value: nil)
+            .execute()
     }
 }
     
