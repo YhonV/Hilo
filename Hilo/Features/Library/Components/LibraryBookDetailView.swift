@@ -201,8 +201,9 @@ struct LibraryBookDetailView: View {
                     Button {
                         showRemoveConfirmation = true
                     } label: {
-                        Image(systemName: "ellipsis")
+                        Image(systemName: "trash")
                     }
+                    .accessibilityLabel(String(localized: "library_remove_book"))
                     .disabled(isRemovingBook)
                 }
             }
