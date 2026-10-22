@@ -430,7 +430,7 @@ final class OpenLibraryService {
             averageRating: nil,
             totalReviews: 0,
             editorial: dto.publishers?.first
-                ?? "Editorial desconocida",
+                ?? String(localized: "book_unknown_publisher"),
             language: language
         )
     }

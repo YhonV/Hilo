@@ -44,7 +44,7 @@ struct EditQuoteSheetView: View {
                         try await updateQuote()
                     } catch {
                         saveErrorMessage =
-                            "No se pudo actualizar la cita. Inténtalo nuevamente."
+                            String(localized: "quote_update_error")
 
                         showSaveError = true
                     }
@@ -57,14 +57,14 @@ struct EditQuoteSheetView: View {
         .padding(.horizontal, 20)
         .padding(.top, 20)
         .alert(
-            "No se pudo actualizar",
+            String(localized: "update_error_title"),
             isPresented: $showSaveError
         ) {
-            Button("Aceptar", role: .cancel) { }
+            Button(String(localized: "common_ok"), role: .cancel) { }
         } message: {
             Text(
                 saveErrorMessage
-                ?? "Ocurrió un error inesperado."
+                ?? String(localized: "unexpected_error")
             )
         }
     }
@@ -113,7 +113,7 @@ struct EditQuoteSheetView: View {
         guard let pageNumber = Int(page),
               pageNumber > 0 else {
             validationMessage =
-                "Ingresa un número de página válido."
+                String(localized: "quote_invalid_page")
 
             return nil
         }
@@ -122,7 +122,7 @@ struct EditQuoteSheetView: View {
            pageNumber > totalPages {
 
             validationMessage =
-                "Este libro tiene \(totalPages) páginas."
+                String(format: String(localized: "book_total_pages_message"), totalPages)
 
             return nil
         }

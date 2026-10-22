@@ -33,7 +33,7 @@ struct AdditionalSearchResultsView: View {
 
                     Spacer()
 
-                    Text(isExpanded ? "search_show_less" : "search_show_all")
+                    Text(isExpanded ? String(localized: "search_show_less") : String(localized: "search_show_all"))
                         .foregroundStyle(AppColors.primaryStrong)
                         .fontWeight(.semibold)
 

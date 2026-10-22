@@ -57,11 +57,11 @@ struct LibraryBookDetailView: View {
                     } label: {
                         Group {
                                 if currentBook.status.name == "read" {
-                                    Label("Volver a leer", systemImage: "arrow.counterclockwise")
+                                    Label(String(localized: "reading_reread"), systemImage: "arrow.counterclockwise")
                                 } else if currentBook.status.name == "toRead" {
-                                    Label("Comenzar lectura", systemImage: "book")
+                                    Label(String(localized: "reading_start_reading"), systemImage: "book")
                                 } else {
-                                    Label("Actualizar progreso", systemImage: "book.pages")
+                                    Label(String(localized: "reading_update_progress"), systemImage: "book.pages")
                                 }
                             }
                             .frame(maxWidth: .infinity)
@@ -92,7 +92,7 @@ struct LibraryBookDetailView: View {
                         Button {
                             showQuoteSheet.toggle()
                         } label: {
-                            Label("Agregar cita", systemImage: "quote.bubble")
+                            Label(String(localized: "quote_add"), systemImage: "quote.bubble")
                                 .font(.subheadline)
                                 .lineLimit(1)
                                 .minimumScaleFactor(0.85)
@@ -115,7 +115,7 @@ struct LibraryBookDetailView: View {
                 // MARK: - Citas asociadas al libro
                 
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("Tus citas")
+                    Text(String(localized: "quotes_yours"))
                         .font(.title2.bold())
                         .foregroundStyle(.white)
 
@@ -142,7 +142,7 @@ struct LibraryBookDetailView: View {
                 
                 // MARK: - Detalles del libro
                 VStack(alignment: .leading, spacing: 16) {
-                    Text("Detalles del libro")
+                    Text(String(localized: "book_details"))
                         .font(.title2.bold())
                         .foregroundStyle(.white)
 
@@ -151,7 +151,7 @@ struct LibraryBookDetailView: View {
                         if let publisher = currentBook.edition.publisher,
                            !publisher.isEmpty {
                             BookDetailRow(
-                                title: "Editorial",
+                                title: String(localized: "book_publisher"),
                                 value: publisher,
                                 systemImage: "building.2"
                             )
@@ -160,7 +160,7 @@ struct LibraryBookDetailView: View {
                         if let publishedDate = currentBook.edition.publishedDate,
                            !publishedDate.isEmpty {
                             BookDetailRow(
-                                title: "Fecha de publicación",
+                                title: String(localized: "book_publication_date"),
                                 value: publishedDate,
                                 systemImage: "calendar"
                             )
@@ -168,7 +168,7 @@ struct LibraryBookDetailView: View {
 
                         if let numberOfPages = currentBook.edition.numberOfPages {
                             BookDetailRow(
-                                title: "Páginas",
+                                title: String(localized: "book_pages"),
                                 value: "\(numberOfPages)",
                                 systemImage: "book.pages"
                             )
@@ -177,7 +177,7 @@ struct LibraryBookDetailView: View {
                         if let isbn = currentBook.edition.isbn,
                            !isbn.isEmpty {
                             BookDetailRow(
-                                title: "ISBN",
+                                title: String(localized: "book_isbn"),
                                 value: isbn,
                                 systemImage: "barcode"
                             )
@@ -205,27 +205,27 @@ struct LibraryBookDetailView: View {
                 }
             }
             .alert(
-                "¿Quitar este libro de tu biblioteca?",
+                String(localized: "library_remove_confirmation"),
                 isPresented: $showRemoveConfirmation
             ) {
-                Button("Cancelar", role: .cancel) {}
+                Button(String(localized: "common_cancel"), role: .cancel) {}
 
-                Button("Quitar libro", role: .destructive) {
+                Button(String(localized: "library_remove_book"), role: .destructive) {
                     Task {
                         await removeBook()
                     }
                 }
             } message: {
-                Text("El libro dejará de aparecer en tu biblioteca, pero conservaremos tus citas y progreso de lectura.")
+                Text(String(localized: "library_remove_description"))
             }
             .alert(
-                "No se pudo quitar el libro",
+                String(localized: "library_remove_error"),
                 isPresented: Binding(
                     get: { removeError != nil },
                     set: { if !$0 { removeError = nil } }
                 )
             ) {
-                Button("Aceptar", role: .cancel) {
+                Button(String(localized: "common_ok"), role: .cancel) {
                     removeError = nil
                 }
             } message: {
@@ -262,8 +262,8 @@ struct LibraryBookDetailView: View {
         inputFormatter.dateFormat = "yyyy-MM-dd"
 
         let outputFormatter = DateFormatter()
-        outputFormatter.locale = Locale(identifier: "es_ES")
-        outputFormatter.dateFormat = "d MMM yyyy"
+        outputFormatter.locale = .autoupdatingCurrent
+        outputFormatter.setLocalizedDateFormatFromTemplate("d MMM yyyy")
 
         guard let date = inputFormatter.date(from: dateString) else {
             return dateString
@@ -329,7 +329,7 @@ struct LibraryBookDetailView: View {
                        let totalPages = currentBook.edition.numberOfPages,
                        totalPages > 0  {
 
-                        Text("\(progressPercentage)% leído")
+                        Text(String(format: String(localized: "reading_progress_percentage"), progressPercentage))
                             .font(.subheadline)
                             .foregroundStyle(.white)
 
@@ -337,13 +337,13 @@ struct LibraryBookDetailView: View {
                             .tint(AppColors.accent)
 
                         Text(
-                            "Página \(currentPage) de \(totalPages)"
+                            String(format: String(localized: "reading_page_position"), currentPage, totalPages)
                         )
                         .font(.footnote)
                         .foregroundStyle(.white)
 
                     } else if let currentPage = currentBook.currentPage {
-                        Text("Página \(currentPage)")
+                        Text(String(format: String(localized: "reading_page_number"), currentPage))
                             .font(.footnote)
                             .foregroundStyle(.white)
                     }
@@ -352,7 +352,7 @@ struct LibraryBookDetailView: View {
                 // POR LEER
                 if currentBook.status.name == "toRead" {
                     Label (
-                        String("Aún no inicias la lectura"),
+                        String(String(localized: "reading_not_started")),
                         systemImage: "tray"
                     )
                     .padding(.horizontal, 10)
@@ -377,7 +377,7 @@ struct LibraryBookDetailView: View {
                 if currentBook.status.name == "read" {
                     if let finishedAt = currentBook.finishedAt {
                         Label(
-                            "Finalizado el \(formatDate(finishedAt))",
+                            String(format: String(localized: "reading_finished_on"), formatDate(finishedAt)),
                             systemImage: "checkmark.circle"
                         )
                         .padding(.horizontal, 10)
@@ -416,7 +416,7 @@ struct LibraryBookDetailView: View {
             )
             dismiss()
         } catch {
-            removeError = error.localizedDescription
+            removeError = String(localized: "library_remove_error")
         }
     }
     

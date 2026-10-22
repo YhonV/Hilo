@@ -62,7 +62,7 @@ struct LibraryBooksCarouselView: View {
                                     .fontWeight(.semibold)
                                     .lineLimit(2, reservesSpace: true)
                                 
-                                Text(authors.isEmpty ? "Autor desconocido" : authors)
+                                Text(authors.isEmpty ? String(localized: "book_unknown_author") : authors)
                                     .font(.callout)
                                     .foregroundStyle(AppColors.secondaryText)
                                     .lineLimit(1)
@@ -73,18 +73,18 @@ struct LibraryBooksCarouselView: View {
                                     let progress = min(Double(currentPage) / Double(totalPages),1.0)
                                     let progressPercentage = Int(progress * 100)
                                     
-                                    Text("\(progressPercentage)% leído")
+                                    Text(String(format: String(localized: "reading_progress_percentage"), progressPercentage))
                                         .font(.subheadline)
                                         .foregroundStyle(AppColors.secondaryText)
                                     
                                     ProgressView(value: progress)
                                         .tint(AppColors.accent)
                                     
-                                    Text("Página \(currentPage) de \(totalPages)")
+                                    Text(String(format: String(localized: "reading_page_position"), currentPage, totalPages))
                                         .font(.footnote)
                                         .foregroundStyle(AppColors.secondaryText)
                                 } else if let currentPage = book.currentPage {
-                                    Text("Página \(currentPage)")
+                                    Text(String(format: String(localized: "reading_page_number"), currentPage))
                                         .font(.footnote)
                                         .foregroundStyle(AppColors.secondaryText)
                                 }

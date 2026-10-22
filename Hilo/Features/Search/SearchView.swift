@@ -99,7 +99,7 @@ struct SearchView: View {
                                 Text("search_best_matches")
                                     .font(.headline)
                                 Spacer()
-                                Text("Top \(bestMatches.count)")
+                                Text(String(format: String(localized: "search_top_count"), bestMatches.count))
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
@@ -201,8 +201,8 @@ struct SearchView: View {
                         print("Error debounce búsqueda:", error)
                     }
                 }
-                .alert("No se pudieron cargar los libros", isPresented: $showLoadError) {
-                    Button("Reintentar") {
+                .alert(String(localized: "books_load_error_title"), isPresented: $showLoadError) {
+                    Button(String(localized: "common_retry")) {
                         Task {
                             booksIsLoading = true
                             defer { booksIsLoading = false }
@@ -214,9 +214,9 @@ struct SearchView: View {
                             }
                         }
                     }
-                    Button("Cancelar", role: .cancel) { }
+                    Button(String(localized: "common_cancel"), role: .cancel) { }
                 } message: {
-                    Text("Hubo un problema al conectarse con Google Books. Inténtalo nuevamente.")
+                    Text(String(localized: "books_load_error_message"))
                 }
             }
         }

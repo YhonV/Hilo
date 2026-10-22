@@ -44,7 +44,7 @@ struct QuoteComposerView: View {
                         .font(.caption)
 
                     TextField(
-                        "Página",
+                        String(localized: "reading_page_placeholder"),
                         text: $pageText
                     )
                     .keyboardType(.numberPad)

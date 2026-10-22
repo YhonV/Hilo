@@ -17,6 +17,8 @@ struct BookDetailView: View {
     @Environment(AuthViewModel.self) private var authViewModel
     @State private var isCheckingBookStatus = true
     @State private var coverImage: UIImage?
+    @State private var isLoadingCover = false
+    @State private var coverRequestID = UUID()
     
     private var buttonTitle: String {
         switch bookDetailViewModel.bookStatus {
@@ -84,9 +86,15 @@ struct BookDetailView: View {
                                     .clipShape(RoundedRectangle(cornerRadius: 20))
                                     .shadow(color: .black.opacity(0.15), radius: 8, x: 0, y: 4)
                                     .padding(.bottom, 10)
-                            } else {
+                            } else if isLoadingCover {
                                 ProgressView()
                                     .frame(width: 180, height: 260)
+                            } else {
+                                Image("no-cover")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 180, height: 260)
+                                    .clipShape(RoundedRectangle(cornerRadius: 20))
                             }
                         }
                         .frame(maxWidth: .infinity)
@@ -222,21 +230,31 @@ struct BookDetailView: View {
                                 .tint(.white)
                                 .padding()
 
-                        } else if !bookDetailViewModel.editions.isEmpty {
+                        } else if !bookDetailViewModel.displayEditions.isEmpty {
 
                             VStack(alignment: .leading, spacing: 12) {
 
-                                Text("Otras ediciones")
-                                    .font(.title2.bold())
-                                    .foregroundStyle(.white)
-                                    .padding(.horizontal, 20)
+                                HStack {
+                                    Text(String(localized: "editions_title"))
+                                        .font(.title2.bold())
+                                        .foregroundStyle(.white)
+                                    Spacer()
+                                    if bookDetailViewModel.displayEditions.count > 10 {
+                                        Button(bookDetailViewModel.showsAllEditions ? String(localized: "show_less") : String(localized: "editions_show_all")) {
+                                            bookDetailViewModel.showsAllEditions.toggle()
+                                        }
+                                        .font(.subheadline.weight(.semibold))
+                                        .foregroundStyle(.white)
+                                    }
+                                }
+                                .padding(.horizontal, 20)
 
                                 ScrollView(.horizontal, showsIndicators: false) {
 
                                     LazyHStack(alignment: .top, spacing: 12) {
 
                                         ForEach(
-                                            bookDetailViewModel.editions,
+                                            bookDetailViewModel.visibleEditions,
                                             id: \.key
                                         ) { edition in
 
@@ -244,7 +262,8 @@ struct BookDetailView: View {
                                                 edition: edition,
                                                 isSelected:
                                                     bookDetailViewModel.selectedEdition?.key
-                                                    == edition.key
+                                                    == edition.key,
+                                                isSaved: bookDetailViewModel.savedEdition?.key == edition.key
                                             ) {
                                                 bookDetailViewModel.selectEdition(edition)
                                                 statusFeedbackTrigger += 1
@@ -260,6 +279,13 @@ struct BookDetailView: View {
                             )
                         }
                         
+                        if let message = bookDetailViewModel.librarySelectionError ?? bookDetailViewModel.editionsError {
+                            Text(message)
+                                .font(.caption)
+                                .foregroundStyle(.white.opacity(0.8))
+                                .padding(.horizontal, 20)
+                        }
+
                         Button {
                             showReadingStatusOptions = true
                         } label: {
@@ -290,7 +316,7 @@ struct BookDetailView: View {
                             isLoading ||
                             isCheckingBookStatus ||
                             bookDetailViewModel.isLoadingEditions ||
-                            bookDetailViewModel.book.editionId == nil
+                            !bookDetailViewModel.canSaveEdition
                         )
                         .sheet(isPresented: $showReadingStatusOptions) {
                             ReadingStatusSheet(
@@ -316,7 +342,7 @@ struct BookDetailView: View {
                                 .font(.title2.bold())
                                 .foregroundStyle(.white)
                             
-                            Text(bookDetailViewModel.book.description ?? "no_description")
+                            Text(bookDetailViewModel.book.description ?? String(localized: "no_description"))
                                 .font(.body)
                                 .foregroundStyle(.white.opacity(0.80))
                                 .lineSpacing(2)
@@ -328,7 +354,7 @@ struct BookDetailView: View {
                                     isDescriptionExpanded.toggle()
                                 }
                             } label: {
-                                Text(isDescriptionExpanded ? "show_less" : "show_more")
+                                Text(isDescriptionExpanded ? String(localized: "show_less") : String(localized: "show_more"))
                                     .font(.subheadline)
                                     .fontWeight(.semibold)
                                     .foregroundStyle(.white)
@@ -349,44 +375,25 @@ struct BookDetailView: View {
         .toolbar(.hidden, for: .tabBar)
         
         .task {
-            bookDetailViewModel.isInitialLoading = true
-
-            // Las ediciones se cargan independientemente.
-            let editionsTask = Task {
-                await bookDetailViewModel.loadEditions()
-            }
-
-            // Cargar portada y detalles en paralelo.
-            async let cover: Void = getCoverImage()
-            async let details: Void = bookDetailViewModel.loadBookDetails()
-
             do {
-                try await details
+                try await bookDetailViewModel.loadBookDetails()
             } catch {
                 print("Error cargando detalles:", error)
             }
-
-            await cover
-
-            // Mostrar la pantalla principal.
             bookDetailViewModel.isInitialLoading = false
-
-            // Consultar el estado sin bloquear toda la pantalla.
+        }
+        .task {
+            await bookDetailViewModel.loadEditions()
+        }
+        .task {
             do {
                 try await getUserBook()
             } catch {
                 print("Error consultando biblioteca:", error)
             }
-
-            // No necesitamos esperar las ediciones para mostrar la vista.
-            _ = editionsTask
         }
-        .onChange(of: bookDetailViewModel.book.cover) {
-            _, _ in
-
-            Task {
-                await getCoverImage()
-            }
+        .task(id: bookDetailViewModel.book.cover) {
+            await getCoverImage()
         }
 
     }
@@ -405,11 +412,11 @@ struct BookDetailView: View {
     
     func getUserBook() async throws {
 
+        isCheckingBookStatus = true
+        defer { isCheckingBookStatus = false }
         guard let userId = authViewModel.currentUser?.id else {
             return
         }
-        isCheckingBookStatus = true
-        defer { isCheckingBookStatus = false }
         
         try await bookDetailViewModel.getBooksFromUserLibrary(
             userId: userId
@@ -417,19 +424,27 @@ struct BookDetailView: View {
     }
     
     
+    @MainActor
     private func getCoverImage() async {
-        guard let url = URL(string: bookDetailViewModel.book.cover) else {
-            return
-        }
+        let requestID = UUID()
+        coverRequestID = requestID
+        let coverURL = bookDetailViewModel.book.cover
+        coverImage = nil
+        isLoadingCover = false
+        guard !coverURL.isEmpty, let url = URL(string: coverURL) else { return }
 
+        isLoadingCover = true
+        defer {
+            if coverRequestID == requestID { isLoadingCover = false }
+        }
         do {
             let image = try await ImagePipeline.shared.image(for: url)
+            guard !Task.isCancelled,
+                  coverRequestID == requestID,
+                  bookDetailViewModel.book.cover == coverURL else { return }
             coverImage = image
-
         } catch {
-            print("Error descargando portada: \(error)")
+            // Keep the placeholder; an old request must never restore an old cover.
         }
     }
-
-
 }

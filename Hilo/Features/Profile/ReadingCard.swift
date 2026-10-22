@@ -82,7 +82,7 @@ struct ReadingCard: View {
                 if let totalPages = readingBook.edition?.numberOfPages,
                    totalPages > 0 {
 
-                    Text("\(progressPercentage)% leído")
+                    Text(String(format: String(localized: "reading_progress_percentage"), progressPercentage))
                         .font(.subheadline)
                         .foregroundStyle(AppColors.secondaryText)
 
@@ -90,14 +90,14 @@ struct ReadingCard: View {
                         .tint(AppColors.accent)
 
                     Text(
-                        "Página \(readingBook.currentPage) de \(totalPages)"
+                        String(format: String(localized: "reading_page_position"), readingBook.currentPage, totalPages)
                     )
                     .font(.footnote)
                     .foregroundStyle(AppColors.secondaryText)
 
                 } else {
 
-                    Text("Página \(readingBook.currentPage)")
+                    Text(String(format: String(localized: "reading_page_number"), readingBook.currentPage))
                         .font(.footnote)
                         .foregroundStyle(AppColors.secondaryText)
                 }

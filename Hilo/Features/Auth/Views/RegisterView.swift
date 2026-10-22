@@ -177,7 +177,7 @@ struct RegisterView: View {
                                         try await register(email: email, password: password)
                                     } catch {
                                         isLoading = false
-                                        errorMessage = error.localizedDescription
+                                        errorMessage = String(localized: "auth_sign_up_error")
                                         showError = true
                                     }
                                 }
@@ -214,8 +214,8 @@ struct RegisterView: View {
                     isFocused = false
                 }
             }
-            .alert("Error", isPresented: $showError) {
-                Button("OK", role: .cancel) { }
+            .alert(String(localized: "common_error"), isPresented: $showError) {
+                Button(String(localized: "common_ok"), role: .cancel) { }
             } message: {
                 Text(LocalizedStringKey(errorMessage ?? "error_unknown"))
             }

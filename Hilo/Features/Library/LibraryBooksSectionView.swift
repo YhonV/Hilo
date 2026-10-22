@@ -8,9 +8,17 @@
 import SwiftUI
 
 enum Status: String, CaseIterable {
-    case reading = "Leyendo"
-    case toRead = "Por leer"
-    case read = "Leídos"
+    case reading
+    case toRead
+    case read
+
+    var localizedTitle: String {
+        switch self {
+        case .reading: return String(localized: "reading")
+        case .toRead: return String(localized: "to_read")
+        case .read: return String(localized: "books_read")
+        }
+    }
 
     var databaseValue: String {
         switch self {
@@ -38,9 +46,9 @@ struct LibraryBooksSectionView: View {
 
     var body: some View {
         VStack(spacing: 16) {
-            Picker("Estado de lectura", selection: $selectedStatus) {
+            Picker(String(localized: "reading_status_title"), selection: $selectedStatus) {
                 ForEach(Status.allCases, id: \.self) { status in
-                    Text(status.rawValue)
+                    Text(status.localizedTitle)
                         .tag(status)
                 }
             }

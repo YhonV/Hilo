@@ -111,13 +111,13 @@ struct CropImageView: View {
             // MARK: - Acciones
 
             HStack {
-                Button("Cancelar") {
+                Button(String(localized: "common_cancel")) {
                     onCancel()
                 }
 
                 Spacer()
 
-                Button("Usar selección") {
+                Button(String(localized: "crop_use_selection")) {
                     guard let croppedImage = cropImage() else {
                         return
                     }

@@ -86,7 +86,7 @@ struct ForgotPasswordView: View {
                             do {
                                 try await forgotPassword(email: email)
                             } catch {
-                                errorMessage = error.localizedDescription
+                                errorMessage = String(localized: "auth_recovery_error")
                                 showError = true
                             }
                         }
@@ -111,8 +111,8 @@ struct ForgotPasswordView: View {
                 }
                 .padding(.bottom, 40)
             }
-            .alert("Error", isPresented: $showError) {
-                Button("OK", role: .cancel) { }
+            .alert(String(localized: "common_error"), isPresented: $showError) {
+                Button(String(localized: "common_ok"), role: .cancel) { }
             } message: {
                 Text(LocalizedStringKey(errorMessage ?? "error_unknown"))
             }

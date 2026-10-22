@@ -39,10 +39,10 @@ struct CalendarDayDetailSheet: View {
                     if activities.isEmpty {
 
                         ContentUnavailableView(
-                            "Sin actividad",
+                            String(localized: "calendar_no_activity"),
                             systemImage: "book.closed",
                             description: Text(
-                                "No registraste actividades de lectura este día."
+                                String(localized: "calendar_no_activity_description")
                             )
                         )
 
@@ -66,12 +66,12 @@ struct CalendarDayDetailSheet: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding()
             }
-            .navigationTitle("Actividad de lectura")
+            .navigationTitle(String(localized: "calendar_title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
 
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Cerrar") {
+                    Button(String(localized: "common_close")) {
                         dismiss()
                     }
                 }

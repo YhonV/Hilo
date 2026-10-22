@@ -11,17 +11,8 @@ struct BookEditionCard: View {
 
     let edition: OpenLibraryEditionDTO
     let isSelected: Bool
+    var isSaved: Bool = false
     let action: () -> Void
-
-    private var coverURL: URL? {
-        guard let coverId = edition.covers?.first else {
-            return nil
-        }
-
-        return URL(
-            string: "https://covers.openlibrary.org/b/id/\(coverId)-M.jpg"
-        )
-    }
 
     var body: some View {
 
@@ -29,7 +20,7 @@ struct BookEditionCard: View {
 
             VStack(alignment: .leading, spacing: 6) {
 
-                AsyncImage(url: coverURL) { image in
+                AsyncImage(url: edition.displayCoverURL) { image in
                     image
                         .resizable()
                         .scaledToFill()
@@ -53,19 +44,48 @@ struct BookEditionCard: View {
                         )
                 }
 
-                Text(edition.publishers?.first ?? "")
+                .overlay(alignment: .topTrailing) {
+                    if isSelected {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.title3)
+                            .symbolRenderingMode(.palette)
+                            .foregroundStyle(.white, AppColors.accent)
+                            .padding(5)
+                    }
+                }
+
+                Text(edition.languageLabel)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.white)
+                    .lineLimit(2)
+
+                Text(edition.publisherLabel)
                     .font(.caption2)
                     .foregroundStyle(.white.opacity(0.8))
                     .lineLimit(2)
 
-                Text(edition.publishDate ?? "")
+                Text(edition.publicationYear ?? String(localized: "book_unknown_year"))
                     .font(.caption2)
                     .foregroundStyle(.white.opacity(0.6))
                     .lineLimit(1)
+
+                if isSaved {
+                    Label(String(localized: "edition_saved"), systemImage: "bookmark.fill")
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(.white.opacity(0.9))
+                }
             }
-            .frame(width: 90, alignment: .leading)
+            .frame(width: 105, alignment: .leading)
+            .padding(8)
+            .background(isSelected ? .white.opacity(0.12) : .clear,
+                        in: RoundedRectangle(cornerRadius: 12))
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(String(format: String(localized: "edition_accessibility_description"),
+                                   edition.languageLabel, edition.publisherLabel,
+                                   edition.publicationYear ?? String(localized: "book_unknown_year")))
+        .accessibilityValue(isSelected ? String(localized: "edition_selected") : (isSaved ? String(localized: "edition_saved") : ""))
+        .accessibilityAddTraits(isSelected ? [.isSelected] : [])
     }
 }
 

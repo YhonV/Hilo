@@ -15,11 +15,11 @@ struct EmptyQuoteCard: View {
                 .font(.system(size: 28))
                 .foregroundStyle(iconColor)
 
-            Text("No hay citas guardadas")
+            Text(String(localized: "quotes_empty_title"))
                 .font(.headline)
                 .foregroundStyle(titleColor)
 
-            Text("Guarda una cita de este libro para verla aquí.")
+            Text(String(localized: "quotes_empty_description"))
                 .font(.subheadline)
                 .foregroundStyle(subtitleColor)
                 .multilineTextAlignment(.center)

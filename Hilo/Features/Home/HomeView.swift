@@ -9,7 +9,7 @@ import SwiftUI
 struct HomeView: View {
     var body: some View{
         VStack {
-            Text("Hola desde Home")
+            Text(String(localized: "home_welcome"))
         }
     }
 }

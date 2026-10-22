@@ -11,7 +11,7 @@ struct ContentView: View {
     
     var body: some View {
         VStack {
-            Text("Hola Content View")
+            Text("home_welcome")
         }
     }
 }

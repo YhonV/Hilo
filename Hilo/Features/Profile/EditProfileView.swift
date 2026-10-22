@@ -83,7 +83,7 @@ struct EditProfileView: View {
                                 selection: $selectedPhoto,
                                 matching: .images
                             ) {
-                                Label("Cambiar foto", systemImage: "photo")
+                                Label(String(localized: "profile_change_photo"), systemImage: "photo")
                                     .font(.callout)
                                     .fontWeight(.medium)
                                     .foregroundStyle(
@@ -170,8 +170,8 @@ struct EditProfileView: View {
                     isFocused = false
                 }
             }
-            .alert("Error", isPresented: $showError) {
-                Button("OK", role: .cancel) { }
+            .alert(String(localized: "common_error"), isPresented: $showError) {
+                Button(String(localized: "common_ok"), role: .cancel) { }
             } message: {
                 Text(LocalizedStringKey(errorMessage ?? "error_unknown"))
             }
@@ -211,14 +211,14 @@ struct EditProfileView: View {
                                 }
                             }
                         } label: {
-                            Text("Guardar")
+                            Text(String(localized: "common_save"))
                         }
                         .buttonStyle(.glassProminent)
                         .tint(AppColors.primaryStrong)
 
                     } else {
 
-                        Button("Editar") {
+                        Button(String(localized: "common_edit")) {
                             isEditing = true
                         }
                     }

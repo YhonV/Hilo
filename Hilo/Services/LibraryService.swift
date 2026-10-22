@@ -7,19 +7,54 @@
 import Foundation
 import Supabase
 
-struct EditionResponse: Decodable {
-    let editionId: UUID
-
-    enum CodingKeys: String, CodingKey {
-        case editionId = "edition_id"
-    }
-}
-
-struct UserBookResponse: Decodable {
+// One snapshot of the active work association; edition IDs here are Open Library IDs.
+struct SavedLibrarySelection: Decodable {
     let statusId: Int
+    let edition: SavedLibraryEdition?
 
     enum CodingKeys: String, CodingKey {
         case statusId = "status_id"
+        case edition = "book_editions"
+    }
+
+    var status: BookStatus? {
+        switch statusId {
+        case 1: return .reading
+        case 2: return .read
+        case 3: return .toRead
+        default: return nil
+        }
+    }
+}
+
+struct SavedLibraryEdition: Decodable {
+    let externalId: String?
+    let isbn: String?
+    let numberOfPages: Int?
+    let publisher: String?
+    let publishedDate: String?
+    let coverUrl: String?
+    let language: String?
+
+    enum CodingKeys: String, CodingKey {
+        case externalId = "open_library_edition_id"
+        case isbn, publisher, language
+        case numberOfPages = "number_of_pages"
+        case publishedDate = "published_date"
+        case coverUrl = "cover_url"
+    }
+
+    func asEdition(title: String) -> OpenLibraryEditionDTO? {
+        guard let externalId, externalId.range(of: #"^/books/OL[0-9]+M$"#, options: .regularExpression) != nil else {
+            return nil
+        }
+        return OpenLibraryEditionDTO(
+            key: externalId, title: title, covers: nil,
+            languages: language.map { [OpenLibraryLanguageDTO(key: $0)] },
+            isbn10: nil, isbn13: isbn.map { [$0] },
+            publishers: publisher.map { [$0] }, numberOfPages: numberOfPages,
+            publishDate: publishedDate, persistedCoverURL: coverUrl
+        )
     }
 }
 
@@ -149,7 +184,7 @@ enum BookSaveError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .missingEdition:
-            return "Debes seleccionar una edición antes de guardar el libro."
+            return String(localized: "edition_required")
         }
     }
 }
@@ -187,66 +222,21 @@ final class LibraryService {
             .execute()
     }
     
-    // MARK: - Obtener Status de libros
-    func getBookStatusFromUserLibrary(book: Book,userId: UUID) async throws -> BookStatus? {
-
-        var editionQuery = supabase
-            .from("book_editions")
-            .select("edition_id")
-
-        if !book.externalId.isEmpty {
-            editionQuery = editionQuery
-                .eq("external_id", value: book.externalId)
-        } else if let isbn = book.isbn {
-            editionQuery = editionQuery
-                .eq("isbn", value: isbn)
-        } else {
-            return nil
-        }
-
-        let editions: [EditionResponse] = try await editionQuery
-            .limit(1)
-            .execute()
-            .value
-
-        guard let edition = editions.first else {
-            print("No se encontró la edición")
-            return nil
-        }
-
-        let userBooks: [UserBookResponse] = try await supabase
+    // Read status and persisted edition together, scoped to the work and active user row.
+    func getSavedSelection(book: Book, userId: UUID) async throws -> SavedLibrarySelection? {
+        guard !book.externalId.isEmpty else { return nil }
+        let rows: [SavedLibrarySelection] = try await supabase
             .from("user_book")
-            .select("status_id")
+            .select("status_id, books!inner(open_library_work_id), book_editions(*)")
             .eq("user_id", value: userId.uuidString)
-            .eq("edition_id", value: edition.editionId.uuidString)
+            .eq("books.open_library_work_id", value: book.externalId)
             .is("deleted_at", value: nil)
             .limit(1)
             .execute()
             .value
-
-        guard let userBook = userBooks.first else {
-            print("El usuario no tiene esta edición")
-            return nil
-        }
-
-        let status = mapBookStatus(statusId: userBook.statusId)
-
-        return status
+        return rows.first
     }
-    
-    private func mapBookStatus(statusId: Int) -> BookStatus? {
-        switch statusId {
-        case 1:
-            return .reading
-        case 2:
-            return .read
-        case 3:
-            return .toRead
-        default:
-            return nil
-        }
-    }
-    
+
     // MARK: - Obtener todos los libros del usuario
     func getUsersBook(userId: UUID) async throws -> [UserLibraryBook] {
         let response: [UserLibraryBook] = try await supabase

@@ -66,9 +66,9 @@ enum FirestoreError: Error, LocalizedError {
     
     var errorDescription: String? {
         switch self {
-        case .invalidUID: return "ID de usuario inválido"
-        case .userNotFound: return "Usuario no encontrado"
-        case .decodingError: return "Error al leer datos del usuario"
+        case .invalidUID: return String(localized: "user_invalid_id")
+        case .userNotFound: return String(localized: "user_not_found")
+        case .decodingError: return String(localized: "user_read_error")
         }
     }
 }

@@ -51,7 +51,7 @@ struct QuoteCard: View {
                 Spacer(minLength: 12)
                 
                 if let page {
-                    Text("pág. \(page)")
+                    Text(String(format: String(localized: "reading_page_abbreviation"), page))
                         .font(.footnote)
                         .foregroundStyle(AppColors.secondaryText)
                         .fixedSize()

@@ -14,7 +14,7 @@ struct LibraryView: View {
                     VStack(spacing: 16) {
                         // MARK: - Leyendo, leídos y por leer
                         VStack(spacing: 5) {
-                            Text("Tu biblioteca")
+                            Text(String(localized: "library_title"))
                                 .font(.headline)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .padding(.bottom, 12)

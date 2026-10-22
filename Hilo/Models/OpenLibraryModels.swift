@@ -73,6 +73,7 @@ struct OpenLibraryEditionDTO: Decodable {
     let publishers: [String]?
     let numberOfPages: Int?
     let publishDate: String?
+    var persistedCoverURL: String? = nil
 
     enum CodingKeys: String, CodingKey {
         case key
@@ -84,6 +85,68 @@ struct OpenLibraryEditionDTO: Decodable {
         case publishers
         case numberOfPages = "number_of_pages"
         case publishDate = "publish_date"
+    }
+}
+
+// Presentation helpers do not change edition identity or persisted records.
+extension OpenLibraryEditionDTO {
+    var displayCoverURL: URL? {
+        if let value = persistedCoverURL?.trimmingCharacters(in: .whitespacesAndNewlines),
+           let url = URL(string: value), ["http", "https"].contains(url.scheme?.lowercased() ?? ""),
+           url.host != nil {
+            return url
+        }
+        return covers?.first(where: { $0 > 0 }).flatMap {
+            URL(string: "https://covers.openlibrary.org/b/id/\($0)-M.jpg")
+        }
+    }
+
+    var coverIdentity: String? {
+        guard let url = displayCoverURL else { return nil }
+        // Open Library size suffixes refer to the same image, not different covers.
+        if url.host?.lowercased() == "covers.openlibrary.org" {
+            return url.path.lowercased()
+                .replacingOccurrences(of: #"-[sml]\.jpg$"#, with: ".jpg", options: .regularExpression)
+        }
+        return url.absoluteString
+    }
+
+    var languageCodes: [String] {
+        (languages ?? []).map {
+            $0.key.replacingOccurrences(of: "/languages/", with: "").lowercased()
+        }.filter { !$0.isEmpty && $0 != "unknown" && $0 != "und" }
+    }
+
+    func matchesLanguage(_ code: String) -> Bool {
+        languageCodes.contains {
+            Locale.Language(identifier: $0).languageCode?.identifier(.alpha3)
+                == Locale.Language(identifier: code).languageCode?.identifier(.alpha3)
+        }
+    }
+
+    var languageLabel: String {
+        let names = languageCodes.map { Locale.current.localizedString(forLanguageCode: $0) ?? $0.uppercased() }
+        return names.isEmpty ? String(localized: "book_unknown_language") : names.joined(separator: ", ")
+    }
+
+    var publisherLabel: String {
+        publishers?.first(where: { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty })
+            ?? String(localized: "book_unknown_publisher")
+    }
+
+    var publicationYear: String? {
+        guard let date = publishDate,
+              let range = date.range(of: #"\b[12][0-9]{3}\b"#, options: .regularExpression) else { return nil }
+        return String(date[range])
+    }
+
+    var metadataScore: Int {
+        [!languageCodes.isEmpty,
+         publishers?.contains(where: { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }) == true,
+         publicationYear != nil,
+         (numberOfPages ?? 0) > 0,
+         ((isbn13 ?? []) + (isbn10 ?? [])).contains(where: { !$0.isEmpty })]
+            .filter { $0 }.count
     }
 }
 

@@ -40,13 +40,13 @@ struct ProfileView: View {
                                 .frame(maxWidth: .infinity)
                                 .overlay(alignment: .topTrailing) {
                                     Menu {
-                                        NavigationLink("Editar perfil") {
+                                        NavigationLink(String(localized: "profile_edit")) {
                                             EditProfileView()
                                         }
                                         
                                         Divider()
                                         
-                                        Button("Cerrar sesión", role: .destructive) {
+                                        Button(String(localized: "profile_sign_out"), role: .destructive) {
                                             Task {
                                                 await authViewModel.signOut()
                                             }
@@ -105,7 +105,7 @@ struct ProfileView: View {
 
                                 Text(
                                     authViewModel.currentUser?.displayName
-                                    ?? "Loading..."
+                                    ?? String(localized: "common_loading")
                                 )
                                 .font(.title2)
                                 .fontWeight(.bold)
@@ -113,7 +113,7 @@ struct ProfileView: View {
 
                                 Text(
                                     authViewModel.currentUser?.username
-                                    ?? "@username"
+                                    ?? String(localized: "profile_username_placeholder")
                                 )
                                 .font(.subheadline)
                                 .fontWeight(.bold)
@@ -130,13 +130,13 @@ struct ProfileView: View {
                         /// **Estadisticas básica**
                         
                         HStack {
-                            BasicStatisticCard(value: profileViewModel.readCount, icon: "checkmark", title: "Leídos")
+                            BasicStatisticCard(value: profileViewModel.readCount, icon: "checkmark", title: String(localized: "books_read"))
                             Divider().frame(width: 1, height: 55)
                             
-                            BasicStatisticCard(value: profileViewModel.readingCount, icon: "book", title: "Leyendo")
+                            BasicStatisticCard(value: profileViewModel.readingCount, icon: "book", title: String(localized: "reading"))
                             Divider().frame(width: 1, height: 55)
                             
-                            BasicStatisticCard(value: profileViewModel.toReadCount, icon: "bookmark", title: "Por leer")
+                            BasicStatisticCard(value: profileViewModel.toReadCount, icon: "bookmark", title: String(localized: "to_read"))
                         }
                         
                         Spacer()
@@ -145,7 +145,7 @@ struct ProfileView: View {
                         
                         VStack(spacing: 5) {
 
-                            Text("Leyendo actualmente")
+                            Text(String(localized: "profile_currently_reading"))
                                 .font(.headline)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .padding(.bottom, 12)
@@ -172,7 +172,7 @@ struct ProfileView: View {
                         /// **Citas del usuario**
                         
                         VStack(alignment: .leading, spacing: 12) {
-                            Text("Tus citas")
+                            Text(String(localized: "quotes_yours"))
                                 .font(.headline)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .padding(.bottom, 12)

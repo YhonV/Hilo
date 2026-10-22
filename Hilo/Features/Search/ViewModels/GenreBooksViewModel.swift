@@ -48,7 +48,7 @@ final class GenreBooksViewModel {
         } catch let error as URLError where error.code == .cancelled {
             return
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = String(localized: "books_load_error_message")
         }
     }
 }

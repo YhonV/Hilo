@@ -1,0 +1,2 @@
+/* System permission prompts */
+"NSCameraUsageDescription" = "Hilo necesita acceso a la cámara para escanear citas de tus libros.";

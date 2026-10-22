@@ -120,7 +120,7 @@ struct LoginView: View {
                                     do {
                                         try await signIn(email: email, password: password)
                                     } catch {
-                                        errorMessage = error.localizedDescription
+                                        errorMessage = String(localized: "auth_sign_in_error")
                                         showError = true
                                     }
                                 }
@@ -187,8 +187,8 @@ struct LoginView: View {
                     isFocused = false
                 }
                 .scrollIndicators(.hidden)
-                .alert("Error", isPresented: $showError) {
-                    Button("OK", role: .cancel) { }
+                .alert(String(localized: "common_error"), isPresented: $showError) {
+                    Button(String(localized: "common_ok"), role: .cancel) { }
                 } message: {
                     Text(LocalizedStringKey(errorMessage ?? "error_unknown"))
                 }

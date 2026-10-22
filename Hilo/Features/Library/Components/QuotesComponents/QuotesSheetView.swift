@@ -57,14 +57,14 @@ struct QuotesSheetView: View {
         .padding(.horizontal, 20)
         .padding(.top, 20)
         .alert(
-            "No se pudo guardar",
+            String(localized: "save_error_title"),
             isPresented: $showSaveError
         ) {
-            Button("Aceptar", role: .cancel) { }
+            Button(String(localized: "common_ok"), role: .cancel) { }
         } message: {
             Text(
                 saveErrorMessage
-                ?? "Ocurrió un error inesperado."
+                ?? String(localized: "unexpected_error")
             )
         }
         .fullScreenCover(isPresented: $showOCRFlow) {
@@ -115,11 +115,11 @@ struct QuotesSheetView: View {
     private var quoteMethodSelector: some View {
         VStack(alignment: .leading, spacing: 6) {
 
-            Text("Agregar una cita")
+            Text(String(localized: "quote_add_title"))
                 .font(.title2)
                 .fontWeight(.bold)
 
-            Text("¿Cómo quieres agregarla?")
+            Text(String(localized: "quote_add_method"))
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .lineLimit(2)
@@ -129,7 +129,7 @@ struct QuotesSheetView: View {
                 sourceType = .manual
             } label: {
                 Label(
-                    "Escribir manualmente",
+                    String(localized: "quote_type_manually"),
                     systemImage: "pencil"
                 )
                 .frame(maxWidth: .infinity)
@@ -144,7 +144,7 @@ struct QuotesSheetView: View {
                 showOCRFlow = true
             } label: {
                 Label(
-                    "Escanear con cámara",
+                    String(localized: "quote_scan_camera"),
                     systemImage: "camera"
                 )
                 .frame(maxWidth: .infinity)
@@ -167,7 +167,7 @@ struct QuotesSheetView: View {
                     do {
                         try await saveQuote()
                     } catch {
-                        saveErrorMessage = "No se pudo guardar la cita. Inténtalo nuevamente."
+                        saveErrorMessage = String(localized: "quote_save_error")
                         showSaveError = true
                         print("ERROR GUARDANDO CITA:", error)
                     }
@@ -216,11 +216,11 @@ struct QuotesSheetView: View {
         }
 
         guard let pageNumber = Int(paginaTexto), pageNumber > 0 else {
-            validationMessage = "Ingresa un número de página válido."
+            validationMessage = String(localized: "quote_invalid_page")
             return nil
         }
         if let totalPages = bookDetail.edition.numberOfPages, pageNumber > totalPages {
-            validationMessage = "Este libro tiene \(totalPages) páginas."
+            validationMessage = String(format: String(localized: "book_total_pages_message"), totalPages)
             return nil
         }
 

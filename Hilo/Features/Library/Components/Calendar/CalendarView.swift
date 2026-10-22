@@ -70,7 +70,7 @@ struct CalendarView: View {
 
             VStack(alignment: .leading, spacing: 4) {
 
-                Text("Actividad de lectura")
+                Text(String(localized: "calendar_title"))
                     .font(.headline)
 
                 Text(viewModel.monthTitle)
@@ -119,8 +119,8 @@ struct CalendarView: View {
                 }
                 .accessibilityLabel(
                     viewModel.isExpanded
-                        ? "Minimizar calendario"
-                        : "Expandir calendario"
+                        ? String(localized: "calendar_collapse")
+                        : String(localized: "calendar_expand")
                 )
             }
             .buttonStyle(.plain)

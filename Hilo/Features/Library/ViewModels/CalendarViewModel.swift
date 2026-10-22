@@ -105,7 +105,7 @@ final class CalendarViewModel: ObservableObject {
                 endDate: endDate
             )
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = String(localized: "calendar_load_error")
         }
 
         isLoading = false

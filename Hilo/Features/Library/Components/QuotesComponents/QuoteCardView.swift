@@ -31,13 +31,13 @@ struct QuoteCardView: View {
                     Button {
                         showEditQuote = true
                     } label: {
-                        Label("Editar", systemImage: "pencil")
+                        Label(String(localized: "common_edit"), systemImage: "pencil")
                     }
                     
                     Button(role: .destructive) {
                         confirmationDelete = true
                     } label: {
-                        Label("Eliminar", systemImage: "trash")
+                        Label(String(localized: "common_delete"), systemImage: "trash")
                     }
                 } label: {
                     Image(systemName: "ellipsis")
@@ -57,7 +57,7 @@ struct QuoteCardView: View {
 
                 if let pageNumber = quote.pageNumber {
                     Label(
-                        "Página \(pageNumber)",
+                        String(format: String(localized: "reading_page_number"), pageNumber),
                         systemImage: "book.pages"
                     )
                     .font(.caption)
@@ -81,9 +81,9 @@ struct QuoteCardView: View {
             RoundedRectangle(cornerRadius: 18)
                 .stroke(AppColors.border.opacity(0.5), lineWidth: 1)
         }
-        .alert("¿Eliminar esta cita?", isPresented: $confirmationDelete) {
-            Button("Cancelar", role: .cancel) {}
-            Button("Eliminar", role: .destructive) {
+        .alert(String(localized: "quote_delete_confirmation"), isPresented: $confirmationDelete) {
+            Button(String(localized: "common_cancel"), role: .cancel) {}
+            Button(String(localized: "common_delete"), role: .destructive) {
                 Task {
                     do {
                         try await quoteViewModel.deleteQuote(quoteId: quote.id)
@@ -93,7 +93,7 @@ struct QuoteCardView: View {
                 }
             }
         } message: {
-            Text("Esta acción no se puede deshacer.")
+            Text(String(localized: "delete_irreversible"))
         }
         .sheet(isPresented: $showEditQuote) {
             EditQuoteSheetView(

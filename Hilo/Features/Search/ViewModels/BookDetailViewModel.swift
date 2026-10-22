@@ -1,5 +1,6 @@
 import SwiftUI
 
+@MainActor
 @Observable
 class BookDetailViewModel {
 
@@ -16,17 +17,108 @@ class BookDetailViewModel {
     var selectedEdition: OpenLibraryEditionDTO?
     var isLoadingEditions = false
     var editionsError: String?
+    var librarySelectionError: String?
+    private(set) var savedEdition: OpenLibraryEditionDTO?
+    var showsAllEditions = false {
+        didSet {
+            if oldValue && !showsAllEditions {
+                collapsedEditionID = selectedEdition?.key
+            }
+        }
+    }
+    private var collapsedEditionID: String?
+    private let deviceLanguage: String
+    private let originalTitle: String
+
+    // Filtering is presentation-only. Keep the complete batch in `editions`.
+    var displayEditions: [OpenLibraryEditionDTO] {
+        var candidates = editions
+        for protectedEdition in [savedEdition, selectedEdition].compactMap({ $0 }) {
+            // Refresh metadata in place: removing and appending changed the tie-break
+            // index on every tap, making SwiftUI move the selected card.
+            if let index = candidates.firstIndex(where: { $0.key == protectedEdition.key }) {
+                candidates[index] = protectedEdition
+            } else {
+                candidates.append(protectedEdition)
+            }
+        }
+        let ranked = candidates.enumerated().sorted { lhs, rhs in
+            let leftSaved = lhs.element.key == savedEdition?.key
+            let rightSaved = rhs.element.key == savedEdition?.key
+            if leftSaved != rightSaved { return leftSaved }
+            let leftLanguage = lhs.element.matchesLanguage(deviceLanguage)
+            let rightLanguage = rhs.element.matchesLanguage(deviceLanguage)
+            if leftLanguage != rightLanguage { return leftLanguage }
+            if lhs.element.metadataScore != rhs.element.metadataScore {
+                return lhs.element.metadataScore > rhs.element.metadataScore
+            }
+            return lhs.offset < rhs.offset
+        }.map(\.element)
+        let protectedIDs = Set([savedEdition?.key, selectedEdition?.key].compactMap { $0 })
+        let protectedCovers = Set(ranked.filter { protectedIDs.contains($0.key) }.compactMap(\.coverIdentity))
+        var seenIDs = Set<String>()
+        var seenCovers = Set<String>()
+        return ranked.filter { edition in
+            guard seenIDs.insert(edition.key).inserted else { return false }
+            if protectedIDs.contains(edition.key) { return true }
+            guard let cover = edition.coverIdentity, !protectedCovers.contains(cover) else { return false }
+            return seenCovers.insert(cover).inserted
+        }
+    }
+
+    var visibleEditions: [OpenLibraryEditionDTO] {
+        let all = displayEditions
+        guard !showsAllEditions else { return all }
+        var visible = Array(all.prefix(10))
+        // Retain the collapsed subset until the user expands/collapses again.
+        // Subsequent taps must not replace a card or shift its neighbours.
+        if let retainedEdition = all.first(where: { $0.key == collapsedEditionID }),
+           !visible.contains(where: { $0.key == retainedEdition.key }) {
+            if visible.count == 10 { visible.removeLast() }
+            visible.append(retainedEdition)
+        }
+        return visible
+    }
+    private var hasManualSelection = false
+    private var hasSavedAssociation = false
+
+    var canSaveEdition: Bool {
+        book.editionId?.range(of: #"^/books/OL[0-9]+M$"#, options: .regularExpression) != nil
+    }
     
-    init(book: Book) {
+    init(book: Book, deviceLanguage: String = Locale.current.language.languageCode?.identifier ?? "en") {
+        self.deviceLanguage = deviceLanguage
         self.book = book
+        self.originalTitle = book.title
     }
 
     // MARK: - Obtener estado del libro
     func getBooksFromUserLibrary(userId: UUID) async throws {
-        bookStatus = try await libraryService.getBookStatusFromUserLibrary(
-            book: book,
-            userId: userId
-        )
+        do {
+            let selection = try await libraryService.getSavedSelection(book: book, userId: userId)
+            bookStatus = selection?.status
+            hasSavedAssociation = selection != nil
+            librarySelectionError = nil
+            savedEdition = selection?.edition?.asEdition(title: originalTitle)
+            guard selection != nil else { return }
+            guard let edition = savedEdition else {
+                guard !hasManualSelection else { return }
+                clearEdition()
+                librarySelectionError = String(localized: "edition_restore_error")
+                return
+            }
+            editions.removeAll { $0.key == edition.key }
+            editions.insert(edition, at: 0)
+            if !hasManualSelection { applyEdition(edition) }
+        } catch {
+            // An unavailable library is not evidence that this work is unsaved.
+            hasSavedAssociation = true
+            if !hasManualSelection {
+                clearEdition()
+            }
+            librarySelectionError = String(localized: "edition_lookup_error")
+            throw error
+        }
     }
 
     // MARK: - Obtener sinopsis
@@ -91,6 +183,7 @@ class BookDetailViewModel {
     func saveBook(status: BookStatus) async throws {
 
         let previousStatus = bookStatus
+        let editionBeingSaved = selectedEdition
         bookStatus = status
 
         do {
@@ -98,6 +191,8 @@ class BookDetailViewModel {
                 book: book,
                 status: status
             )
+            savedEdition = editionBeingSaved
+            hasSavedAssociation = true
 
         } catch {
             bookStatus = previousStatus
@@ -120,47 +215,59 @@ class BookDetailViewModel {
                 workId: book.externalId
             )
 
-            // Priorizar ediciones que tengan portada
-            editions = availableEditions.sorted {
-                ($0.covers?.isEmpty == false ? 1 : 0) >
-                ($1.covers?.isEmpty == false ? 1 : 0)
-            }
+            editions = availableEditions
 
-            // Si ya existe una edición seleccionada, conservarla.
-            if let editionId = book.editionId,
-               let edition = editions.first(where: { $0.key == editionId }) {
-
-                selectedEdition = edition
+            // Preserve the exact snapshot (including persisted cover URLs) and manual choices.
+            if let selectedEdition {
+                editions.removeAll { $0.key == selectedEdition.key }
+                editions.insert(selectedEdition, at: 0)
                 return
             }
-
-            // Seleccionar inicialmente una edición con portada.
-            if let firstEdition = editions.first {
-                selectEdition(firstEdition)
+            guard !hasManualSelection, !hasSavedAssociation else { return }
+            if let edition = displayEditions.first {
+                applyEdition(edition)
             }
 
         } catch {
-            editionsError = error.localizedDescription
+            editionsError = String(localized: "editions_load_error")
         }
     }
     
     // MARK: - Seleccionar edición
     func selectEdition(_ edition: OpenLibraryEditionDTO) {
+        hasManualSelection = true
+        librarySelectionError = nil
+        applyEdition(edition)
+    }
 
+    private func clearEdition() {
+        selectedEdition = nil
+        book.editionId = nil
+        book.title = originalTitle
+        book.cover = ""
+        book.isbn = nil
+        book.editorial = String(localized: "book_unknown_publisher")
+        book.language = "unknown"
+        book.numberOfPages = nil
+        book.publishedDate = nil
+    }
+
+    private func applyEdition(_ edition: OpenLibraryEditionDTO) {
         selectedEdition = edition
 
         book.editionId = edition.key
         book.title = edition.title
 
-        if let coverId = edition.covers?.first {
-            book.cover = "https://covers.openlibrary.org/b/id/\(coverId)-L.jpg"
-        }
+        book.cover = edition.persistedCoverURL
+            ?? edition.covers?.first(where: { $0 > 0 }).map {
+                "https://covers.openlibrary.org/b/id/\($0)-L.jpg"
+            } ?? ""
 
         book.isbn = edition.isbn13?.first
             ?? edition.isbn10?.first
 
         book.editorial = edition.publishers?.first
-            ?? "Editorial desconocida"
+            ?? String(localized: "book_unknown_publisher")
 
         book.numberOfPages = edition.numberOfPages
         book.publishedDate = edition.publishDate

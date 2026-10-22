@@ -77,16 +77,16 @@ struct CalendarActivityRow: View {
         switch activity.activityType {
 
         case .started:
-            return "Comenzaste a leer"
+            return String(localized: "activity_started")
 
         case .progress:
-            return "Actualizaste tu progreso"
+            return String(localized: "activity_progress")
 
         case .finished:
-            return "Terminaste de leer"
+            return String(localized: "activity_finished")
 
         case .quote:
-            return "Guardaste una cita"
+            return String(localized: "activity_quote")
         }
     }
 }
