@@ -2,7 +2,7 @@
 //  BookCard.swift
 //  Hilo
 //
-//  Created by YhonGoogleBooksResponse Vivas on 08-03-26.
+//  Created by Yhon Vivas on 08-03-26.
 //
 import SwiftUI
 

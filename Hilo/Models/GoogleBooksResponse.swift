@@ -7,7 +7,7 @@
 import Foundation
 
 struct GoogleBooksResponse: Codable {
-    var items: [BookItem]
+    var items: [BookItem]?
 }
 
 struct BookItem: Codable {

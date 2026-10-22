@@ -48,6 +48,3 @@ struct BookCardSkeleton: View {
         .padding(.vertical, 8)
     }
 }
-#Preview {
-    BookCardSkeleton()
-}

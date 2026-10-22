@@ -11,20 +11,25 @@ class SearchViewModel {
     var books: [Book] = []
     var searchText: String = ""
     var hasLoadedInitialBooks: Bool = false
+    private var initialBooks: [Book] = []
+    private var lastSearchQuery: String?
+    var recommendedBooks: [Book] = []
+    var recommendationsIsLoading = false
+    var hasSearched = false
+    var recentSearches: [String] = []
+    var discoveryBooks: [Book] = []
+    var discoveryIsLoading = false
     
     // MARK: - Función cargar libros iniciales (Luego será mejorada, enviando generos favoritos del usuario)
     func loadInitialBooks() async throws {
         guard !hasLoadedInitialBooks else { return }
-        let query = "Harry Potter y la orden del fenix"
-        let fetchedBooks = try await GoogleBooksService.shared.searchBook( query: query)
-        books = sortBooks(fetchedBooks, query: query)
-        if let firstBook = books.first,
-           firstBook.cover.isEmpty {
 
-            await GoogleBooksService.shared.debugCover(
-                for: firstBook
-            )
-        }
+        let query = "Harry Potter"
+
+        let fetchedBooks = try await OpenLibraryService.shared.searchBooks(query: query)
+        
+        books = try await enrichFirstBooks(fetchedBooks, query: query)
+
         hasLoadedInitialBooks = true
     }
     
@@ -32,195 +37,226 @@ class SearchViewModel {
     func searchBooks() async {
         let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !query.isEmpty else { return }
-
+        guard query != lastSearchQuery else { return }
+        hasSearched = false
+        books = []
+        recommendedBooks = []
         do {
-            let fetchedBooks = try await GoogleBooksService.shared.searchBook(query: query)
-            books = sortBooks(fetchedBooks, query: query)
-            if let firstBook = books.first,
-               firstBook.cover.isEmpty {
+            let fetchedBooks = try await OpenLibraryService.shared.searchBooks(query: query)
 
-                await GoogleBooksService.shared.debugCover(
-                    for: firstBook
-                )
+            let sortedBooks = fetchedBooks.sorted { firstBook, secondBook in
+
+                let firstScore = titleMatchScore(title: firstBook.title, query: query)
+
+                let secondScore = titleMatchScore(title: secondBook.title, query: query)
+
+                return firstScore > secondScore
             }
+
+            let enrichedBooks = try await enrichFirstBooks(
+                sortedBooks,
+                query: query
+            )
+            
+            try Task.checkCancellation()
+
+            books = enrichedBooks
+            lastSearchQuery = query
+            hasSearched = true
+            SearchHistoryService.shared.saveSearch(query)
+            loadRecentSearches()
+            
+            Task {
+                await getRecommendedBooks()
+            }
+
+        } catch is CancellationError {
+            return
+
         } catch {
             print("Error cargando libros: \(error)")
         }
     }
     
-    // MARK: - Función que generará un score de los libros buscados, con esto ordenaré en el buscador
-    func completenessScore(book: Book) -> Int {
-        var score = 0
-        
-        if !book.cover.isEmpty { score += 2 }
-        if !book.authors.isEmpty { score += 2 }
-        if !(book.isbn ?? "").isEmpty { score += 2 } // se comprueba que no esté vacío
-        if let pages = book.numberOfPages, pages > 0 { score += 2 }
-        if book.editorial != "Editorial desconocida" { score += 1 }
-        if !(book.description ?? "").isEmpty { score += 1}
-        if !book.genre.isEmpty { score += 1 }
-        if !(book.publishedDate ?? "").isEmpty { score += 1 }
-        if let rating = book.averageRating, rating > 0 { score += 1 }
-        if book.totalReviews > 0 { score += 1 }
-        
-        return score
+    func restoreInitialBooks() {
+        books = initialBooks
+        recommendedBooks = []
+        hasSearched = false
+        lastSearchQuery = nil
     }
     
-    //MARK: - Determinamos si un libro realmente es relevante o no
-    private func relevanceScore(book: Book, query: String) -> Int {
+    private func enrichFirstBooks(_ books: [Book], query: String) async throws -> [Book] {
 
-        let normalizedQuery = normalizeText(query)
-        let normalizedTitle = normalizeText(book.title)
+        var enrichedBooks = books
 
-        guard !normalizedQuery.isEmpty else {
-            return 0
+        let amount = min(3, books.count)
+
+        for index in 0..<amount {
+
+            try Task.checkCancellation()
+
+            let originalBook = books[index]
+
+            let enrichedBook =
+                try await OpenLibraryService.shared.enrichBookWithBestEdition(
+                    book: originalBook,
+                    query: query
+                )
+
+            enrichedBooks[index] = enrichedBook
         }
 
-        let queryWords = normalizedQuery.split(separator: " ")
-        let titleWords = normalizedTitle.split(separator: " ")
+        return enrichedBooks
+    }
+    
+    private func titleMatchScore(title: String, query: String) -> Int {
 
-        // 1. Título exactamente igual
+        let normalizedTitle = title.lowercased()
+        let normalizedQuery = query.lowercased()
+
         if normalizedTitle == normalizedQuery {
             return 100
         }
 
-        // 2. Caso especial para búsquedas de una sola palabra
-        if queryWords.count == 1,
-           let searchedWord = queryWords.first {
-
-            // "It (Eso)"
-            if titleWords.first == searchedWord {
-
-                let extraWords = max(titleWords.count - 1, 0)
-
-                return max(
-                    80 - (extraWords * 8),
-                    55
-                )
-            }
-
-            // "Debug It", "Act Like It", etc.
-            if titleWords.contains(searchedWord) {
-
-                let extraWords = max(titleWords.count - 1, 0)
-
-                return max(
-                    50 - (extraWords * 4),
-                    25
-                )
-            }
-
-            return 0
-        }
-
-        // 3. La búsqueda completa aparece al comienzo del título
         if normalizedTitle.hasPrefix(normalizedQuery) {
-            return 85
+            return 80
         }
 
-        // 4. La búsqueda completa aparece dentro del título
         if normalizedTitle.contains(normalizedQuery) {
-            return 70
+            return 60
         }
 
-        // 5. Comparación por palabras del título
-        let queryWordsSet = Set(queryWords)
-        let titleWordsSet = Set(titleWords)
-
-        let titleMatches = queryWordsSet.intersection(titleWordsSet)
-
-        // Palabras que todavía no encontramos en el título
-        let remainingWords = queryWordsSet.subtracting(titleMatches)
-
-        // 6. Buscar esas palabras en los autores
-        let authorWords = Set(
-            book.authors.flatMap {
-                normalizeText($0).split(separator: " ")
-            }
-        )
-
-        let authorMatches = remainingWords.intersection(authorWords)
-
-        let titleCoverage =
-            Double(titleMatches.count) /
-            Double(queryWordsSet.count)
-
-        let authorCoverage =
-            Double(authorMatches.count) /
-            Double(queryWordsSet.count)
-
-        var score = 0
-
-        // El título pesa más
-        score += Int(titleCoverage * 60)
-
-        // El autor complementa la búsqueda
-        score += Int(authorCoverage * 40)
-
-        // Si encontramos toda la query entre título + autor
-        let totalMatches = titleMatches.union(authorMatches)
-
-        if totalMatches.count == queryWordsSet.count {
-            score += 20
+        return 0
+    }
+    
+    // MARK: - Recomendación de libros
+    func getRecommendedBooks() async {
+        guard let mainBook = books.first,
+              let author = mainBook.authors.first,
+              !author.isEmpty else {
+            recommendedBooks = []
+            return
         }
+        
+        recommendationsIsLoading = true
+        defer { recommendationsIsLoading = false }
 
-        // Penalizar títulos demasiado largos
-        let extraTitleWords = max(
-            titleWordsSet.count - titleMatches.count,
-            0
-        )
+        do {
+            let fetchedBooks = try await OpenLibraryService.shared.searchBooks(
+                query: "author:\"\(author)\""
+            )
 
-        score -= min(extraTitleWords * 2, 20)
+            try Task.checkCancellation()
 
-        return max(score, 0)
+            let existingIds = Set(books.map(\.externalId))
+
+            recommendedBooks = Array(
+                fetchedBooks.filter { book in
+                    !existingIds.contains(book.externalId)
+                    && book.authors.contains {
+                        $0.compare(author, options: [.caseInsensitive, .diacriticInsensitive]) == .orderedSame
+                    }
+                }
+                .prefix(8)
+            )
+
+        } catch is CancellationError {
+            return
+        } catch let error as URLError where error.code == .cancelled {
+            return
+        } catch {
+            recommendedBooks = []
+            print("Error cargando recomendaciones: \(error)")
+        }
     }
     
-    // MARK: - Función helper para normalizar texto
-    func normalizeText(_ text: String) -> String {
-        text
-            .lowercased()
-            .folding(options: .diacriticInsensitive, locale: .current)
-            .components(separatedBy: .punctuationCharacters)
-            .joined(separator: " ")
-            .split(whereSeparator: \.isWhitespace)
-            .joined(separator: " ")
+    // MARK: - Obtener búsquedas recientes
+    func loadRecentSearches() {
+        recentSearches = SearchHistoryService.shared.getRecentSearches()
     }
     
-    // MARK: - Función para sortear los libros
-    private func sortBooks(_ books: [Book],query: String) -> [Book] {
+    // MARK: - Eliminar historial de búsquedas
+    func clearRecentSearches() {
+        SearchHistoryService.shared.clearHistory()
+        recentSearches = []
+    }
+    
+    
+    // MARK: - Descubrir libros
+    
+    func loadDiscoveryBooks(forceRefresh: Bool = false) async {
+        guard !discoveryIsLoading else { return }
+        guard forceRefresh || discoveryBooks.isEmpty else { return }
 
-        books.enumerated()
-            .sorted { first, second in
 
-                let firstRelevance = relevanceScore(
-                    book: first.element,
-                    query: query
-                )
+        discoveryIsLoading = true
+        defer { discoveryIsLoading = false }
 
-                let secondRelevance = relevanceScore(
-                    book: second.element,
-                    query: query
-                )
+        let queries = [
+            "subject:fantasy",
+            "subject:science_fiction",
+            "subject:mystery",
+            "subject:romance",
+            "subject:horror",
+            "subject:adventure",
+            "subject:thriller",
+            "subject:historical_fiction",
+            "subject:dystopian_fiction",
+            "subject:young_adult_fiction"
+        ]
 
-                if firstRelevance != secondRelevance {
-                    return firstRelevance > secondRelevance
+        let selectedQueries = Array(queries.shuffled().prefix(4))
+
+        do {
+            let results = await withTaskGroup(of: [Book].self) { group in
+
+                for query in selectedQueries {
+                    group.addTask {
+                        do {
+                            return try await OpenLibraryService.shared.searchBooks(
+                                query: query,
+                                offset: Int.random(in: 0...5) * 20
+                            )
+                        } catch {
+                            return []
+                        }
+                    }
                 }
 
-                let firstCompleteness = completenessScore(
-                    book: first.element
-                )
+                var allResults: [[Book]] = []
 
-                let secondCompleteness = completenessScore(
-                    book: second.element
-                )
-
-                if firstCompleteness != secondCompleteness {
-                    return firstCompleteness > secondCompleteness
+                for await books in group {
+                    allResults.append(books)
                 }
 
-                return first.offset < second.offset
+                return allResults
             }
-            .map(\.element)
+
+            try Task.checkCancellation()
+
+            var discoveredBooks: [Book] = []
+            var existingIds = Set<String>()
+
+            for books in results {
+                let candidates = books.filter {
+                    !$0.cover.isEmpty &&
+                    !existingIds.contains($0.externalId)
+                }
+
+                for book in candidates.prefix(2) {
+                    discoveredBooks.append(book)
+                    existingIds.insert(book.externalId)
+                }
+            }
+
+            discoveryBooks = discoveredBooks
+
+        } catch is CancellationError {
+            return
+        } catch {
+            print("Error cargando libros para descubrir:", error)
+        }
     }
-    
+
+
 }

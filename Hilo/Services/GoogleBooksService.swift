@@ -4,6 +4,7 @@
 //
 //  Created by Yhon Vivas on 08-03-26.
 //
+
 import Foundation
 
 final class GoogleBooksService {
@@ -15,258 +16,376 @@ final class GoogleBooksService {
     private let BASE_URL = "https://www.googleapis.com/books/v1/volumes"
 
     private let API_KEY =
-        Bundle.main.object(forInfoDictionaryKey: "GoogleBooksAPIKey") as? String ?? ""
+        Bundle.main.object(
+            forInfoDictionaryKey: "GoogleBooksAPIKey"
+        ) as? String ?? ""
 
-    // MARK: - Búsqueda pública
 
-    func searchBook(query: String) async throws -> [Book] {
+    // MARK: - Obtener descripción
 
-        let cleanQuery = query.trimmingCharacters(
-            in: .whitespacesAndNewlines
-        )
-
-        guard !cleanQuery.isEmpty else {
-            return []
-        }
-
-        async let generalSearch = fetchBooks(
-            query: cleanQuery
-        )
-
-        async let titleSearch = fetchBooks(
-            query: "intitle:\(cleanQuery)"
-        )
-
-        let (generalBooks, titleBooks) = try await (
-            generalSearch,
-            titleSearch
-        )
-
-        return mergeBooks(
-            generalBooks,
-            titleBooks
-        )
-    }
-
-    // MARK: - Petición a Google Books
-
-    private func fetchBooks(query: String) async throws -> [Book] {
+    func getDescription(
+        title: String,
+        authors: [String],
+        language: String,
+        allowAlternativeSearch: Bool = true
+    ) async throws -> String? {
 
         var components = URLComponents(string: BASE_URL)
 
+        // Siempre buscamos usando título + autor para reducir resultados irrelevantes.
+        let query = "\(title) \(authors.joined(separator: " "))"
+
         components?.queryItems = [
-            URLQueryItem(name: "q", value: query),
-            URLQueryItem(name: "key", value: API_KEY),
-            URLQueryItem(name: "maxResults", value: "40"),
-            URLQueryItem(name: "printType", value: "books"),
-            URLQueryItem(name: "projection", value: "full")
+            URLQueryItem(
+                name: "q",
+                value: query
+            ),
+            URLQueryItem(
+                name: "key",
+                value: API_KEY
+            ),
+            URLQueryItem(
+                name: "maxResults",
+                value: "20"
+            )
         ]
 
         guard let url = components?.url else {
-            throw NSError(
-                domain: "Invalid URL",
-                code: 0
-            )
+            throw URLError(.badURL)
         }
 
-        var retryCount = 0
+        let (data, urlResponse) = try await URLSession.shared.data(
+            from: url
+        )
 
-        while retryCount < 3 {
+        guard let httpResponse = urlResponse as? HTTPURLResponse else {
+            throw URLError(.badServerResponse)
+        }
 
-            let (data, urlResponse) =
-                try await URLSession.shared.data(from: url)
-
-            guard let httpResponse =
-                urlResponse as? HTTPURLResponse else {
-
-                throw NSError(
-                    domain: "Invalid response",
-                    code: 0
-                )
-            }
-
-            if (200...299).contains(httpResponse.statusCode) {
-
-                let response = try JSONDecoder().decode(
-                    GoogleBooksResponse.self,
-                    from: data
-                )
-
-                return response.items.map { item in
-
-                    let info = item.volumeInfo
-
-                    let cover = info.imageLinks?.thumbnail
-                        .replacingOccurrences(of: "http://", with: "https://") ?? ""
-
-                    print("""
-                    ------------------------------
-                    ID: \(item.id)
-                    Título: \(info.title)
-                    Autores: \(info.authors ?? [])
-                    Tiene imageLinks: \(info.imageLinks != nil)
-                    Thumbnail original: \(info.imageLinks?.thumbnail ?? "NIL")
-                    Cover final: \(cover.isEmpty ? "VACÍA" : cover)
-                    ------------------------------
-                    """)
-
-                    return Book(
-                        googleBookId: item.id,
-                        title: info.title,
-                        authors: info.authors ?? [],
-                        cover: info.imageLinks?.thumbnail
-                            .replacingOccurrences(
-                                of: "http://",
-                                with: "https://"
-                            ) ?? "",
-                        genre: info.categories ?? [],
-                        description: info.description,
-                        publishedDate: info.publishedDate,
-                        numberOfPages: {
-                            guard
-                                let pages = info.pageCount,
-                                pages > 0
-                            else {
-                                return nil
-                            }
-
-                            return pages
-                        }(),
-                        isbn: info.industryIdentifiers?
-                            .first {
-                                $0.type == "ISBN_13"
-                            }?
-                            .identifier,
-                        averageRating: info.averageRating,
-                        totalReviews: info.ratingsCount ?? 0,
-                        editorial: info.publisher
-                            ?? "Editorial desconocida",
-                        language: info.language
-                            ?? "unknown"
-                    )
-                }
-            }
-
-            if [429, 502, 503, 504]
-                .contains(httpResponse.statusCode) {
-
-                retryCount += 1
-
-                if retryCount < 3 {
-                    try await Task.sleep(
-                        for: .seconds(1)
-                    )
-
-                    continue
-                }
-            }
-
+        guard (200...299).contains(httpResponse.statusCode) else {
             throw NSError(
-                domain: "HTTP Error",
+                domain: "GoogleBooks",
                 code: httpResponse.statusCode
             )
         }
 
-        throw NSError(
-            domain: "Max retries reached",
-            code: 0
+        let response = try JSONDecoder().decode(
+            GoogleBooksMetadataResponse.self,
+            from: data
         )
-    }
 
-    // MARK: - Eliminar duplicados
+        let items = response.items ?? []
 
-    private func mergeBooks(
-        _ firstBooks: [Book],
-        _ secondBooks: [Book]
-    ) -> [Book] {
+        let expectedLanguage = googleLanguageCode(
+            from: language
+        )
 
-        var seenIds = Set<String>()
-        var result: [Book] = []
+        let normalizedExpectedTitle = normalize(title)
 
-        for book in firstBooks + secondBooks {
+        var alternativeTitle: String?
 
-            if seenIds.insert(book.googleBookId).inserted {
-                result.append(book)
+        var bestMatch: GoogleBooksMetadataItem?
+        var bestScore = Int.min
+
+
+        // MARK: Evaluar resultados
+
+        for item in items {
+
+            let info = item.volumeInfo
+
+            guard let googleTitle = info.title else {
+                continue
             }
-        }
 
-        return result
-    }
-    
-    // MARK: - Debug de portadas
+            let normalizedGoogleTitle = normalize(
+                googleTitle
+            )
 
-    func debugCover(for book: Book) async {
 
-        print("""
-        
-        =====================================
-        DEBUG PORTADA
-        Título: \(book.title)
-        Autor: \(book.authors.joined(separator: ", "))
-        ISBN: \(book.isbn ?? "SIN ISBN")
-        Google ID: \(book.googleBookId)
-        Portada actual: \(book.cover.isEmpty ? "VACÍA" : book.cover)
-        =====================================
-        
-        """)
+            // MARK: Detectar título alternativo
 
-        // 1. Buscar exactamente por ISBN
-        if let isbn = book.isbn, !isbn.isEmpty {
+            let authorMatches = info.authors?.contains {
+                googleAuthor in
 
-            do {
-                let isbnResults = try await fetchBooks(
-                    query: "isbn:\(isbn)"
-                )
+                authors.contains { expectedAuthor in
 
-                print("RESULTADOS BUSCANDO POR ISBN: \(isbn)")
+                    let normalizedGoogleAuthor =
+                        normalize(googleAuthor)
 
-                for result in isbnResults {
-                    print("""
-                    
-                    Título: \(result.title)
-                    ID: \(result.googleBookId)
-                    Portada: \(result.cover.isEmpty ? "VACÍA" : result.cover)
-                    
-                    """)
+                    let normalizedExpectedAuthor =
+                        normalize(expectedAuthor)
+
+                    return normalizedGoogleAuthor.contains(
+                        normalizedExpectedAuthor
+                    )
+                    ||
+                    normalizedExpectedAuthor.contains(
+                        normalizedGoogleAuthor
+                    )
                 }
 
-            } catch {
-                print("Error buscando por ISBN: \(error)")
+            } ?? false
+
+
+            /*
+             Ejemplo:
+
+             Open Library:
+             "Amanecer rojo 2. Hijo dorado"
+
+             Google:
+             "Hijo dorado"
+
+             Si pertenece al mismo autor, podemos usar
+             "Hijo dorado" para una segunda búsqueda.
+             */
+
+            if authorMatches,
+               normalizedGoogleTitle != normalizedExpectedTitle,
+               normalizedExpectedTitle.contains(
+                    normalizedGoogleTitle
+               ),
+               alternativeTitle == nil {
+
+                alternativeTitle = googleTitle
+            }
+
+
+            // MARK: Puntuar candidato
+
+            guard let score = metadataScore(
+                info: info,
+                expectedTitle: title,
+                expectedAuthors: authors,
+                preferredLanguage: expectedLanguage
+            ) else {
+                continue
+            }
+
+
+            if score > bestScore {
+                bestScore = score
+                bestMatch = item
             }
         }
 
-        // 2. Buscar por título + autor
-        if let author = book.authors.first {
 
-            let query = "intitle:\(book.title) inauthor:\(author)"
+        // MARK: Usar mejor resultado
 
-            do {
-                let results = try await fetchBooks(
-                    query: query
+        if bestScore >= 120,
+           let description =
+                bestMatch?.volumeInfo.description {
+
+            return description
+        }
+
+
+        // MARK: Segundo intento con título alternativo
+
+        if allowAlternativeSearch,
+           let alternativeTitle {
+
+            return try await getDescription(
+                title: alternativeTitle,
+                authors: authors,
+                language: language,
+                allowAlternativeSearch: false
+            )
+        }
+
+
+        return nil
+    }
+
+
+    // MARK: - Puntuar metadata de Google Books
+
+    private func metadataScore(
+        info: GoogleBooksMetadataVolumeInfo,
+        expectedTitle: String,
+        expectedAuthors: [String],
+        preferredLanguage: String?
+    ) -> Int? {
+
+        guard
+            let googleTitle = info.title,
+            let description = info.description,
+            !description
+                .trimmingCharacters(
+                    in: .whitespacesAndNewlines
                 )
+                .isEmpty
+        else {
+            return nil
+        }
 
-                print("""
-                
-                RESULTADOS BUSCANDO:
-                \(query)
-                
-                """)
 
-                for result in results {
-                    print("""
-                    
-                    Título: \(result.title)
-                    Autor: \(result.authors.joined(separator: ", "))
-                    ISBN: \(result.isbn ?? "SIN ISBN")
-                    ID: \(result.googleBookId)
-                    Portada: \(result.cover.isEmpty ? "VACÍA" : result.cover)
-                    
-                    """)
+        // Hilo solo utilizará sinopsis en español o inglés.
+        if let language = info.language,
+           language != "es",
+           language != "en" {
+
+            return nil
+        }
+
+
+        let normalizedTitle = normalize(
+            googleTitle
+        )
+
+        let normalizedExpectedTitle = normalize(
+            expectedTitle
+        )
+
+        var score = 0
+
+
+        // MARK: Título
+
+        if normalizedTitle == normalizedExpectedTitle {
+
+            score += 100
+
+        } else if
+            normalizedTitle.contains(
+                normalizedExpectedTitle
+            )
+            ||
+            normalizedExpectedTitle.contains(
+                normalizedTitle
+            ) {
+
+            score += 50
+
+        } else {
+
+            // El título no parece corresponder al libro.
+            return nil
+        }
+
+
+        // MARK: Autor
+
+        if let googleAuthors = info.authors,
+           !googleAuthors.isEmpty {
+
+            let authorMatches = googleAuthors.contains {
+                googleAuthor in
+
+                expectedAuthors.contains {
+                    expectedAuthor in
+
+                    let normalizedGoogleAuthor =
+                        normalize(googleAuthor)
+
+                    let normalizedExpectedAuthor =
+                        normalize(expectedAuthor)
+
+                    return normalizedGoogleAuthor.contains(
+                        normalizedExpectedAuthor
+                    )
+                    ||
+                    normalizedExpectedAuthor.contains(
+                        normalizedGoogleAuthor
+                    )
                 }
+            }
 
-            } catch {
-                print("Error buscando por título y autor: \(error)")
+
+            if authorMatches {
+
+                score += 80
+
+            } else {
+
+                score -= 80
             }
         }
+
+
+        // MARK: Idioma
+
+        if let preferredLanguage {
+
+            if info.language == preferredLanguage {
+
+                score += 30
+
+            } else if
+                info.language == "es"
+                || info.language == "en" {
+
+                score -= 10
+            }
+        }
+
+
+        // MARK: Penalizar packs / colecciones completas
+
+        let unwantedTerms = [
+            "pack",
+            "bundle",
+            "box set",
+            "coleccion",
+            "trilogia",
+            "saga"
+        ]
+
+        let isPack = unwantedTerms.contains { term in
+            normalizedTitle.contains(term)
+        }
+
+        if isPack,
+           normalizedTitle != normalizedExpectedTitle {
+
+            score -= 100
+        }
+
+
+        return score
+    }
+
+
+    // MARK: - Convertir idioma Open Library -> Google
+
+    private func googleLanguageCode(
+        from language: String
+    ) -> String? {
+
+        switch language {
+
+        case "spa", "es":
+            return "es"
+
+        case "eng", "en":
+            return "en"
+
+        default:
+            return nil
+        }
+    }
+
+
+    // MARK: - Normalizar texto
+
+    private func normalize(
+        _ text: String
+    ) -> String {
+
+        text
+            .lowercased()
+            .folding(
+                options: .diacriticInsensitive,
+                locale: .current
+            )
+            .replacingOccurrences(
+                of: "[^a-z0-9]+",
+                with: " ",
+                options: .regularExpression
+            )
+            .trimmingCharacters(
+                in: .whitespacesAndNewlines
+            )
     }
 }

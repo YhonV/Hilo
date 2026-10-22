@@ -99,3 +99,34 @@
 
 "reading_page_error_negative" = "La página no puede ser menor que 0.";
 "reading_page_error_exceeds_total" = "La página no puede superar las %d páginas del libro.";
+
+/* ===== book genres ===== */
+"genre_horror" = "Terror";
+"genre_thriller" = "Suspenso";
+"genre_science_fiction" = "Ciencia ficción";
+"genre_fantasy" = "Fantasía";
+"genre_romance" = "Romance";
+"genre_mystery" = "Misterio";
+"genre_crime" = "Crimen";
+"genre_dystopia" = "Distopía";
+"genre_adventure" = "Aventura";
+"genre_historical_fiction" = "Ficción histórica";
+"genre_young_adult" = "Juvenil";
+
+/* ===== Search: Additional Results ===== */
+"search_explore_more" = "Explorar más libros";
+"search_additional_results" = "%d resultados adicionales";
+"search_show_less" = "Ver menos";
+"search_show_all" = "Ver todos";
+
+/* ===== SearchView ===== */
+"search_same_author" = "Más libros del mismo autor";
+"search_best_matches" = "Mejores coincidencias";
+"search_no_results_title" = "No encontramos libros";
+"search_no_results_description" = "No encontramos resultados para «%@». Prueba con otro título o autor.";
+"search_recent_title" = "Búsquedas recientes";
+"search_clear_history" = "Borrar historial";
+"search_discover_books" = "Descubre tu próxima lectura";
+"search_discover_refresh" = "Descubrir otros libros";
+"search_explore_genres" = "Explorar por género";
+"genre_load_more" = "Cargar más libros";

@@ -6,7 +6,7 @@
 //
 
 struct SaveBookParams: Encodable {
-    let p_google_books_id: String
+    let p_external_id: String
     let p_title: String
     let p_status: String
     let p_description: String?
@@ -18,4 +18,5 @@ struct SaveBookParams: Encodable {
     let p_published_date: String?
     let p_number_of_pages: Int?
     let p_cover_url: String?
+    let p_edition_id: String
 }
