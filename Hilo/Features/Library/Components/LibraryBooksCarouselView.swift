@@ -13,7 +13,7 @@ struct LibraryBooksCarouselView: View {
     
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(alignment: .top, spacing: 12) {
+            LazyHStack(alignment: .top, spacing: 12) {
                 ForEach(userLibraryBooks, id: \.bookId) { book in
                     let authors = book.book.bookAuthors
                         .map { $0.author.name }
@@ -21,7 +21,7 @@ struct LibraryBooksCarouselView: View {
                     NavigationLink {
                         LibraryBookDetailView(bookDetail: book)
                     } label: {
-                        HStack(alignment: .top, spacing: 12) {
+                        LazyHStack(alignment: .top, spacing: 12) {
                             // MARK: - Portada del libro
                             AsyncImage(
                                 url: URL(string: book.edition.coverUrl ?? "")

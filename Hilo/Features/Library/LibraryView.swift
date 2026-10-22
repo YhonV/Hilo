@@ -13,17 +13,13 @@ struct LibraryView: View {
                 ScrollView {
                     VStack(spacing: 16) {
                         // MARK: - Leyendo, leídos y por leer
-                        VStack(spacing: 5) {
-                            Text(String(localized: "library_title"))
-                                .font(.headline)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.bottom, 12)
-                                         
+                        VStack(spacing: 16) {
                             LibraryBooksSectionView(userLibraryBooks: libraryViewModel.userBooks)
                             
                             CalendarView()
                         }
                         .padding(.horizontal, 20)
+                        .padding(.top, 12)
                     }
                 }
             }

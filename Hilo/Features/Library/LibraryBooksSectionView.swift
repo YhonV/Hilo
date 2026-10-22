@@ -35,6 +35,7 @@ enum Status: String, CaseIterable {
 struct LibraryBooksSectionView: View {
 
     @State private var selectedStatus = Status.reading
+    @State private var showsGrid = false
 
     let userLibraryBooks: [UserLibraryBook]
 
@@ -45,7 +46,29 @@ struct LibraryBooksSectionView: View {
     }
 
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 12) {
+            HStack {
+                Text(String(localized: "library_title"))
+                    .font(.headline)
+                Spacer()
+                if !userLibraryBooks.isEmpty {
+                    Button {
+                        showsGrid.toggle()
+                    } label: {
+                        Label(showsGrid ? String(localized: "collection_show_carousel") : String(localized: "library_show_grid"),
+                              systemImage: showsGrid ? "rectangle.portrait.on.rectangle.portrait" : "square.grid.2x2")
+                            .labelStyle(.iconOnly)
+                            .font(.body.weight(.medium))
+                            .frame(width: 28, height: 28)
+                    }
+                    .buttonStyle(.glass)
+                    .buttonBorderShape(.circle)
+                    .controlSize(.regular)
+                    .tint(AppColors.accent)
+                }
+            }
+            .frame(minHeight: 44)
+
             Picker(String(localized: "reading_status_title"), selection: $selectedStatus) {
                 ForEach(Status.allCases, id: \.self) { status in
                     Text(status.localizedTitle)
@@ -54,7 +77,13 @@ struct LibraryBooksSectionView: View {
             }
             .pickerStyle(.segmented)
 
-            LibraryBooksCarouselView(userLibraryBooks: filteredBooks)
+            if !filteredBooks.isEmpty {
+                if showsGrid {
+                    LibraryBooksGridView(books: filteredBooks)
+                } else {
+                    LibraryBooksCarouselView(userLibraryBooks: Array(filteredBooks.prefix(6)))
+                }
+            }
         }
     }
 }

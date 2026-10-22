@@ -216,3 +216,6 @@
 "editions_load_error" = "No se pudieron cargar las ediciones. Inténtalo de nuevo.";
 "edition_accessibility_description" = "%1$@, %2$@, %3$@";
 "quote_unknown_book" = "Libro no disponible";
+"library_show_grid" = "Ver todos";
+"quotes_show_grid" = "Ver todas";
+"collection_show_carousel" = "Ver carrusel";

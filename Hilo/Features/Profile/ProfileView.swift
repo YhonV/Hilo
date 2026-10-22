@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct ProfileView: View {
+    @State private var showsQuotesGrid = false
     @Environment(AuthViewModel.self) private var authViewModel
     
     @State private var profileViewModel = ProfileViewModel()
@@ -172,18 +173,42 @@ struct ProfileView: View {
                         /// **Citas del usuario**
                         
                         VStack(alignment: .leading, spacing: 12) {
-                            Text(String(localized: "quotes_yours"))
-                                .font(.headline)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.bottom, 12)
+                            HStack(alignment: .firstTextBaseline) {
+                                Text(String(localized: "quotes_yours"))
+                                    .font(.headline)
+                                Spacer()
+                                if !quoteViewModel.userQuotes.isEmpty {
+                                    Button {
+                                        showsQuotesGrid.toggle()
+                                    } label: {
+                                        Label(showsQuotesGrid ? String(localized: "collection_show_carousel") : String(localized: "quotes_show_grid"),
+                                              systemImage: showsQuotesGrid ? "rectangle.portrait.on.rectangle.portrait" : "square.grid.2x2")
+                                            .font(.caption.weight(.semibold))
+                                            .padding(.horizontal, 4)
+                                            .padding(.vertical, 3)
+                                    }
+                                    .buttonStyle(.glass)
+                                    .buttonBorderShape(.capsule)
+                                    .controlSize(.regular)
+                                    .tint(AppColors.accent)
+                                }
+                            }
+                            .padding(.bottom, 4)
 
                             if quoteViewModel.userQuotes.isEmpty {
                                 EmptyQuoteCard(style: .surface)
                                     .frame(maxWidth: .infinity)
+                            } else if showsQuotesGrid {
+                                LazyVGrid(columns: [GridItem(.adaptive(minimum: 280), spacing: 12, alignment: .top)],
+                                          alignment: .leading, spacing: 12) {
+                                    ForEach(quoteViewModel.userQuotes, id: \.id) { quote in
+                                        QuoteCardView(quote: quote, totalPages: quote.bookContext?.edition?.numberOfPages)
+                                    }
+                                }
                             } else {
                                 ScrollView(.horizontal, showsIndicators: false) {
                                     LazyHStack(alignment: .top, spacing: 12) {
-                                        ForEach(quoteViewModel.userQuotes, id: \.id) { quote in
+                                        ForEach(Array(quoteViewModel.userQuotes.prefix(6)), id: \.id) { quote in
                                             QuoteCardView(
                                                 quote: quote,
                                                 totalPages: quote.bookContext?.edition?.numberOfPages
