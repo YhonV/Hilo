@@ -34,7 +34,11 @@ class QuoteService {
             .from("quotes")
             .select("""
                 *,
-                user_book!inner(user_id)
+                user_book!inner(
+                    user_id,
+                    books(title),
+                    book_editions(cover_url, number_of_pages)
+                )
                 """)
             .eq("user_book.user_id", value: userId)
             .order("created_at", ascending: false)

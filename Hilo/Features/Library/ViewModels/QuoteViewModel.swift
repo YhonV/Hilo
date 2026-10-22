@@ -37,6 +37,7 @@ final class QuoteViewModel {
     func deleteQuote(quoteId: UUID) async throws {
         try await quoteService.deleteQuote(quoteId: quoteId)
         quotes.removeAll{$0.id == quoteId}
+        userQuotes.removeAll { $0.id == quoteId }
     }
     
     // MARK: - Editar cita
@@ -44,13 +45,16 @@ final class QuoteViewModel {
         let params = UpdateQuoteParams(content: content, pageNumber: pageNumber)
         let updatedQuote = try await quoteService.updateQuote(quoteId: quoteId,request: params)
 
-        guard let index = quotes.firstIndex(where: {
-            $0.id == quoteId
-        }) else {
-            return
+        if let index = quotes.firstIndex(where: { $0.id == quoteId }) {
+            var replacement = updatedQuote
+            replacement.bookContext = quotes[index].bookContext
+            quotes[index] = replacement
         }
-
-        quotes[index] = updatedQuote
+        if let index = userQuotes.firstIndex(where: { $0.id == quoteId }) {
+            var replacement = updatedQuote
+            replacement.bookContext = userQuotes[index].bookContext
+            userQuotes[index] = replacement
+        }
     }
     
     // MARK: - Obtener todas las citas del usuario

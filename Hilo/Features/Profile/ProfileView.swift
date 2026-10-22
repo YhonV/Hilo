@@ -182,13 +182,13 @@ struct ProfileView: View {
                                     .frame(maxWidth: .infinity)
                             } else {
                                 ScrollView(.horizontal, showsIndicators: false) {
-                                    HStack(spacing: 12) {
+                                    LazyHStack(alignment: .top, spacing: 12) {
                                         ForEach(quoteViewModel.userQuotes, id: \.id) { quote in
                                             QuoteCardView(
                                                 quote: quote,
-                                                totalPages: quote.pageNumber
+                                                totalPages: quote.bookContext?.edition?.numberOfPages
                                             )
-                                            .frame(width: 300)
+                                            .containerRelativeFrame(.horizontal) { width, _ in max(0, width - 16) }
                                         }
                                     }
                                 }

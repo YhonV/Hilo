@@ -216,3 +216,4 @@
 "calendar_load_error" = "Could not load reading activity. Please try again.";
 "editions_load_error" = "Could not load editions. Please try again.";
 "edition_accessibility_description" = "%1$@, %2$@, %3$@";
+"quote_unknown_book" = "Book unavailable";

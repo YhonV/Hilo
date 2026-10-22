@@ -215,3 +215,4 @@
 "calendar_load_error" = "No se pudo cargar la actividad de lectura. Inténtalo de nuevo.";
 "editions_load_error" = "No se pudieron cargar las ediciones. Inténtalo de nuevo.";
 "edition_accessibility_description" = "%1$@, %2$@, %3$@";
+"quote_unknown_book" = "Libro no disponible";

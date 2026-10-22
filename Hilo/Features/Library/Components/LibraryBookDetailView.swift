@@ -124,13 +124,15 @@ struct LibraryBookDetailView: View {
                             .frame(maxWidth: .infinity)
                     } else {
                         ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 12) {
+                            LazyHStack(alignment: .top, spacing: 12) {
                                 ForEach(quoteViewModel.quotes, id: \.id) { quote in
                                     QuoteCardView(
                                         quote: quote,
-                                        totalPages: currentBook.edition.numberOfPages
+                                        totalPages: currentBook.edition.numberOfPages,
+                                        bookTitle: currentBook.book.title,
+                                        bookCoverURL: currentBook.edition.coverUrl
                                     )
-                                    .frame(width: 300)
+                                    .containerRelativeFrame(.horizontal) { width, _ in max(0, width - 16) }
                                 }
                             }
                         }

@@ -10,23 +10,43 @@ import SwiftUI
 struct QuoteCardView: View {
     let quote: Quote
     let totalPages: Int?
+    var bookTitle: String? = nil
+    var bookCoverURL: String? = nil
+
+    private var sourceTitle: String {
+        let title = bookTitle ?? quote.bookContext?.book?.title
+        return title?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false
+            ? title! : String(localized: "quote_unknown_book")
+    }
+
+    private var sourceCoverURL: URL? {
+        guard let value = bookCoverURL ?? quote.bookContext?.edition?.coverURL,
+              !value.isEmpty else { return nil }
+        return URL(string: value)
+    }
     
     @State private var confirmationDelete: Bool = false
     @State private var showEditQuote = false
     
     @Environment(QuoteViewModel.self) private var quoteViewModel
-    @Environment(\.dismiss) private var dismiss
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
 
-            HStack {
+            HStack(alignment: .top, spacing: 10) {
                 Image(systemName: "quote.opening")
-                    .font(.title2)
+                    .font(.title3)
                     .foregroundStyle(AppColors.accent)
-                
-                Spacer()
-                
+                    .accessibilityHidden(true)
+
+                Text(quote.content)
+                    .font(.body)
+                    .lineLimit(4)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .foregroundStyle(AppColors.titles)
+                    .multilineTextAlignment(.leading)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
                 Menu {
                     Button {
                         showEditQuote = true
@@ -46,30 +66,46 @@ struct QuoteCardView: View {
                 }
             }
             
-            Text(quote.content)
-                .font(.body)
-                .lineLimit(3, reservesSpace: true)
-                .foregroundStyle(AppColors.titles)
-                .multilineTextAlignment(.leading)
+            HStack(alignment: .center, spacing: 12) {
+                HStack(spacing: 8) {
+                    AsyncImage(url: sourceCoverURL) { phase in
+                        if let image = phase.image {
+                            image.resizable().scaledToFill()
+                        } else {
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(AppColors.border.opacity(0.3))
+                                .overlay {
+                                    Image(systemName: "book.closed")
+                                        .font(.caption)
+                                        .foregroundStyle(AppColors.secondaryText)
+                                }
+                        }
+                    }
+                    .frame(width: 28, height: 40)
+                    .clipShape(RoundedRectangle(cornerRadius: 4))
+                    .accessibilityHidden(true)
+
+                    Text(sourceTitle)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(AppColors.titles)
+                        .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-            HStack(spacing: 10) {
-
-                if let pageNumber = quote.pageNumber {
-                    Label(
-                        String(format: String(localized: "reading_page_number"), pageNumber),
-                        systemImage: "book.pages"
-                    )
-                    .font(.caption)
-                    .foregroundStyle(AppColors.secondaryText)
+                VStack(alignment: .trailing, spacing: 4) {
+                    if let pageNumber = quote.pageNumber {
+                        Text(String(format: String(localized: "reading_page_number"), pageNumber))
+                    }
+                    if !formattedDate.isEmpty {
+                        Text(formattedDate)
+                    }
                 }
-
-                Spacer()
-
-                Text(formattedDate)
-                    .font(.caption)
-                    .foregroundStyle(AppColors.secondaryText)
+                .font(.caption2)
+                .foregroundStyle(AppColors.secondaryText)
+                .fixedSize(horizontal: false, vertical: true)
             }
+
         }
         .padding(16)
         .frame(maxWidth: .infinity)
@@ -112,7 +148,9 @@ struct QuoteCardView: View {
             .withFractionalSeconds
         ]
 
-        guard let date = inputFormatter.date(from: quote.createdAt) else {
+        let fractionalDate = inputFormatter.date(from: quote.createdAt)
+        inputFormatter.formatOptions = [.withInternetDateTime]
+        guard let date = fractionalDate ?? inputFormatter.date(from: quote.createdAt) else {
             return ""
         }
 

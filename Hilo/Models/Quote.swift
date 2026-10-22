@@ -14,6 +14,7 @@ nonisolated struct Quote: Decodable {
     var sourceType: SourceTypeQuote
     var createdAt: String
     var updatedAt: String
+    var bookContext: QuoteBookContext? = nil
     
     enum CodingKeys: String, CodingKey {
         case id = "id"
@@ -23,6 +24,7 @@ nonisolated struct Quote: Decodable {
         case sourceType = "source_type"
         case createdAt = "created_at"
         case updatedAt = "updated_at"
+        case bookContext = "user_book"
     }
 }
 
@@ -58,5 +60,30 @@ struct UpdateQuoteParams: Encodable {
     enum CodingKeys: String, CodingKey {
         case content
         case pageNumber = "page_number"
+    }
+}
+
+// Optional so insert/update responses and quotes with unavailable relations still decode.
+nonisolated struct QuoteBookContext: Decodable {
+    let book: QuoteBookInfo?
+    let edition: QuoteEditionInfo?
+
+    enum CodingKeys: String, CodingKey {
+        case book = "books"
+        case edition = "book_editions"
+    }
+}
+
+nonisolated struct QuoteBookInfo: Decodable {
+    let title: String?
+}
+
+nonisolated struct QuoteEditionInfo: Decodable {
+    let coverURL: String?
+    let numberOfPages: Int?
+
+    enum CodingKeys: String, CodingKey {
+        case coverURL = "cover_url"
+        case numberOfPages = "number_of_pages"
     }
 }
