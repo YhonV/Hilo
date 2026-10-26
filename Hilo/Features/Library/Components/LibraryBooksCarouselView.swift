@@ -10,11 +10,12 @@ import SwiftUI
 struct LibraryBooksCarouselView: View {
     
     let userLibraryBooks: [UserLibraryBook]
+    @State private var visibleBookID: UUID?
     
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             LazyHStack(alignment: .top, spacing: 12) {
-                ForEach(userLibraryBooks, id: \.bookId) { book in
+                ForEach(userLibraryBooks, id: \.userBookId) { book in
                     let authors = book.book.bookAuthors
                         .map { $0.author.name }
                         .joined(separator: ", ")
@@ -95,6 +96,11 @@ struct LibraryBooksCarouselView: View {
                     }
                 }
             }
+            .scrollTargetLayout()
+        }
+        .scrollPosition(id: $visibleBookID, anchor: .leading)
+        .onChange(of: userLibraryBooks.first?.userBookId) { _, firstID in
+            visibleBookID = firstID
         }
     }
 }

@@ -220,3 +220,4 @@
 "library_show_grid" = "View all";
 "quotes_show_grid" = "View all";
 "collection_show_carousel" = "Show carousel";
+"reading_started_on" = "Started: %@";

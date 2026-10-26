@@ -54,20 +54,11 @@ struct BookEditionCard: View {
                     }
                 }
 
-                Text(edition.languageLabel)
+                Text(edition.title)
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.white)
-                    .lineLimit(2)
-
-                Text(edition.publisherLabel)
-                    .font(.caption2)
-                    .foregroundStyle(.white.opacity(0.8))
-                    .lineLimit(2)
-
-                Text(edition.publicationYear ?? String(localized: "book_unknown_year"))
-                    .font(.caption2)
-                    .foregroundStyle(.white.opacity(0.6))
-                    .lineLimit(1)
+                    .multilineTextAlignment(.leading)
+                    .lineLimit(3)
 
                 if isSaved {
                     Label(String(localized: "edition_saved"), systemImage: "bookmark.fill")
@@ -81,9 +72,7 @@ struct BookEditionCard: View {
                         in: RoundedRectangle(cornerRadius: 12))
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(String(format: String(localized: "edition_accessibility_description"),
-                                   edition.languageLabel, edition.publisherLabel,
-                                   edition.publicationYear ?? String(localized: "book_unknown_year")))
+        .accessibilityLabel(Text(verbatim: edition.title))
         .accessibilityValue(isSelected ? String(localized: "edition_selected") : (isSaved ? String(localized: "edition_saved") : ""))
         .accessibilityAddTraits(isSelected ? [.isSelected] : [])
     }

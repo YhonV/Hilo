@@ -271,6 +271,8 @@ final class LibraryService {
             """)
             .eq("user_id", value: userId)
             .is("deleted_at", value: nil)
+            .order("updated_at", ascending: false, nullsFirst: false)
+            .order("user_book_id", ascending: true)
             .execute()
             .value
         return response

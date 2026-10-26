@@ -27,6 +27,7 @@ final class LibraryViewModel {
             where: { $0.userBookId == userBookId }
         ) {
             userBooks[index].currentPage = currentPage
+            moveToFront(at: index)
         }
     }
     
@@ -45,6 +46,7 @@ final class LibraryViewModel {
             userBooks[index].currentPage = updatedBook.currentPage
             userBooks[index].startedAt = updatedBook.startedAt
             userBooks[index].finishedAt = updatedBook.finishedAt
+            moveToFront(at: index)
         }
     }
     
@@ -68,9 +70,17 @@ final class LibraryViewModel {
             userBooks[index].currentPage = updatedBook.currentPage
             userBooks[index].startedAt = updatedBook.startedAt
             userBooks[index].finishedAt = updatedBook.finishedAt
+            moveToFront(at: index)
         }
     }
     
+    // Only successful writes change recency; keep all other books in their current order.
+    private func moveToFront(at index: Int) {
+        guard index != 0 else { return }
+        let updatedBook = userBooks.remove(at: index)
+        userBooks.insert(updatedBook, at: 0)
+    }
+
     private func statusName(from statusId: Int) -> String {
         switch statusId {
         case 1:

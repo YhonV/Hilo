@@ -262,6 +262,8 @@ struct LibraryBookDetailView: View {
     
     private func formatDate(_ dateString: String) -> String {
         let inputFormatter = DateFormatter()
+        inputFormatter.locale = Locale(identifier: "en_US_POSIX")
+        inputFormatter.calendar = Calendar(identifier: .gregorian)
         inputFormatter.dateFormat = "yyyy-MM-dd"
 
         let outputFormatter = DateFormatter()
@@ -328,6 +330,30 @@ struct LibraryBookDetailView: View {
                 
                 // LEYENDO
                 if currentBook.status.name == "reading" {
+                    if let startedAt = currentBook.startedAt,
+                       !startedAt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                        Label(
+                            String(format: String(localized: "reading_started_on"), formatDate(startedAt)),
+                            systemImage: "calendar"
+                        )
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(
+                            .white.opacity(0.12),
+                            in: Capsule()
+                        )
+                        .overlay {
+                            Capsule()
+                                .stroke(
+                                    .white.opacity(0.20),
+                                    lineWidth: 1
+                                )
+                        }
+                        .foregroundStyle(.white)
+                        .fontWeight(.semibold)
+                        .fixedSize(horizontal: false, vertical: true)
+                    }
+
                     if let currentPage = currentBook.currentPage,
                        let totalPages = currentBook.edition.numberOfPages,
                        totalPages > 0  {
@@ -373,7 +399,7 @@ struct LibraryBookDetailView: View {
                     }
                     .foregroundStyle(.white)
                     .fontWeight(.semibold)
-                    .fixedSize()
+                    .fixedSize(horizontal: false, vertical: true)
                 }
                 
                 // LEÍDO
@@ -398,7 +424,7 @@ struct LibraryBookDetailView: View {
                         }
                         .foregroundStyle(.white)
                         .fontWeight(.semibold)
-                        .fixedSize()
+                        .fixedSize(horizontal: false, vertical: true)
                     }
                 }
             }

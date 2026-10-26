@@ -24,6 +24,7 @@ final class OpenLibraryService {
         var enrichedBook = book
 
         enrichedBook.title = edition.title
+        enrichedBook.editionId = edition.key
 
         if let coverId = edition.covers?.first {
             enrichedBook.cover = "https://covers.openlibrary.org/b/id/\(coverId)-L.jpg"

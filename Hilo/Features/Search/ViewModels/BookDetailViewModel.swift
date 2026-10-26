@@ -29,6 +29,7 @@ class BookDetailViewModel {
     private var collapsedEditionID: String?
     private let deviceLanguage: String
     private let originalTitle: String
+    private let originalBook: Book
 
     // Filtering is presentation-only. Keep the complete batch in `editions`.
     var displayEditions: [OpenLibraryEditionDTO] {
@@ -55,14 +56,19 @@ class BookDetailViewModel {
             return lhs.offset < rhs.offset
         }.map(\.element)
         let protectedIDs = Set([savedEdition?.key, selectedEdition?.key].compactMap { $0 })
-        let protectedCovers = Set(ranked.filter { protectedIDs.contains($0.key) }.compactMap(\.coverIdentity))
+        let protectedKeys = ranked.filter { protectedIDs.contains($0.key) }
+            .reduce(into: Set<String>()) { $0.formUnion($1.presentationDuplicateKeys) }
         var seenIDs = Set<String>()
-        var seenCovers = Set<String>()
+        var seenKeys = Set<String>()
         return ranked.filter { edition in
             guard seenIDs.insert(edition.key).inserted else { return false }
+            // Keep saved and manually selected records visible even if they share artwork.
             if protectedIDs.contains(edition.key) { return true }
-            guard let cover = edition.coverIdentity, !protectedCovers.contains(cover) else { return false }
-            return seenCovers.insert(cover).inserted
+            guard edition.displayCoverURL != nil else { return false }
+            let keys = edition.presentationDuplicateKeys
+            guard keys.isDisjoint(with: protectedKeys), keys.isDisjoint(with: seenKeys) else { return false }
+            seenKeys.formUnion(keys)
+            return true
         }
     }
 
@@ -90,6 +96,7 @@ class BookDetailViewModel {
         self.deviceLanguage = deviceLanguage
         self.book = book
         self.originalTitle = book.title
+        self.originalBook = book
     }
 
     // MARK: - Obtener estado del libro
@@ -139,18 +146,23 @@ class BookDetailViewModel {
 
         let needsDescription = book.description?.isEmpty != false
 
-        async let workTask = openLibraryService.getWorkDetails(
-            workId: book.externalId
-        )
+        // Each provider can succeed independently; edition changes must not change the query.
+        async let workTask: OpenLibraryWorkDTO? = {
+            do {
+                return try await openLibraryService.getWorkDetails(workId: originalBook.externalId)
+            } catch {
+                print("Error Open Library:", error)
+                return nil
+            }
+        }()
 
         async let googleTask: String? = {
             guard needsDescription else { return nil }
-
             do {
                 return try await googleBooksService.getDescription(
-                    title: book.title,
-                    authors: book.authors,
-                    language: book.language
+                    title: originalBook.title,
+                    authors: originalBook.authors,
+                    language: originalBook.language
                 )
             } catch {
                 print("Error Google Books:", error)
@@ -158,22 +170,16 @@ class BookDetailViewModel {
             }
         }()
 
-        let work = try await workTask
-        let googleDescription = await googleTask
-
-        if book.genre.isEmpty {
-            book.genre = openLibraryService.extractGenres(
-                from: work.subjects ?? []
-            )
+        let (work, googleDescription) = await (workTask, googleTask)
+        guard !Task.isCancelled else { return }
+        if book.genre.isEmpty, let work {
+            book.genre = openLibraryService.extractGenres(from: work.subjects ?? [])
         }
-
-        if needsDescription {
-            if let googleDescription, !googleDescription.isEmpty {
-                print("USANDO DESCRIPCIÓN GOOGLE")
-                book.description = googleDescription
-            } else {
-                print("USANDO DESCRIPCIÓN OPEN LIBRARY")
-                book.description = work.description?.value
+        if book.description?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty != false {
+            let descriptions = [googleDescription, work?.description?.value]
+            if let description = descriptions.compactMap({ $0?.trimmingCharacters(in: .whitespacesAndNewlines) })
+                .first(where: { !$0.isEmpty }) {
+                book.description = description
             }
         }
     }
@@ -224,7 +230,29 @@ class BookDetailViewModel {
                 return
             }
             guard !hasManualSelection, !hasSavedAssociation else { return }
-            if let edition = displayEditions.first {
+            if let id = originalBook.editionId,
+               id.range(of: #"^/books/OL[0-9]+M$"#, options: .regularExpression) != nil {
+                var edition = editions.first(where: { $0.key == id }) ?? OpenLibraryEditionDTO(
+                    key: id, title: originalBook.title, covers: nil,
+                    languages: [OpenLibraryLanguageDTO(key: originalBook.language)],
+                    isbn10: nil, isbn13: originalBook.isbn.map { [$0] },
+                    publishers: [originalBook.editorial], numberOfPages: originalBook.numberOfPages,
+                    publishDate: originalBook.publishedDate
+                )
+                if !originalBook.cover.isEmpty { edition.persistedCoverURL = originalBook.cover }
+                applyEdition(edition)
+            } else if !originalBook.cover.isEmpty {
+                // Search can return a work cover without an edition ID. Match that cover
+                // before selecting; never silently substitute a different edition.
+                let identity = originalBook.cover.replacingOccurrences(
+                    of: #"-[SML]\.jpg"#, with: ".jpg", options: .regularExpression)
+                if let edition = editions.first(where: {
+                    $0.displayCoverURL?.absoluteString.replacingOccurrences(
+                        of: #"-[SML]\.jpg"#, with: ".jpg", options: .regularExpression) == identity
+                }) {
+                    applyEdition(edition)
+                }
+            } else if let edition = displayEditions.first {
                 applyEdition(edition)
             }
 

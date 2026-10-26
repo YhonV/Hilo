@@ -111,6 +111,30 @@ extension OpenLibraryEditionDTO {
         return url.absoluteString
     }
 
+    // Group equivalent catalog entries for presentation, without changing their IDs.
+    var presentationDuplicateKeys: Set<String> {
+        var keys = Set<String>()
+        if let coverIdentity { keys.insert("cover:" + coverIdentity) }
+        for isbn in (isbn10 ?? []) + (isbn13 ?? []) {
+            let clean = isbn.uppercased().filter { $0.isNumber || $0 == "X" }
+            if clean.count == 10 || clean.count == 13 { keys.insert("isbn:" + clean) }
+        }
+        func normalized(_ value: String) -> String {
+            value.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: Locale(identifier: "en_US_POSIX"))
+                .components(separatedBy: CharacterSet.alphanumerics.inverted)
+                .filter { !$0.isEmpty }.joined(separator: " ")
+        }
+        let normalizedTitle = normalized(title)
+        let publisher = normalized(publishers?.first ?? "")
+        // A title alone is not enough: preserve genuinely different editions and
+        // incomplete records. This also catches duplicate uploads with different cover IDs.
+        if !normalizedTitle.isEmpty, !publisher.isEmpty, let year = publicationYear {
+            let languages = languageCodes.sorted().joined(separator: ",")
+            keys.insert("metadata:\(normalizedTitle)|\(publisher)|\(year)|\(languages)|\(numberOfPages.map(String.init) ?? "")")
+        }
+        return keys
+    }
+
     var languageCodes: [String] {
         (languages ?? []).map {
             $0.key.replacingOccurrences(of: "/languages/", with: "").lowercased()

@@ -33,21 +33,31 @@ source = '\n'.join([
         try await withCheckedThrowingContinuation { pending = $0 }
     }
     func getDescription(workId: String) async throws -> String? { nil }
+    var fails = false
+    var description: OpenLibraryDescription?
     func getWorkDetails(workId: String) async throws -> OpenLibraryWorkDTO {
-        OpenLibraryWorkDTO(description: nil, subjects: nil)
+        if fails { throw URLError(.notConnectedToInternet) }
+        return OpenLibraryWorkDTO(description: description, subjects: nil)
     }
     func extractGenres(from: [String]) -> [BookGenre] { [] }
 }
 @MainActor final class GoogleBooksService {
     static let shared = GoogleBooksService()
-    func getDescription(title: String, authors: [String], language: String) async throws -> String? { nil }
+    var description: String?
+    var fails = false
+    var requestedTitle: String?
+    func getDescription(title: String, authors: [String], language: String) async throws -> String? {
+        requestedTitle = title
+        if fails { throw URLError(.notConnectedToInternet) }
+        return description
+    }
 }
 ''',
     read('Hilo/Features/Search/ViewModels/BookDetailViewModel.swift'),
     r'''
 @main struct Checks {
     @MainActor static func main() async throws {
-        let base = Book(externalId: "/works/OL1W", title: "Work", authors: [], cover: "search-cover",
+        let base = Book(externalId: "/works/OL1W", title: "Work", authors: [], cover: "",
                         genre: [], totalReviews: 0, editorial: "", language: "")
         let a = OpenLibraryEditionDTO(key: "/books/OL1M", title: "A", covers: [1], languages: nil,
              isbn10: nil, isbn13: nil, publishers: nil, numberOfPages: 10, publishDate: nil)
@@ -112,10 +122,26 @@ source = '\n'.join([
         func edition(_ id: Int, cover: Int?, language: String = "eng", complete: Bool = false) -> OpenLibraryEditionDTO {
             OpenLibraryEditionDTO(key: "/books/OL\(id)M", title: "Edition \(id)",
                 covers: cover.map { [$0] }, languages: [OpenLibraryLanguageDTO(key: "/languages/\(language)")],
-                isbn10: nil, isbn13: complete ? ["1234567890123"] : nil,
+                isbn10: nil, isbn13: complete ? [String(format: "978000000%04d", id)] : nil,
                 publishers: complete ? ["Publisher"] : nil, numberOfPages: complete ? 100 : nil,
                 publishDate: complete ? "October 12, 2001" : nil)
         }
+        let duplicates = BookDetailViewModel(book: base)
+        func catalogEdition(_ id: Int, year: String = "2014", publisher: String = "Edimat Libros", isbn: String? = nil) -> OpenLibraryEditionDTO {
+            OpenLibraryEditionDTO(key: "/books/OL\(id)M", title: "La metamorfosis",
+                covers: [id], languages: nil, isbn10: nil, isbn13: isbn.map { [$0] },
+                publishers: [publisher], numberOfPages: 112, publishDate: year)
+        }
+        duplicates.editions = [catalogEdition(100), catalogEdition(101, publisher: "EDIMAT  LIBROS"),
+                               catalogEdition(102, year: "2008")]
+        assert(duplicates.displayEditions.map(\.key) == ["/books/OL100M", "/books/OL102M"])
+        assert(duplicates.editions.count == 3)
+        duplicates.editions = [catalogEdition(103, isbn: "978-1234567890"),
+                               catalogEdition(104, year: "2015", isbn: "9781234567890")]
+        assert(duplicates.displayEditions.count == 1)
+        let stableDuplicates = duplicates.displayEditions.map(\.key)
+        duplicates.selectEdition(duplicates.displayEditions[0])
+        assert(duplicates.displayEditions.map(\.key) == stableDuplicates)
         let carousel = BookDetailViewModel(book: base, deviceLanguage: "es")
         carousel.editions = [edition(10, cover: nil), edition(11, cover: -1),
             edition(12, cover: 12, complete: true), edition(13, cover: 13, language: "spa"),
@@ -159,6 +185,31 @@ source = '\n'.join([
         assert(carousel.visibleEditions.first?.key == "/books/OL99M")
         assert(carousel.selectedEdition?.key == "/books/OL34M")
         assert(carousel.visibleEditions.count == 10)
+        var searchBook = base
+        searchBook.cover = "https://covers.openlibrary.org/b/id/99-L.jpg"
+        searchBook.editionId = "/books/OL99M"
+        let details = BookDetailViewModel(book: searchBook)
+        let load = Task { await details.loadEditions() }
+        while OpenLibraryService.shared.pending == nil { await Task.yield() }
+        OpenLibraryService.shared.pending?.resume(returning: [a, b])
+        OpenLibraryService.shared.pending = nil
+        await load.value
+        assert(details.book.cover == searchBook.cover && details.book.editionId == searchBook.editionId)
+        details.selectEdition(b)
+        OpenLibraryService.shared.fails = true
+        GoogleBooksService.shared.description = "Google synopsis"
+        try await details.loadBookDetails()
+        assert(details.book.description == "Google synopsis")
+        assert(GoogleBooksService.shared.requestedTitle == searchBook.title)
+        OpenLibraryService.shared.fails = false
+        OpenLibraryService.shared.description = .text("Open Library synopsis")
+        GoogleBooksService.shared.fails = true
+        let fallback = BookDetailViewModel(book: base)
+        try await fallback.loadBookDetails()
+        assert(fallback.book.description == "Open Library synopsis")
+        try await details.loadBookDetails()
+        assert(details.book.description == "Google synopsis")
+        print("PASS: search edition/cover preserved outside batch, independent synopsis providers, stable query, existing description preserved")
         print("PASS: cover filtering/deduplication, language/metadata ordering, initial limit, expansion, saved coverless edition and retained manual selection")
         print("PASS: arrival orders, manual selection, persisted fallback, missing edition, unsaved work, network failure")
     }
