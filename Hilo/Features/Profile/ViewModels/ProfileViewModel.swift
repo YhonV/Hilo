@@ -44,10 +44,50 @@ final class ProfileViewModel {
 
     // MARK: - Currently Reading
     var currentlyReadingBooks: [CurrentlyReadingBook] = []
+
+    private var loadedUserID: UUID?
+    private var lastLoadedAt: Date?
+    private let cacheLifetime: TimeInterval = 300
+
+    var isCacheFresh: Bool {
+        guard let loadedUserID, let lastLoadedAt else { return false }
+        return loadedUserID == currentUserID && Date().timeIntervalSince(lastLoadedAt) < cacheLifetime
+    }
+    private var currentUserID: UUID? { loadedUserID }
+
+    /// Reuses the already loaded library snapshot so progress changes appear
+    /// immediately when returning to ProfileView, without another network call.
+    func syncFromLibrary(_ books: [UserLibraryBook]) {
+        readCount = books.filter { $0.statusId == BookStatus.read.id }.count
+        readingCount = books.filter { $0.statusId == BookStatus.reading.id }.count
+        toReadCount = books.filter { $0.statusId == BookStatus.toRead.id }.count
+        pagesRead = books.compactMap(\.currentPage).reduce(0, +)
+
+        currentlyReadingBooks = books
+            .filter { $0.statusId == BookStatus.reading.id }
+            .map { book in
+                CurrentlyReadingBook(
+                    userBookId: book.userBookId,
+                    currentPage: book.currentPage ?? 0,
+                    book: CurrentBook(
+                        title: book.book.title,
+                        authors: book.book.bookAuthors.map {
+                            CurrentBookAuthor(name: $0.author.name)
+                        }
+                    ),
+                    edition: CurrentBookEdition(
+                        numberOfPages: book.edition.numberOfPages,
+                        coverURL: book.edition.coverUrl
+                    )
+                )
+            }
+    }
     
     // MARK: - Load Profile
 
     func loadProfileData(userId: UUID) async {
+
+        guard !isCacheFresh || loadedUserID != userId else { return }
 
         isLoading = true
         errorMessage = nil
@@ -56,9 +96,12 @@ final class ProfileViewModel {
             isLoading = false
         }
 
-        await loadAvatar(userId: userId)
-        await loadBasicStats(userId: userId)
-        await loadCurrentlyReading(userId: userId)
+        async let avatarTask: Void = loadAvatar(userId: userId)
+        async let statsTask: Void = loadBasicStats(userId: userId)
+        async let currentTask: Void = loadCurrentlyReading(userId: userId)
+        _ = await (avatarTask, statsTask, currentTask)
+        loadedUserID = userId
+        lastLoadedAt = Date()
 //        await loadQuotes(userId: userId)
 //        await loadActivityStats(userId: userId)
     }
@@ -105,6 +148,7 @@ final class ProfileViewModel {
             readCount = rows.filter { $0.statusId == BookStatus.read.id }.count
             readingCount = rows.filter { $0.statusId == BookStatus.reading.id }.count
             toReadCount = rows.filter { $0.statusId == BookStatus.toRead.id }.count
+            pagesRead = rows.compactMap(\.currentPage).reduce(0, +)
 
         } catch {
             print("Error cargando estadísticas:", error)

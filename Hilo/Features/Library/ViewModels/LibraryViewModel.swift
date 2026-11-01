@@ -14,10 +14,13 @@ final class LibraryViewModel {
     
     // MARK: - Objetos
     var userBooks: [UserLibraryBook] = []
+    private var loadedUserID: UUID?
     
     // MARK: - Obtener los libros del usuario
     func getUserBooks(userId: UUID) async throws {
+        guard loadedUserID != userId else { return }
         userBooks = try await libraryService.getUsersBook(userId: userId)
+        loadedUserID = userId
     }
     
     // MARK: - Actualizar progreso de lectura

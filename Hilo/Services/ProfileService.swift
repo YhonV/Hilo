@@ -9,9 +9,11 @@ import Foundation
 
 struct UserBookStatusRow: Decodable {
     let statusId: Int
+    let currentPage: Int?
 
     enum CodingKeys: String, CodingKey {
         case statusId = "status_id"
+        case currentPage = "current_page"
     }
 }
 
@@ -54,8 +56,9 @@ class ProfileService {
     func getReadingStats(uid: UUID) async throws -> [UserBookStatusRow] {
         return try await supabase
             .from("user_book")
-            .select("status_id")
+            .select("status_id, current_page")
             .eq("user_id", value: uid)
+            .is("deleted_at", value: nil)
             .execute()
             .value
     }
@@ -81,6 +84,7 @@ class ProfileService {
             )
             .eq("user_id", value: uid)
             .eq("status_id", value: BookStatus.reading.id)
+            .is("deleted_at", value: nil)
             .order("updated_at", ascending: false)
             .execute()
             .value

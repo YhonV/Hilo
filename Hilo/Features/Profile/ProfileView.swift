@@ -130,14 +130,11 @@ struct ProfileView: View {
                     
                         /// **Estadisticas básica**
                         
-                        HStack {
+                        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
                             BasicStatisticCard(value: profileViewModel.readCount, icon: "checkmark", title: String(localized: "books_read"))
-                            Divider().frame(width: 1, height: 55)
-                            
                             BasicStatisticCard(value: profileViewModel.readingCount, icon: "book", title: String(localized: "reading"))
-                            Divider().frame(width: 1, height: 55)
-                            
                             BasicStatisticCard(value: profileViewModel.toReadCount, icon: "bookmark", title: String(localized: "to_read"))
+                            BasicStatisticCard(value: profileViewModel.pagesRead, icon: "book.pages", title: String(localized: "pages_read"))
                         }
                         
                         Spacer()
@@ -230,11 +227,12 @@ struct ProfileView: View {
         .task {
             if let userId = authViewModel.currentUser?.id {
 
-                await profileViewModel.loadProfileData(userId: userId)
-
+                async let profileTask: Void = profileViewModel.loadProfileData(userId: userId)
+                async let libraryTask: Void = libraryViewModel.getUserBooks(userId: userId)
+                async let quotesTask: Void = quoteViewModel.getAllQuotes(userId: userId)
                 do {
-                    try await libraryViewModel.getUserBooks(userId: userId)
-                    try await quoteViewModel.getAllQuotes(userId: userId)
+                    _ = try await (profileTask, libraryTask, quotesTask)
+                    profileViewModel.syncFromLibrary(libraryViewModel.userBooks)
                 } catch {
                     print("Error cargando perfil: \(error)")
                 }

@@ -12,6 +12,8 @@ struct RegisterView: View {
     @State private var username: String = ""
     @State private var password: String = ""
     @State private var confirmPassword: String = ""
+    @State private var isPasswordVisible = false
+    @State private var isConfirmPasswordVisible = false
     
     @State private var isLoading = false
     @State private var navigateToLogin = false
@@ -123,9 +125,26 @@ struct RegisterView: View {
                                         .foregroundColor(AppColors.primary)
                                         .frame(width: 20)
                                     
-                                    SecureField("password_placeholder", text: $password)
-                                        .autocorrectionDisabled()
-                                        .focused($isFocused)
+                                    Group {
+                                        if isPasswordVisible {
+                                            TextField("password_placeholder", text: $password)
+                                        } else {
+                                            SecureField("password_placeholder", text: $password)
+                                        }
+                                    }
+                                    .autocorrectionDisabled()
+                                    .focused($isFocused)
+
+                                    Button {
+                                        isPasswordVisible.toggle()
+                                    } label: {
+                                        Image(systemName: isPasswordVisible ? "eye" : "eye.slash")
+                                            .foregroundStyle(AppColors.secondaryText)
+                                    }
+                                    .buttonStyle(.plain)
+                                    .accessibilityLabel(
+                                        String(localized: isPasswordVisible ? "hide_password" : "show_password")
+                                    )
                                 }
                                 .padding()
                                 .background(AppColors.background.opacity(0.65))
@@ -141,9 +160,26 @@ struct RegisterView: View {
                                         .foregroundColor(AppColors.primary)
                                         .frame(width: 20)
                                     
-                                    SecureField("confirm_password_placeholder", text: $confirmPassword)
-                                        .autocorrectionDisabled()
-                                        .focused($isFocused)
+                                    Group {
+                                        if isConfirmPasswordVisible {
+                                            TextField("confirm_password_placeholder", text: $confirmPassword)
+                                        } else {
+                                            SecureField("confirm_password_placeholder", text: $confirmPassword)
+                                        }
+                                    }
+                                    .autocorrectionDisabled()
+                                    .focused($isFocused)
+
+                                    Button {
+                                        isConfirmPasswordVisible.toggle()
+                                    } label: {
+                                        Image(systemName: isConfirmPasswordVisible ? "eye" : "eye.slash")
+                                            .foregroundStyle(AppColors.secondaryText)
+                                    }
+                                    .buttonStyle(.plain)
+                                    .accessibilityLabel(
+                                        String(localized: isConfirmPasswordVisible ? "hide_password" : "show_password")
+                                    )
                                 }
                                 .padding()
                                 .background(AppColors.background.opacity(0.65))
