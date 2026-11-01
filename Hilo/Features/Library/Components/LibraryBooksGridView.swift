@@ -23,24 +23,11 @@ struct LibraryBooksGridView: View {
                     LibraryBookDetailView(bookDetail: book)
                 } label: {
                     VStack(alignment: .leading, spacing: 6) {
-                        Color.clear
-                            .aspectRatio(2.0 / 3.0, contentMode: .fit)
-                            .overlay {
-                                AsyncImage(url: URL(string: book.edition.coverUrl ?? "")) { phase in
-                                    if let image = phase.image {
-                                        image.resizable().scaledToFit()
-                                    } else {
-                                        RoundedRectangle(cornerRadius: 8)
-                                            .fill(AppColors.surface)
-                                            .overlay {
-                                                Image(systemName: "book.closed")
-                                                    .font(.title2)
-                                                    .foregroundStyle(AppColors.secondaryText)
-                                            }
-                                    }
-                                }
-                            }
-                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                        BookCoverView(
+                            url: book.edition.coverUrl ?? "",
+                            width: 110,
+                            height: 180
+                        )
                             .accessibilityHidden(true)
 
                         Text(book.book.title)

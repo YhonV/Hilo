@@ -24,37 +24,10 @@ struct LibraryBooksCarouselView: View {
                     } label: {
                         LazyHStack(alignment: .top, spacing: 12) {
                             // MARK: - Portada del libro
-                            AsyncImage(
-                                url: URL(string: book.edition.coverUrl ?? "")
-                            ) { phase in
-                                
-                                switch phase {
-                                    
-                                case .empty:
-                                    ProgressView()
-                                    
-                                case .success(let image):
-                                    image
-                                        .resizable()
-                                        .scaledToFill()
-                                    
-                                case .failure:
-                                    Image(systemName: "book.closed")
-                                        .resizable()
-                                        .scaledToFit()
-                                        .padding()
-                                        .foregroundStyle(AppColors.secondaryText)
-                                    
-                                @unknown default:
-                                    EmptyView()
-                                }
-                            }
-                            .frame(width: 90, height: 130)
-                            .clipShape(
-                                RoundedRectangle(
-                                    cornerRadius: 10,
-                                    style: .continuous
-                                )
+                            BookCoverView(
+                                url: book.edition.coverUrl ?? "",
+                                width: 90,
+                                height: 130
                             )
                             
                             VStack(alignment: .leading, spacing: 8) {

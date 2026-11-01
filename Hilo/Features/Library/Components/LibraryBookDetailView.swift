@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Nuke
 
 struct LibraryBookDetailView: View {
     let bookDetail: UserLibraryBook
@@ -21,6 +22,14 @@ struct LibraryBookDetailView: View {
     @State private var showRemoveConfirmation = false
     @State private var isRemovingBook = false
     @State private var removeError: String?
+
+    init(bookDetail: UserLibraryBook) {
+        self.bookDetail = bookDetail
+        let cachedImage = bookDetail.edition.coverUrl
+            .flatMap { URL(string: $0.replacingOccurrences(of: "-L.jpg", with: "-M.jpg")) }
+            .flatMap { ImagePipeline.shared.cache[$0]?.image }
+        _coverImage = State(initialValue: cachedImage)
+    }
     
     private var currentBook: UserLibraryBook {
         libraryViewModel.userBooks.first {
@@ -247,13 +256,12 @@ struct LibraryBookDetailView: View {
     
     private func getCoverImage() async {
         guard let coverUrl = currentBook.edition.coverUrl,
-              let url = URL(string: coverUrl) else {
+              let url = URL(string: coverUrl.replacingOccurrences(of: "-L.jpg", with: "-M.jpg")) else {
             return
         }
         
         do {
-            let (data, _) = try await URLSession.shared.data(from: url)
-            guard let image = UIImage(data: data) else { return }
+            let image = try await ImagePipeline.shared.image(for: url)
             coverImage = image
         } catch {
             print("Error descargando portada: \(error)")
