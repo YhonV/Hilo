@@ -211,6 +211,8 @@
 "search_top_count" = "Top %d";
 "error_loading_profile_picture" = "Could not load the profile photo.";
 "auth_sign_in_error" = "Could not sign in. Check your email and password and try again.";
+"show_password" = "Show password";
+"hide_password" = "Hide password";
 "auth_sign_up_error" = "Could not create your account. Check your details and try again.";
 "auth_recovery_error" = "Could not send the recovery email. Please try again.";
 "calendar_load_error" = "Could not load reading activity. Please try again.";

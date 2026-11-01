@@ -220,3 +220,5 @@
 "quotes_show_grid" = "Ver todas";
 "collection_show_carousel" = "Ver carrusel";
 "reading_started_on" = "Iniciado: %@";
+"show_password" = "Mostrar contraseña";
+"hide_password" = "Ocultar contraseña";

@@ -9,6 +9,7 @@ import SwiftUI
 struct LoginView: View {
     @State private var email: String = ""
     @State private var password: String = ""
+    @State private var isPasswordVisible = false
     
     @State private var isLoading = false
     @State private var errorMessage : String?
@@ -72,8 +73,25 @@ struct LoginView: View {
                                         .foregroundColor(AppColors.primary)
                                         .frame(width: 20)
                                     
-                                    SecureField("form_password_placeholder", text: $password)
-                                        .focused($isFocused)
+                                    Group {
+                                        if isPasswordVisible {
+                                            TextField("form_password_placeholder", text: $password)
+                                        } else {
+                                            SecureField("form_password_placeholder", text: $password)
+                                        }
+                                    }
+                                    .focused($isFocused)
+
+                                    Button {
+                                        isPasswordVisible.toggle()
+                                    } label: {
+                                        Image(systemName: isPasswordVisible ? "eye" : "eye.slash")
+                                            .foregroundStyle(AppColors.secondaryText)
+                                    }
+                                    .buttonStyle(.plain)
+                                    .accessibilityLabel(
+                                        String(localized: isPasswordVisible ? "hide_password" : "show_password")
+                                    )
                                 }
                                 .padding()
                                 .background(AppColors.background.opacity(0.65))
