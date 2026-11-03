@@ -223,3 +223,5 @@
 "show_password" = "Mostrar contraseña";
 "hide_password" = "Ocultar contraseña";
 "pages_read" = "Páginas leídas";
+"pages_remaining" = "Páginas por leer";
+"finished_this_year" = "Finalizados este año";

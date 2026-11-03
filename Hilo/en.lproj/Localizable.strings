@@ -214,6 +214,8 @@
 "show_password" = "Show password";
 "hide_password" = "Hide password";
 "pages_read" = "Pages read";
+"pages_remaining" = "Pages to read";
+"finished_this_year" = "Finished this year";
 "auth_sign_up_error" = "Could not create your account. Check your details and try again.";
 "auth_recovery_error" = "Could not send the recovery email. Please try again.";
 "calendar_load_error" = "Could not load reading activity. Please try again.";

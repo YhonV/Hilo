@@ -27,6 +27,9 @@ final class QuoteViewModel {
         )
         let newQuote = try await quoteService.saveQuote(request: param)
         quotes.append(newQuote)
+        // Keep the profile collection in sync with the book detail collection.
+        // Both screens share this view model, so returning to ProfileView is immediate.
+        userQuotes.insert(newQuote, at: 0)
     }
     
     // MARK: - Obtener citas

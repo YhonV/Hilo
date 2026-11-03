@@ -32,6 +32,8 @@ final class ProfileViewModel {
     // MARK: - Activity
 
     var pagesRead: Int = 0
+    var pagesRemaining: Int = 0
+    var finishedThisYear: Int = 0
     var averageRating: Double = 0
     var reviewsCount: Int = 0
     var favoriteGenre: String = ""
@@ -62,6 +64,17 @@ final class ProfileViewModel {
         readingCount = books.filter { $0.statusId == BookStatus.reading.id }.count
         toReadCount = books.filter { $0.statusId == BookStatus.toRead.id }.count
         pagesRead = books.compactMap(\.currentPage).reduce(0, +)
+        pagesRemaining = books.reduce(0) { total, book in
+            guard let pages = book.edition.numberOfPages, pages > 0 else { return total }
+            return total + max(pages - (book.currentPage ?? 0), 0)
+        }
+        let currentYear = Calendar.autoupdatingCurrent.component(.year, from: Date())
+        finishedThisYear = books.filter { book in
+            guard book.statusId == BookStatus.read.id,
+                  let finishedAt = book.finishedAt,
+                  let date = Self.parseDate(finishedAt) else { return false }
+            return Calendar.autoupdatingCurrent.component(.year, from: date) == currentYear
+        }.count
 
         currentlyReadingBooks = books
             .filter { $0.statusId == BookStatus.reading.id }
@@ -81,6 +94,21 @@ final class ProfileViewModel {
                     )
                 )
             }
+    }
+
+    private static func parseDate(_ value: String) -> Date? {
+        let iso = ISO8601DateFormatter()
+        iso.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        if let date = iso.date(from: value) { return date }
+
+        iso.formatOptions = [.withInternetDateTime]
+        if let date = iso.date(from: value) { return date }
+
+        let dayFormatter = DateFormatter()
+        dayFormatter.calendar = Calendar(identifier: .gregorian)
+        dayFormatter.locale = Locale(identifier: "en_US_POSIX")
+        dayFormatter.dateFormat = "yyyy-MM-dd"
+        return dayFormatter.date(from: value)
     }
     
     // MARK: - Load Profile

@@ -119,6 +119,7 @@ struct ProfileView: View {
                                 .font(.subheadline)
                                 .fontWeight(.bold)
                                 .foregroundStyle(AppColors.secondaryText)
+
                             }
 
                             .frame(maxWidth: .infinity)
@@ -135,6 +136,8 @@ struct ProfileView: View {
                             BasicStatisticCard(value: profileViewModel.readingCount, icon: "book", title: String(localized: "reading"))
                             BasicStatisticCard(value: profileViewModel.toReadCount, icon: "bookmark", title: String(localized: "to_read"))
                             BasicStatisticCard(value: profileViewModel.pagesRead, icon: "book.pages", title: String(localized: "pages_read"))
+                            BasicStatisticCard(value: profileViewModel.pagesRemaining, icon: "book.closed", title: String(localized: "pages_remaining"))
+                            BasicStatisticCard(value: profileViewModel.finishedThisYear, icon: "calendar.badge.checkmark", title: String(localized: "finished_this_year"))
                         }
                         
                         Spacer()
@@ -232,10 +235,12 @@ struct ProfileView: View {
                 async let quotesTask: Void = quoteViewModel.getAllQuotes(userId: userId)
                 do {
                     _ = try await (profileTask, libraryTask, quotesTask)
-                    profileViewModel.syncFromLibrary(libraryViewModel.userBooks)
                 } catch {
                     print("Error cargando perfil: \(error)")
                 }
+                // Library progress is authoritative for the profile stats even if
+                // the independent quotes request fails.
+                profileViewModel.syncFromLibrary(libraryViewModel.userBooks)
             }
         }
     }

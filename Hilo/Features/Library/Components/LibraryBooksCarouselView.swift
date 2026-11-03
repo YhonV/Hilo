@@ -10,7 +10,6 @@ import SwiftUI
 struct LibraryBooksCarouselView: View {
     
     let userLibraryBooks: [UserLibraryBook]
-    @State private var visibleBookID: UUID?
     
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
@@ -22,7 +21,7 @@ struct LibraryBooksCarouselView: View {
                     NavigationLink {
                         LibraryBookDetailView(bookDetail: book)
                     } label: {
-                        LazyHStack(alignment: .top, spacing: 12) {
+                        HStack(alignment: .top, spacing: 12) {
                             // MARK: - Portada del libro
                             BookCoverView(
                                 url: book.edition.coverUrl ?? "",
@@ -65,15 +64,13 @@ struct LibraryBooksCarouselView: View {
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
                         }
-                        .frame(width: 320)
+                        .frame(width: 320, alignment: .leading)
                     }
                 }
             }
-            .scrollTargetLayout()
         }
-        .scrollPosition(id: $visibleBookID, anchor: .leading)
-        .onChange(of: userLibraryBooks.first?.userBookId) { _, firstID in
-            visibleBookID = firstID
-        }
+        .contentMargins(.leading, 0, for: .scrollContent)
+        .contentMargins(.trailing, 12, for: .scrollContent)
+        .defaultScrollAnchor(.leading)
     }
 }

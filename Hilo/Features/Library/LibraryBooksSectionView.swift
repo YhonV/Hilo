@@ -35,7 +35,7 @@ enum Status: String, CaseIterable {
 struct LibraryBooksSectionView: View {
 
     @State private var selectedStatus = Status.reading
-    @State private var showsGrid = false
+    @State private var showsGrid = true
 
     let userLibraryBooks: [UserLibraryBook]
 

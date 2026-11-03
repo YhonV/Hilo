@@ -15,6 +15,7 @@ struct BookDetailView: View {
     @State private var statusFeedbackTrigger = 0
     @State private var bookDetailViewModel: BookDetailViewModel
     @Environment(AuthViewModel.self) private var authViewModel
+    @Environment(LibraryViewModel.self) private var libraryViewModel
     @State private var isCheckingBookStatus = true
     @State private var coverImage: UIImage?
     @State private var isLoadingCover = false
@@ -405,6 +406,12 @@ struct BookDetailView: View {
 
         do {
             try await bookDetailViewModel.saveBook(status: status)
+
+            // Keep the shared library tab in sync immediately after saving from
+            // Search, instead of waiting until the user leaves and re-enters it.
+            if let userId = authViewModel.currentUser?.id {
+                try await libraryViewModel.refreshUserBooks(userId: userId)
+            }
         } catch {
             print("Error guardando libro: \(error)")
         }

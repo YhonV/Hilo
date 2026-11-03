@@ -22,6 +22,14 @@ final class LibraryViewModel {
         userBooks = try await libraryService.getUsersBook(userId: userId)
         loadedUserID = userId
     }
+
+    /// Forces a refresh after a write made outside the library flow (for
+    /// example, saving a book from Search). The regular getter remains cached
+    /// for tab switching, while writes can explicitly update the shared list.
+    func refreshUserBooks(userId: UUID) async throws {
+        userBooks = try await libraryService.getUsersBook(userId: userId)
+        loadedUserID = userId
+    }
     
     // MARK: - Actualizar progreso de lectura
     func updateBookProgres(userBookId: UUID,currentPage: Int) async throws {
