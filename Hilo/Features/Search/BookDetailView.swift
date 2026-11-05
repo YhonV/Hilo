@@ -64,6 +64,7 @@ struct BookDetailView: View {
     
     init(book: Book) {
             self.book = book
+            _coverImage = State(initialValue: BookCoverSource.cachedImage(book.cover))
             _bookDetailViewModel = State(
                 initialValue: BookDetailViewModel(book: book)
             )
@@ -436,16 +437,21 @@ struct BookDetailView: View {
         let requestID = UUID()
         coverRequestID = requestID
         let coverURL = bookDetailViewModel.book.cover
-        coverImage = nil
+        coverImage = BookCoverSource.cachedImage(coverURL)
         isLoadingCover = false
-        guard !coverURL.isEmpty, let url = URL(string: coverURL) else { return }
+        guard !coverURL.isEmpty else { return }
 
         isLoadingCover = true
         defer {
             if coverRequestID == requestID { isLoadingCover = false }
         }
         do {
-            let image = try await ImagePipeline.shared.image(for: url)
+            if coverImage == nil {
+                let thumbnail = try await ImagePipeline.shared.image(for: BookCoverSource.request(coverURL))
+                guard !Task.isCancelled, coverRequestID == requestID else { return }
+                coverImage = thumbnail
+            }
+            let image = try await ImagePipeline.shared.image(for: BookCoverSource.request(coverURL, detail: true))
             guard !Task.isCancelled,
                   coverRequestID == requestID,
                   bookDetailViewModel.book.cover == coverURL else { return }

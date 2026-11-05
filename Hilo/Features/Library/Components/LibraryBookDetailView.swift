@@ -25,9 +25,7 @@ struct LibraryBookDetailView: View {
 
     init(bookDetail: UserLibraryBook) {
         self.bookDetail = bookDetail
-        let cachedImage = bookDetail.edition.coverUrl
-            .flatMap { URL(string: $0.replacingOccurrences(of: "-L.jpg", with: "-M.jpg")) }
-            .flatMap { ImagePipeline.shared.cache[$0]?.image }
+        let cachedImage = BookCoverSource.cachedImage(bookDetail.edition.coverUrl)
         _coverImage = State(initialValue: cachedImage)
     }
     
@@ -255,13 +253,16 @@ struct LibraryBookDetailView: View {
     }
     
     private func getCoverImage() async {
-        guard let coverUrl = currentBook.edition.coverUrl,
-              let url = URL(string: coverUrl.replacingOccurrences(of: "-L.jpg", with: "-M.jpg")) else {
+        guard let coverUrl = currentBook.edition.coverUrl else {
             return
         }
         
         do {
-            let image = try await ImagePipeline.shared.image(for: url)
+            let thumbnail = try await ImagePipeline.shared.image(for: BookCoverSource.request(coverUrl))
+            guard !Task.isCancelled, currentBook.edition.coverUrl == coverUrl else { return }
+            coverImage = thumbnail
+            let image = try await ImagePipeline.shared.image(for: BookCoverSource.request(coverUrl, detail: true))
+            guard !Task.isCancelled, currentBook.edition.coverUrl == coverUrl else { return }
             coverImage = image
         } catch {
             print("Error descargando portada: \(error)")

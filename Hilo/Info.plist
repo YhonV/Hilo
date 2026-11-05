@@ -23,5 +23,7 @@
 	<string>$(SUPABASE_KEY)</string>
 	<key>supabaseUrL</key>
 	<string>$(SUPABASE_URL)</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Hilo necesita permiso para guardar tus citas como imágenes.</string>
 </dict>
 </plist>

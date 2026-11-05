@@ -41,11 +41,11 @@ struct QuoteCardView: View {
 
                 Text(quote.content)
                     .font(.body)
-                    .lineLimit(4)
-                    .fixedSize(horizontal: false, vertical: true)
+                    .lineLimit(3, reservesSpace: true)
                     .foregroundStyle(AppColors.titles)
                     .multilineTextAlignment(.leading)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .frame(maxWidth: .infinity, alignment: .topLeading)
+                    .frame(height: 66, alignment: .topLeading)
 
                 Menu {
                     Button {
@@ -68,7 +68,7 @@ struct QuoteCardView: View {
             
             HStack(alignment: .center, spacing: 12) {
                 HStack(spacing: 8) {
-                    AsyncImage(url: sourceCoverURL) { phase in
+                    CachedBookImage(url: sourceCoverURL) { phase in
                         if let image = phase.image {
                             image.resizable().scaledToFill()
                         } else {

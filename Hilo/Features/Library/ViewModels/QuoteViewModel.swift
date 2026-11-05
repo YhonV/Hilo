@@ -60,6 +60,21 @@ final class QuoteViewModel {
             userQuotes[index] = replacement
         }
     }
+
+    func updateQuoteTemplate(quoteId: UUID, templateId: Int) async throws {
+        let updatedQuote = try await quoteService.updateQuoteTemplate(quoteId: quoteId, templateId: templateId)
+
+        if let index = quotes.firstIndex(where: { $0.id == quoteId }) {
+            var replacement = updatedQuote
+            replacement.bookContext = quotes[index].bookContext
+            quotes[index] = replacement
+        }
+        if let index = userQuotes.firstIndex(where: { $0.id == quoteId }) {
+            var replacement = updatedQuote
+            replacement.bookContext = userQuotes[index].bookContext
+            userQuotes[index] = replacement
+        }
+    }
     
     // MARK: - Obtener todas las citas del usuario
     func getAllQuotes(userId: UUID) async throws {

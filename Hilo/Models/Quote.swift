@@ -12,6 +12,7 @@ nonisolated struct Quote: Decodable {
     var content: String
     var pageNumber: Int?
     var sourceType: SourceTypeQuote
+    var templateId: Int?
     var createdAt: String
     var updatedAt: String
     var bookContext: QuoteBookContext? = nil
@@ -22,6 +23,7 @@ nonisolated struct Quote: Decodable {
         case content = "content"
         case pageNumber = "page_number"
         case sourceType = "source_type"
+        case templateId = "template_id"
         case createdAt = "created_at"
         case updatedAt = "updated_at"
         case bookContext = "user_book"
@@ -60,6 +62,14 @@ struct UpdateQuoteParams: Encodable {
     enum CodingKeys: String, CodingKey {
         case content
         case pageNumber = "page_number"
+    }
+}
+
+struct UpdateQuoteTemplateParams: Encodable {
+    let templateId: Int
+
+    enum CodingKeys: String, CodingKey {
+        case templateId = "template_id"
     }
 }
 

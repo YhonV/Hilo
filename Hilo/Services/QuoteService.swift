@@ -56,4 +56,15 @@ class QuoteService {
     func updateQuote(quoteId: UUID, request: UpdateQuoteParams) async throws -> Quote {
         try await supabase.from("quotes").update(request).eq("id", value: quoteId).select().single().execute().value
     }
+
+    func updateQuoteTemplate(quoteId: UUID, templateId: Int) async throws -> Quote {
+        try await supabase
+            .from("quotes")
+            .update(UpdateQuoteTemplateParams(templateId: templateId))
+            .eq("id", value: quoteId)
+            .select()
+            .single()
+            .execute()
+            .value
+    }
 }

@@ -34,7 +34,7 @@ struct ReadingCard: View {
 
         HStack(alignment: .top, spacing: 12) {
 
-            AsyncImage(
+            CachedBookImage(
                 url: URL(string: readingBook.edition?.coverURL ?? "")
             ) { phase in
 

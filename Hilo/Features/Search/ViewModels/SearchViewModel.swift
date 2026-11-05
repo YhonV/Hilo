@@ -6,6 +6,7 @@
 //
 import SwiftUI
 
+@MainActor
 @Observable
 class SearchViewModel {
     var books: [Book] = []
@@ -13,6 +14,8 @@ class SearchViewModel {
     var hasLoadedInitialBooks: Bool = false
     private var initialBooks: [Book] = []
     private var lastSearchQuery: String?
+    private var searchCache: [String: [Book]] = [:]
+    private var recommendationsTask: Task<Void, Never>?
     var recommendedBooks: [Book] = []
     var recommendationsIsLoading = false
     var hasSearched = false
@@ -28,7 +31,8 @@ class SearchViewModel {
 
         let fetchedBooks = try await OpenLibraryService.shared.searchBooks(query: query)
         
-        books = try await enrichFirstBooks(fetchedBooks, query: query)
+        books = fetchedBooks
+        initialBooks = fetchedBooks
 
         hasLoadedInitialBooks = true
     }
@@ -38,11 +42,17 @@ class SearchViewModel {
         let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !query.isEmpty else { return }
         guard query != lastSearchQuery else { return }
+        recommendationsTask?.cancel()
         hasSearched = false
         books = []
         recommendedBooks = []
         do {
-            let fetchedBooks = try await OpenLibraryService.shared.searchBooks(query: query)
+            let fetchedBooks: [Book]
+            if let cached = searchCache[query] {
+                fetchedBooks = cached
+            } else {
+                fetchedBooks = try await OpenLibraryService.shared.searchBooks(query: query)
+            }
 
             let sortedBooks = fetchedBooks.sorted { firstBook, secondBook in
 
@@ -53,20 +63,18 @@ class SearchViewModel {
                 return firstScore > secondScore
             }
 
-            let enrichedBooks = try await enrichFirstBooks(
-                sortedBooks,
-                query: query
-            )
-            
             try Task.checkCancellation()
+            guard searchText.trimmingCharacters(in: .whitespacesAndNewlines) == query else { return }
 
-            books = enrichedBooks
+            books = sortedBooks
+            if searchCache.count >= 20 { searchCache.removeAll() }
+            searchCache[query] = sortedBooks
             lastSearchQuery = query
             hasSearched = true
             SearchHistoryService.shared.saveSearch(query)
             loadRecentSearches()
             
-            Task {
+            recommendationsTask = Task {
                 await getRecommendedBooks()
             }
 
@@ -79,34 +87,11 @@ class SearchViewModel {
     }
     
     func restoreInitialBooks() {
+        recommendationsTask?.cancel()
         books = initialBooks
         recommendedBooks = []
         hasSearched = false
         lastSearchQuery = nil
-    }
-    
-    private func enrichFirstBooks(_ books: [Book], query: String) async throws -> [Book] {
-
-        var enrichedBooks = books
-
-        let amount = min(3, books.count)
-
-        for index in 0..<amount {
-
-            try Task.checkCancellation()
-
-            let originalBook = books[index]
-
-            let enrichedBook =
-                try await OpenLibraryService.shared.enrichBookWithBestEdition(
-                    book: originalBook,
-                    query: query
-                )
-
-            enrichedBooks[index] = enrichedBook
-        }
-
-        return enrichedBooks
     }
     
     private func titleMatchScore(title: String, query: String) -> Int {
@@ -131,6 +116,7 @@ class SearchViewModel {
     
     // MARK: - Recomendación de libros
     func getRecommendedBooks() async {
+        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard let mainBook = books.first,
               let author = mainBook.authors.first,
               !author.isEmpty else {
@@ -139,7 +125,11 @@ class SearchViewModel {
         }
         
         recommendationsIsLoading = true
-        defer { recommendationsIsLoading = false }
+        defer {
+            if searchText.trimmingCharacters(in: .whitespacesAndNewlines) == query {
+                recommendationsIsLoading = false
+            }
+        }
 
         do {
             let fetchedBooks = try await OpenLibraryService.shared.searchBooks(
@@ -148,6 +138,7 @@ class SearchViewModel {
 
             try Task.checkCancellation()
 
+            guard searchText.trimmingCharacters(in: .whitespacesAndNewlines) == query else { return }
             let existingIds = Set(books.map(\.externalId))
 
             recommendedBooks = Array(

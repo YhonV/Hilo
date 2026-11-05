@@ -49,26 +49,33 @@ struct LibraryView: View {
 
                                 if quoteViewModel.userQuotes.isEmpty {
                                     EmptyQuoteCard(style: .surface)
-                                } else if showsQuotesGrid {
-                                    LazyVGrid(
-                                        columns: [GridItem(.adaptive(minimum: 280), spacing: 14, alignment: .top)],
-                                        alignment: .leading,
-                                        spacing: 14
-                                    ) {
-                                        ForEach(quoteViewModel.userQuotes, id: \.id) { quote in
-                                            LibraryQuoteHighlightCard(quote: quote)
-                                        }
-                                    }
                                 } else {
-                                    ScrollView(.horizontal, showsIndicators: false) {
-                                        LazyHStack(alignment: .top, spacing: 14) {
-                                            ForEach(quoteViewModel.userQuotes, id: \.id) { quote in
-                                                LibraryQuoteHighlightCard(quote: quote)
-                                                    .containerRelativeFrame(.horizontal) { width, _ in
-                                                        max(0, width - 28)
+                                    Group {
+                                        if showsQuotesGrid {
+                                            LazyVGrid(
+                                                columns: [GridItem(.adaptive(minimum: 280), spacing: 14, alignment: .top)],
+                                                alignment: .leading,
+                                                spacing: 14
+                                            ) {
+                                                ForEach(quoteViewModel.userQuotes, id: \.id) { quote in
+                                                    LibraryQuoteHighlightCard(quote: quote)
+                                                }
+                                            }
+                                        } else {
+                                            ScrollView(.horizontal, showsIndicators: false) {
+                                                LazyHStack(alignment: .top, spacing: 14) {
+                                                    ForEach(quoteViewModel.userQuotes, id: \.id) { quote in
+                                                        LibraryQuoteHighlightCard(quote: quote)
+                                                            .containerRelativeFrame(.horizontal) { width, _ in
+                                                                max(0, width - 28)
+                                                            }
                                                     }
+                                                }
                                             }
                                         }
+                                    }
+                                    .transaction { transaction in
+                                        transaction.animation = nil
                                     }
                                 }
                             }

@@ -78,11 +78,18 @@ struct LibraryBooksSectionView: View {
             .pickerStyle(.segmented)
 
             if !filteredBooks.isEmpty {
-                if showsGrid {
-                    LibraryBooksGridView(books: filteredBooks)
-                } else {
-                    LibraryBooksCarouselView(userLibraryBooks: Array(filteredBooks.prefix(6)))
+                Group {
+                    if showsGrid {
+                        LibraryBooksGridView(books: filteredBooks)
+                    } else {
+                        LibraryBooksCarouselView(userLibraryBooks: Array(filteredBooks.prefix(6)))
+                    }
                 }
+                .transaction { transaction in
+                    transaction.animation = nil
+                }
+            } else {
+                EmptyLibraryBooksView(status: selectedStatus)
             }
         }
     }

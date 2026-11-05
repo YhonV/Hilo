@@ -45,7 +45,7 @@ struct CalendarActivityRow: View {
             let url = URL(string: cover)
         {
 
-            AsyncImage(url: url) { image in
+            CachedBookImage(url: url) { image in
 
                 image
                     .resizable()

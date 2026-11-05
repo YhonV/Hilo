@@ -20,7 +20,7 @@ struct BookEditionCard: View {
 
             VStack(alignment: .leading, spacing: 6) {
 
-                AsyncImage(url: edition.displayCoverURL) { image in
+                CachedBookImage(url: edition.displayCoverURL) { image in
                     image
                         .resizable()
                         .scaledToFill()

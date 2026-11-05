@@ -7,23 +7,16 @@
 
 import SwiftUI
 import NukeUI
+import Nuke
 
 struct BookCoverView: View {
     let url: String
 
     var width: CGFloat = 85
     var height: CGFloat = 120
-    private var optimizedURL: URL? {
-        let coverURL = url.replacingOccurrences(
-            of: "-L.jpg",
-            with: "-M.jpg"
-        )
-
-        return URL(string: coverURL)
-    }
 
     var body: some View {
-        LazyImage(url: optimizedURL) { state in
+        LazyImage(request: BookCoverSource.request(url)) { state in
             if let image = state.image {
                 image
                     .resizable()

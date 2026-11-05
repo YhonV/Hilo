@@ -10,7 +10,7 @@ struct BookCard: View {
     let book: Book
     var body: some View {
         VStack {
-            AsyncImage(url: URL(string: book.cover)) { phase in
+            CachedBookImage(url: URL(string: book.cover)) { phase in
                 switch phase {
                 case .success(let image):
                     image.resizable().scaledToFill()

@@ -7,6 +7,7 @@ import UIKit
 /// The pipeline cache is checked first so the quote background does not create
 /// an additional download when the cover is already on screen.
 enum CoverPalette {
+    private static var cachedPalettes: [String: [Color]] = [:]
     static let fallback: [Color] = [
         Color(red: 0.26, green: 0.32, blue: 0.29),
         Color(red: 0.46, green: 0.28, blue: 0.31),
@@ -18,20 +19,24 @@ enum CoverPalette {
             return fallback
         }
 
-        let optimizedURL = coverURL.replacingOccurrences(of: "-L.jpg", with: "-M.jpg")
-        guard let url = URL(string: optimizedURL) else {
+        let request = BookCoverSource.request(coverURL)
+        guard let key = request.url?.absoluteString else {
             return fallback
         }
+        if let colors = cachedPalettes[key] { return colors }
 
         let image: UIImage?
-        if let cachedImage = ImagePipeline.shared.cache[url]?.image {
+        if let cachedImage = ImagePipeline.shared.cache[request]?.image {
             image = cachedImage
         } else {
-            image = try? await ImagePipeline.shared.image(for: url)
+            image = try? await ImagePipeline.shared.image(for: request)
         }
 
         guard let image else { return fallback }
-        return extract(from: image)
+        let colors = extract(from: image)
+        if cachedPalettes.count >= 200 { cachedPalettes.removeAll() }
+        cachedPalettes[key] = colors
+        return colors
     }
 
     private static func extract(from image: UIImage) -> [Color] {

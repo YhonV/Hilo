@@ -45,7 +45,7 @@ struct CalendarDayCell: View {
                     }
                 if let book = books.first {
 
-                    AsyncImage(url: URL(string: book.cover ?? "")) { image in
+                    CachedBookImage(url: URL(string: book.cover ?? "")) { image in
                         image
                             .resizable()
                             .scaledToFill()
