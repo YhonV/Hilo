@@ -20,6 +20,16 @@ class AuthService {
         return response.user.id;
     }
     
+    static let recoveryURL = URL(string: "hilo://auth/recovery")!
+
+    func resetPassword(email: String) async throws {
+        try await supabase.auth.resetPasswordForEmail(email, redirectTo: Self.recoveryURL)
+    }
+
+    func updatePassword(_ password: String) async throws {
+        try await supabase.auth.update(user: UserAttributes(password: password))
+    }
+
     func currentSession() async throws -> Session {
         try await supabase.auth.session
     }

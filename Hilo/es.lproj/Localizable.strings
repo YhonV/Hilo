@@ -45,6 +45,19 @@
 
 /* ===== MainTabView ==== */
 "home_text_tab" = "Inicio";
+"home_discovery_title" = "Por descubrir";
+"home_discovery_library_genres" = "Inspirado en tu biblioteca";
+"home_discovery_explore" = "Nuevas historias para encontrar tu próxima lectura.";
+"home_discovery_based_on" = "Inspirado en tu biblioteca: %@.";
+"home_discovery_new_genre" = "Explora otro género";
+"home_discovery_error" = "No pudimos cargar las recomendaciones. Pulsa recargar para intentarlo otra vez.";
+"home_discovery_empty" = "No encontramos libros nuevos en esta selección. Recarga para explorar más.";
+"home_reading_progress" = "Tu progreso";
+"home_reading_pages_left" = "Por leer";
+"home_reading_total_pages" = "Páginas totales";
+"home_reading_total_unknown" = "Total sin registrar";
+"home_reading_started" = "Comenzaste en: %@";
+"home_reading_start_unknown" = "Inicio sin registrar";
 "search_text_tab" = "Buscar";
 "profile_text_tab" = "Perfil";
 "library_text_tab" = "Biblioteca";
@@ -242,3 +255,20 @@
 "pages_read" = "Páginas leídas";
 "pages_remaining" = "Páginas por leer";
 "finished_this_year" = "Finalizados este año";
+
+// Password recovery
+"recovery_email_sent" = "Si existe una cuenta con ese correo, recibirás un enlace. Revisa también spam y abre el enlace en este dispositivo. Puedes reenviar después de un minuto.";
+"recovery_resend" = "Reenviar correo";
+"recovery_invalid_email" = "Ingresa un correo electrónico válido.";
+"recovery_opening" = "Verificando enlace…";
+"recovery_success" = "Tu contraseña se actualizó correctamente.";
+"recovery_continue" = "Continuar a Hilo";
+"recovery_invalid_link" = "No pudimos validar el enlace. Puede haber vencido, ya haberse usado o haberse solicitado en otro dispositivo. Vuelve al inicio y solicita uno nuevo.";
+"recovery_new_password" = "Crea una nueva contraseña";
+"recovery_password_hint" = "Usa al menos 8 caracteres.";
+"recovery_confirm_password" = "Confirmar nueva contraseña";
+"recovery_save" = "Guardar contraseña";
+"recovery_back_to_login" = "Volver al inicio de sesión";
+"recovery_title" = "Recuperar contraseña";
+"recovery_password_mismatch" = "Las contraseñas no coinciden.";
+"recovery_save_error" = "No pudimos actualizar la contraseña. Revisa tu conexión y utiliza una contraseña nueva que cumpla los requisitos de tu cuenta. Si el problema continúa, solicita otro enlace.";

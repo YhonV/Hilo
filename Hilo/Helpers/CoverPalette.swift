@@ -14,6 +14,19 @@ enum CoverPalette {
         Color(red: 0.20, green: 0.23, blue: 0.25)
     ]
 
+    /// Resolve an already loaded cover synchronously to avoid a fallback flash
+    /// when SwiftUI recreates cards while navigating or changing layouts.
+    static func cachedColors(for source: String?) -> [Color]? {
+        let request = BookCoverSource.request(source)
+        guard let key = request.url?.absoluteString else { return nil }
+        if let colors = cachedPalettes[key] { return colors }
+        guard let image = BookCoverSource.cachedImage(source) else { return nil }
+        let colors = extract(from: image)
+        if cachedPalettes.count >= 200 { cachedPalettes.removeAll() }
+        cachedPalettes[key] = colors
+        return colors
+    }
+
     static func colors(for coverURL: String?) async -> [Color] {
         guard let coverURL else {
             return fallback

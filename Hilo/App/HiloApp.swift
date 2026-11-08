@@ -17,7 +17,9 @@ struct HiloApp: App {
     var body: some Scene {
         WindowGroup {
             Group {
-                if authViewModel.isAuthenticated {
+                if authViewModel.isRecoveringPassword {
+                    ResetPasswordView()
+                } else if authViewModel.isAuthenticated {
                     
                     MainTabView()
                 } else {
@@ -25,6 +27,9 @@ struct HiloApp: App {
                 }
             }
             .environment(authViewModel)
+            .onOpenURL { url in
+                Task { await authViewModel.handleRecoveryURL(url) }
+            }
         }
     }
 }

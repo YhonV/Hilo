@@ -46,6 +46,19 @@
 
 /* ===== MainTabView ==== */
 "home_text_tab" = "Home";
+"home_discovery_title" = "Discover";
+"home_discovery_library_genres" = "Inspired by your library";
+"home_discovery_explore" = "New stories to help you find your next read.";
+"home_discovery_based_on" = "Inspired by your library: %@.";
+"home_discovery_new_genre" = "Explore another genre";
+"home_discovery_error" = "We couldn't load recommendations. Tap refresh to try again.";
+"home_discovery_empty" = "No new books in this selection. Refresh to explore more.";
+"home_reading_progress" = "Your progress";
+"home_reading_pages_left" = "Pages left";
+"home_reading_total_pages" = "Total pages";
+"home_reading_total_unknown" = "Total not recorded";
+"home_reading_started" = "Started on: %@";
+"home_reading_start_unknown" = "Start date not recorded";
 "search_text_tab" = "Search";
 "profile_text_tab" = "Profile";
 "library_text_tab" = "Library";
@@ -243,3 +256,20 @@
 "library_empty_read_title" = "No finished books yet";
 "library_empty_read_description" = "Books you finish will appear here.";
 "reading_started_on" = "Started: %@";
+
+// Password recovery
+"recovery_email_sent" = "If an account exists for this email, you will receive a link. Check spam too and open the link on this device. You can resend after one minute.";
+"recovery_resend" = "Resend email";
+"recovery_invalid_email" = "Enter a valid email address.";
+"recovery_opening" = "Verifying link…";
+"recovery_success" = "Your password has been updated.";
+"recovery_continue" = "Continue to Hilo";
+"recovery_invalid_link" = "We could not verify the link. It may have expired, already been used, or been requested on another device. Return to sign in and request a new one.";
+"recovery_new_password" = "Create a new password";
+"recovery_password_hint" = "Use at least 8 characters.";
+"recovery_confirm_password" = "Confirm new password";
+"recovery_save" = "Save password";
+"recovery_back_to_login" = "Back to sign in";
+"recovery_title" = "Reset password";
+"recovery_password_mismatch" = "Passwords do not match.";
+"recovery_save_error" = "We could not update your password. Check your connection and use a new password that meets your account requirements. If the problem continues, request another link.";

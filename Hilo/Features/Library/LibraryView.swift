@@ -79,8 +79,6 @@ struct LibraryView: View {
                                     }
                                 }
                             }
-                            
-                            CalendarView()
                         }
                         .padding(.horizontal, 20)
                         .padding(.top, 12)

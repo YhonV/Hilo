@@ -28,26 +28,7 @@ struct ExploreGenresView: View {
                     Button {
                         onGenreSelected(genre)
                     } label: {
-                        HStack(spacing: 8) {
-                            Image(systemName: genre.icon)
-                                .font(.subheadline)
-                                .foregroundStyle(genre.color)
-
-                            Text(genre.localizedName)
-                                .font(.subheadline)
-                                .fontWeight(.medium)
-                                .foregroundStyle(AppColors.primaryStrong)
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.8)
-
-                            Spacer(minLength: 0)
-                        }
-                        .padding(.horizontal, 14)
-                        .frame(height: 48)
-                        .glassEffect(
-                            .regular.tint(genre.color.opacity(0.12)).interactive(),
-                            in: .capsule
-                        )
+                        GenrePill(genre: genre, fillsWidth: true)
                     }
                     .buttonStyle(.plain)
                 }

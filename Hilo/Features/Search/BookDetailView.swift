@@ -199,24 +199,7 @@ struct BookDetailView: View {
                             if !bookDetailViewModel.book.genre.isEmpty {
                                 HStack(spacing: 8) {
                                     ForEach(bookDetailViewModel.book.genre, id: \.self) { genre in
-                                        Text(genre.localizedName)
-                                            .font(.caption)
-                                            .fontWeight(.semibold)
-                                            .padding(.horizontal, 12)
-                                            .padding(.vertical, 7)
-                                            .background(
-                                                .white.opacity(0.12),
-                                                in: Capsule()
-                                            )
-                                            .overlay {
-                                                Capsule()
-                                                    .stroke(
-                                                        .white.opacity(0.20),
-                                                        lineWidth: 1
-                                                    )
-                                            }
-                                            .foregroundStyle(.white)
-                                            .fontWeight(.semibold)
+                                        GenreBadge(genre: genre, onCover: true)
                                     }
                                 }
                             }

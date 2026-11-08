@@ -9,6 +9,8 @@ import SwiftUI
 struct ForgotPasswordView: View {
     @State private var email: String = ""
     
+    @State private var emailSent = false
+    @State private var resendAfter = Date.distantPast
     @State private var isLoading = false
     @State private var showError = false
     @State private var errorMessage : String?
@@ -43,6 +45,8 @@ struct ForgotPasswordView: View {
                                 TextField("form_email_placeholder", text: $email)
                                     .keyboardType(.emailAddress)
                                     .textInputAutocapitalization(.never)
+                                    .autocorrectionDisabled()
+                                    .textContentType(.emailAddress)
                             }
                             .padding()
                             .background(AppColors.background.opacity(0.65))
@@ -71,7 +75,7 @@ struct ForgotPasswordView: View {
                             .font(.system(size: 12))
                             .foregroundColor(AppColors.primary)
                         
-                        Text("forgot_password_disclaimer")
+                        Text(emailSent ? "recovery_email_sent" : "forgot_password_disclaimer")
                             .font(.caption)
                             .foregroundColor(AppColors.secondaryText)
                             .multilineTextAlignment(.leading)
@@ -81,33 +85,35 @@ struct ForgotPasswordView: View {
                     .padding(.horizontal, 20)
                     
                     // BOTÓN FIJO
-                    Button {
-                        Task {
-                            do {
-                                try await forgotPassword(email: email)
-                            } catch {
-                                errorMessage = String(localized: "auth_recovery_error")
-                                showError = true
+                    TimelineView(.periodic(from: .now, by: 1)) { context in
+                        Button {
+                            Task {
+                                do {
+                                    try await forgotPassword(email: email)
+                                } catch {
+                                    errorMessage = String(localized: "auth_recovery_error")
+                                    showError = true
+                                }
                             }
-                        }
-                    } label: {
-                        Group {
-                            if isLoading {
-                                ProgressView()
-                                    .tint(.white)
-                            } else {
-                                Text("forgot_password_button")
-                                    .font(.headline)
-                                    .foregroundColor(.white)
+                        } label: {
+                            Group {
+                                if isLoading {
+                                    ProgressView()
+                                        .tint(.white)
+                                } else {
+                                    Text(emailSent ? "recovery_resend" : "forgot_password_button")
+                                        .font(.headline)
+                                        .foregroundColor(.white)
+                                }
                             }
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 40)
                         }
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 40)
+                        .buttonStyle(.glassProminent)
+                        .tint(AppColors.primaryStrong)
+                        .padding(.horizontal, 20)
+                        .disabled(isLoading || context.date < resendAfter)
                     }
-                    .buttonStyle(.glassProminent)
-                    .tint(AppColors.primaryStrong)
-                    .padding(.horizontal, 20)
-                    .disabled(isLoading)
                 }
                 .padding(.bottom, 40)
             }
@@ -122,20 +128,18 @@ struct ForgotPasswordView: View {
     
     func forgotPassword(email: String) async throws {
         isLoading = true
+        defer { isLoading = false }
+        let email = email.trimmingCharacters(in: .whitespacesAndNewlines)
         
-        guard !email.isEmpty else {
-            errorMessage = "all_fields_required"
+        guard email.range(of: #"^[^\s@]+@[^\s@]+\.[^\s@]+$"#, options: .regularExpression) != nil else {
+            errorMessage = "recovery_invalid_email"
             showError = true
-            isLoading = false
             return
         }
         
-        try await FirestoreService.shared.resetPassword(email: email)
-        isLoading = false
-        clearFields()
+        try await AuthService.shared.resetPassword(email: email)
+        emailSent = true
+        resendAfter = Date().addingTimeInterval(60)
     }
-    
-    func clearFields() {
-        email = ""
-    }
+
 }
