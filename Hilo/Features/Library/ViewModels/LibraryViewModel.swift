@@ -14,8 +14,11 @@ final class LibraryViewModel {
     
     // MARK: - Objetos
     var userBooks: [UserLibraryBook] = []
+    private(set) var lastReadingAction: Date?
     private var loadedUserID: UUID?
     
+    func hasLoadedBooks(for userID: UUID) -> Bool { loadedUserID == userID }
+
     // MARK: - Obtener los libros del usuario
     func getUserBooks(userId: UUID) async throws {
         guard loadedUserID != userId else { return }
@@ -33,7 +36,9 @@ final class LibraryViewModel {
     
     // MARK: - Actualizar progreso de lectura
     func updateBookProgres(userBookId: UUID,currentPage: Int) async throws {
+        let previousPage = userBooks.first { $0.userBookId == userBookId }?.currentPage ?? 0
         try await libraryService.updateBookProgress(userBookId: userBookId, currentPage: currentPage)
+        if currentPage > previousPage { lastReadingAction = Date() }
         if let index = userBooks.firstIndex(
             where: { $0.userBookId == userBookId }
         ) {
@@ -46,6 +51,7 @@ final class LibraryViewModel {
     func restartReading(userBookId: UUID) async throws {
 
         let updatedBook = try await libraryService.restartReading(userBookId: userBookId)
+        lastReadingAction = Date()
 
         if let index = userBooks.firstIndex(
             where: { $0.userBookId == userBookId }
@@ -68,6 +74,7 @@ final class LibraryViewModel {
         let updatedBook = try await libraryService.finishReading(
             userBookId: userBookId
         )
+        lastReadingAction = Date()
 
         if let index = userBooks.firstIndex(
             where: { $0.userBookId == userBookId }

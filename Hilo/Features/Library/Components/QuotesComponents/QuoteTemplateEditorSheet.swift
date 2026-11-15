@@ -35,6 +35,8 @@ struct QuoteTemplateEditorSheet: View {
                     LazyHStack(spacing: 12) {
                         ForEach(templates) { template in
                             Button {
+                                guard selectedTemplate != template else { return }
+                                AppHaptics.selection()
                                 withAnimation(.easeInOut(duration: 0.2)) {
                                     selectedTemplate = template
                                 }
@@ -71,6 +73,7 @@ struct QuoteTemplateEditorSheet: View {
 
             Button(String(localized: "common_save")) {
                 onSave(selectedTemplate)
+                AppHaptics.success()
                 dismiss()
             }
             .buttonStyle(.glassProminent)

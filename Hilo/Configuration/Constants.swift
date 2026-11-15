@@ -16,6 +16,8 @@ struct AppColors {
     static let primaryStrong = Color("color-primaryStrong")
     static let secondary = Color("color-secondary")
     static let accent = Color("color-accent")
+    static let accentSurface = accent.opacity(0.09)
+    static let accentBorder = accent.opacity(0.20)
     
     static let secondaryText = Color("color-secondaryText")
     static let titles = Color("color-titles")

@@ -35,7 +35,7 @@ struct RecentSearchesView: View {
                     } label: {
                         HStack(spacing: 12) {
                             Image(systemName: "clock.arrow.circlepath")
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(AppColors.accent)
 
                             Text(search)
                                 .foregroundStyle(.primary)

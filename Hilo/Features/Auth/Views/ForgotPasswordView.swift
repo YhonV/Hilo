@@ -92,6 +92,7 @@ struct ForgotPasswordView: View {
                                     try await forgotPassword(email: email)
                                 } catch {
                                     errorMessage = String(localized: "auth_recovery_error")
+                                    AppHaptics.error()
                                     showError = true
                                 }
                             }
@@ -133,11 +134,13 @@ struct ForgotPasswordView: View {
         
         guard email.range(of: #"^[^\s@]+@[^\s@]+\.[^\s@]+$"#, options: .regularExpression) != nil else {
             errorMessage = "recovery_invalid_email"
+            AppHaptics.error()
             showError = true
             return
         }
         
         try await AuthService.shared.resetPassword(email: email)
+        AppHaptics.success()
         emailSent = true
         resendAfter = Date().addingTimeInterval(60)
     }

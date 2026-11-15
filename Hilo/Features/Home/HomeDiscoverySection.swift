@@ -3,6 +3,7 @@ import SwiftUI
 struct HomeDiscoverySection: View {
     let userID: UUID
     let books: [UserLibraryBook]
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var model = HomeDiscoveryViewModel()
 
     private var libraryKey: String {
@@ -12,9 +13,22 @@ struct HomeDiscoverySection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
-                Text(String(localized: "home_discovery_title"))
-                    .font(.headline)
-                Spacer()
+                let layout = dynamicTypeSize.isAccessibilitySize
+                    ? AnyLayout(VStackLayout(alignment: .leading, spacing: 2))
+                    : AnyLayout(HStackLayout(alignment: .firstTextBaseline, spacing: 8))
+                layout {
+                    Text(String(localized: "home_discovery_title"))
+                        .font(.headline)
+                        .fixedSize(horizontal: true, vertical: false)
+                    Text(model.favoriteGenres.isEmpty
+                         ? String(localized: "home_discovery_explore")
+                         : String(localized: "home_discovery_library_genres"))
+                        .font(.caption)
+                        .foregroundStyle(AppColors.secondaryText)
+                        .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 1)
+                        .minimumScaleFactor(0.85)
+                }
+                Spacer(minLength: 0)
                 Button {
                     Task { await model.load(userID: userID, books: books, force: true) }
                 } label: {
@@ -26,13 +40,6 @@ struct HomeDiscoverySection: View {
                 .disabled(model.isLoading)
                 .accessibilityLabel(String(localized: "search_discover_refresh"))
             }
-
-            Text(model.favoriteGenres.isEmpty
-                 ? String(localized: "home_discovery_explore")
-                 : String(localized: "home_discovery_library_genres"))
-                .font(.subheadline)
-                .foregroundStyle(AppColors.titles)
-                .fixedSize(horizontal: false, vertical: true)
 
             if !model.favoriteGenres.isEmpty {
                 ScrollView(.horizontal, showsIndicators: false) {

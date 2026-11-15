@@ -24,8 +24,10 @@ struct BasicStatisticCard: View {
             Image(systemName: icon)
                 .foregroundStyle(AppColors.accent)
                 .fontWeight(.bold)
-                .frame(height: 20)
+                .frame(width: 32, height: 32)
+                .background(AppColors.accentSurface, in: RoundedRectangle(cornerRadius: 10))
             Text(formattedValue)
+                .foregroundStyle(AppColors.accent)
                 .font(.title2)
                 .fontWeight(.bold)
                 .monospacedDigit()
@@ -39,6 +41,6 @@ struct BasicStatisticCard: View {
                 .frame(height: 30, alignment: .top)
         }
         .frame(maxWidth: .infinity)
-        .frame(height: 82)
+        .frame(minHeight: 98)
     }
 }

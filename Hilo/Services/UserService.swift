@@ -16,6 +16,31 @@ struct UsernameResult: Decodable {
 }
 
 class UserService {
+    /// Report the failure category without logging profile values or session credentials.
+    static func profileErrorDiagnostic(_ error: Error) -> String {
+        func path(_ context: DecodingError.Context) -> String {
+            context.codingPath.map(\.stringValue).joined(separator: ".")
+        }
+        switch error {
+        case let error as PostgrestError:
+            return "database code=\(error.code ?? "unknown")"
+        case DecodingError.keyNotFound(let key, let context):
+            return "decode missing field=\(([path(context), key.stringValue].filter { !$0.isEmpty }).joined(separator: "."))"
+        case DecodingError.valueNotFound(_, let context):
+            return "decode null field=\(path(context))"
+        case DecodingError.typeMismatch(_, let context):
+            return "decode type mismatch field=\(path(context))"
+        case DecodingError.dataCorrupted(let context):
+            return "decode invalid value field=\(path(context))"
+        case let error as URLError:
+            return "network code=\(error.code.rawValue)"
+        default:
+            let error = error as NSError
+            return "request domain=\(error.domain) code=\(error.code)"
+        }
+    }
+
+
     
     func createUser(user: CreateUserRequest) async throws {
         try await supabase
@@ -43,10 +68,6 @@ class UserService {
             .single()
             .execute()
             .value
-    }
-    
-    func deleteUser() {
-        
     }
     
     func isUsernameTaken(username: String) async throws -> Bool {

@@ -74,6 +74,7 @@ struct LibraryQuoteHighlightCard: View {
                     Button {
                         Task {
                             if let image = await makeShareImage() {
+                                AppHaptics.action()
                                 sharePayload = ShareableQuoteImage(image: image)
                             }
                         }
@@ -84,6 +85,7 @@ struct LibraryQuoteHighlightCard: View {
 
                     Button {
                         if selectedTemplate != nil {
+                            AppHaptics.action()
                             showsTemplateEditor = true
                         }
                     } label: {
@@ -254,12 +256,14 @@ struct LibraryQuoteHighlightCard: View {
 
     private func saveImageToPhotos() async {
         guard let image = await makeShareImage() else {
+            AppHaptics.error()
             saveMessage = String(localized: "quote_save_image_error")
             return
         }
 
         let authorization = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
         guard authorization == .authorized || authorization == .limited else {
+            AppHaptics.warning()
             saveMessage = String(localized: "quote_photos_permission_error")
             return
         }
@@ -268,8 +272,10 @@ struct LibraryQuoteHighlightCard: View {
             try await PHPhotoLibrary.shared().performChanges {
                 PHAssetChangeRequest.creationRequestForAsset(from: image)
             }
+            AppHaptics.success()
             saveMessage = String(localized: "quote_save_image_success")
         } catch {
+            AppHaptics.error()
             saveMessage = String(localized: "quote_save_image_error")
         }
     }

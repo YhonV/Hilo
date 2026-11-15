@@ -12,7 +12,6 @@ struct BookDetailView: View {
     @State private var isLoading: Bool = false
     @State private var showReadingStatusOptions: Bool = false
     @State private var isDescriptionExpanded = false
-    @State private var statusFeedbackTrigger = 0
     @State private var bookDetailViewModel: BookDetailViewModel
     @Environment(AuthViewModel.self) private var authViewModel
     @Environment(LibraryViewModel.self) private var libraryViewModel
@@ -250,18 +249,16 @@ struct BookDetailView: View {
                                                     == edition.key,
                                                 isSaved: bookDetailViewModel.savedEdition?.key == edition.key
                                             ) {
+                                                guard bookDetailViewModel.selectedEdition?.key != edition.key else { return }
                                                 bookDetailViewModel.selectEdition(edition)
-                                                statusFeedbackTrigger += 1
+                                                AppHaptics.selection()
                                             }
                                         }
                                     }
                                     .padding(.horizontal, 20)
                                 }
                             }
-                            .sensoryFeedback(
-                                .selection,
-                                trigger: statusFeedbackTrigger
-                            )
+
                         }
                         
                         if let message = bookDetailViewModel.librarySelectionError ?? bookDetailViewModel.editionsError {
@@ -272,6 +269,7 @@ struct BookDetailView: View {
                         }
 
                         Button {
+                            AppHaptics.action()
                             showReadingStatusOptions = true
                         } label: {
                             Group {
@@ -308,7 +306,7 @@ struct BookDetailView: View {
                                 currentStatus: bookDetailViewModel.bookStatus
                             ) { status in
                                 
-                                statusFeedbackTrigger += 1
+                                AppHaptics.selection()
                                 
                                 Task {
                                     await saveBookToList(status: status)
@@ -319,7 +317,6 @@ struct BookDetailView: View {
                             .presentationCornerRadius(28)
                             .presentationBackground(.ultraThinMaterial)
                         }
-                        .sensoryFeedback(.selection, trigger: statusFeedbackTrigger)
                         
                         VStack(alignment: .leading, spacing: 10) {
                             
@@ -391,12 +388,17 @@ struct BookDetailView: View {
         do {
             try await bookDetailViewModel.saveBook(status: status)
 
-            // Keep the shared library tab in sync immediately after saving from
-            // Search, instead of waiting until the user leaves and re-enters it.
+            AppHaptics.success()
+            // A refresh failure must not report a successfully saved book as a failed save.
             if let userId = authViewModel.currentUser?.id {
-                try await libraryViewModel.refreshUserBooks(userId: userId)
+                do {
+                    try await libraryViewModel.refreshUserBooks(userId: userId)
+                } catch {
+                    print("Error refrescando biblioteca: \(error)")
+                }
             }
         } catch {
+            AppHaptics.error()
             print("Error guardando libro: \(error)")
         }
     }

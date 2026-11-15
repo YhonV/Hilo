@@ -26,6 +26,7 @@ struct LibraryView: View {
 
                                     if !quoteViewModel.userQuotes.isEmpty {
                                         Button {
+                                            AppHaptics.selection()
                                             showsQuotesGrid.toggle()
                                         } label: {
                                             Label(

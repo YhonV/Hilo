@@ -48,7 +48,7 @@
 "home_text_tab" = "Home";
 "home_discovery_title" = "Discover";
 "home_discovery_library_genres" = "Inspired by your library";
-"home_discovery_explore" = "New stories to help you find your next read.";
+"home_discovery_explore" = "Explore new reads";
 "home_discovery_based_on" = "Inspired by your library: %@.";
 "home_discovery_new_genre" = "Explore another genre";
 "home_discovery_error" = "We couldn't load recommendations. Tap refresh to try again.";
@@ -273,3 +273,96 @@
 "recovery_title" = "Reset password";
 "recovery_password_mismatch" = "Passwords do not match.";
 "recovery_save_error" = "We could not update your password. Check your connection and use a new password that meets your account requirements. If the problem continues, request another link.";
+
+// Reading reminders
+"reminders_title" = "Reading reminders";
+"reminders_enable" = "Enable daily reminder";
+"reminders_time" = "Time";
+"reminders_rule" = "One daily reminder at your chosen local time while you have books in Reading. It pauses when you finish or remove your last active book. Settings are saved on this device for your account.";
+"reminders_permissions" = "Notification permissions";
+"reminders_open_settings" = "Open system settings";
+"reminders_denied_help" = "Allow Hilo notifications in system settings to receive reminders.";
+"reminders_status" = "Reminder status";
+"reminders_retry" = "Retry";
+"reminders_disabled" = "Reminders are off.";
+"reminders_waiting_permission" = "Waiting for notification permission.";
+"reminders_no_books" = "No active readings. Your reminder will be scheduled when you start reading a book.";
+"reminders_scheduled" = "Daily reminder scheduled";
+"reminders_permission_allowed" = "Notifications allowed";
+"reminders_permission_quiet" = "Temporary permission or quiet delivery";
+"reminders_permission_denied" = "Notifications blocked";
+"reminders_permission_unknown" = "Permission not requested yet";
+"reminders_notification_title" = "Continue your reading";
+"reminders_notification_body" = "Spend a few minutes with your current reads. Your next page awaits in Hilo.";
+"reminders_permission_error" = "Could not request permission. Turn the reminder on again to retry.";
+"reminders_schedule_error" = "Could not schedule the reminder. Please try again.";
+
+// Inactivity reminders
+"inactivity_title" = "Return to reading";
+"inactivity_enable" = "Remind me after a period without reading";
+"inactivity_period" = "Days without activity";
+"inactivity_three_days" = "3 days";
+"inactivity_seven_days" = "7 days";
+"inactivity_last_activity" = "Last reading activity";
+"inactivity_next" = "Next reminder";
+"inactivity_waiting" = "No reminder pending. Your activity is checked and only one reminder is sent per inactive period.";
+"inactivity_rule" = "One reminder at your chosen time, 3 or 7 calendar days after your last reading activity. Starting, advancing pages or finishing a book resets the period; opening the app does not count. Without reading history, we count from activation. No active book is required. This is independent of the daily reminder.";
+"inactivity_notification_title" = "Return to your reading habit";
+"inactivity_notification_body" = "You have not logged reading for a few days. A few pages can be a good start.";
+"inactivity_load_error" = "Could not load your activity. We keep the last known data; if none is available, we wait before scheduling a reminder.";
+
+// Weekly page goals
+"weekly_goal_title" = "Weekly goal";
+"weekly_goal_target" = "Goal: %d pages per week";
+"weekly_goal_enable" = "Remind me about my weekly goal";
+"weekly_goal_progress" = "Weekly goal progress";
+"weekly_goal_count" = "%d of %d pages";
+"weekly_goal_completed" = "Weekly goal achieved!";
+"weekly_goal_remaining" = "You have %d pages left this week";
+"weekly_goal_next" = "Next goal reminder";
+"weekly_goal_no_pending" = "No pending reminders for this week.";
+"weekly_goal_rule" = "Monday through Sunday. You will receive a reminder on Wednesday and Saturday at your chosen time if you are below the expected progress for that day. Reaching your goal cancels this week’s reminders. Your goal is saved for your account on this device.";
+"weekly_goal_load_error" = "Could not load this week’s pages. Goal reminders are paused until progress is refreshed.";
+"weekly_goal_notification_title" = "Keep working toward your reading goal";
+"weekly_goal_notification_body" = "Log your pages and check how much remains to reach your weekly goal in Hilo.";
+
+// Home weekly goal card
+"home_goal_eyebrow" = "YOUR WEEK, PAGE BY PAGE";
+"home_goal_manage" = "Manage goal and reminders";
+"home_goal_loading" = "Updating your week…";
+"home_goal_unavailable" = "Your goal is still here. Refresh to check how many pages you have read this week.";
+"home_goal_reminder" = "Your goal reminder";
+"home_goal_completed_label" = "complete";
+"home_goal_success" = "Goal reached";
+"home_goal_keep_going" = "Weekly progress";
+"home_goal_success_detail" = "You completed your planned pages for this week.";
+"home_goal_reminder_off" = "Off · Set up";
+"home_goal_permission" = "Allow notifications to receive it";
+"home_goal_reminder_review" = "Review reminder status";
+"home_goal_reminder_done" = "Goal achieved · No pending reminders";
+
+"weekly_goal_show_home" = "Show weekly goal on Home";
+"weekly_goal_show_home_help" = "Hiding the card does not turn off its reminders.";
+
+// Account deletion
+"account_delete_title" = "Delete account";
+"account_delete_heading" = "Delete your Hilo account";
+"account_delete_explanation" = "Your account and associated personal data will be deleted. You will lose access to your library and will not be able to recover this information.";
+"account_delete_data_title" = "Data that will be deleted";
+"account_delete_profile_data" = "Profile and profile picture";
+"account_delete_reading_data" = "Library, progress and reading history";
+"account_delete_quotes_data" = "Quotes and other associated personal data";
+"account_delete_preferences_data" = "Local preferences and reminders on this device";
+"account_delete_acknowledge" = "I understand that deletion is permanent";
+"account_delete_action" = "Delete my account";
+"account_delete_working" = "Deleting account…";
+"account_delete_error" = "We could not confirm deletion. Check your connection and try again. If the problem continues, sign in again to check your account status.";
+"account_delete_irreversible" = "This action cannot be undone. You will be signed out when it completes.";
+"account_delete_confirm_title" = "Permanently delete your account?";
+"account_delete_cancel" = "Cancel";
+"account_delete_confirm_action" = "Delete permanently";
+"account_delete_confirm_message" = "Your account and its associated data will be deleted. This action is permanent.";
+
+"account_delete_farewell" = "We’ll miss you so much :(";
+
+"profile_load_error" = "Could not load your profile.";

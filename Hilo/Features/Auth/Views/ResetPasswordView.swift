@@ -111,10 +111,12 @@ struct ResetPasswordView: View {
     @MainActor
     private func save() async {
         guard password.count >= 8 else {
+            AppHaptics.error()
             errorMessage = String(localized: "recovery_password_hint")
             return
         }
         guard password == confirmation else {
+            AppHaptics.error()
             errorMessage = String(localized: "recovery_password_mismatch")
             return
         }
@@ -125,8 +127,10 @@ struct ResetPasswordView: View {
             try await AuthService.shared.updatePassword(password)
             password = ""
             confirmation = ""
+            AppHaptics.success()
             didSave = true
         } catch {
+            AppHaptics.error()
             errorMessage = String(localized: "recovery_save_error")
         }
     }

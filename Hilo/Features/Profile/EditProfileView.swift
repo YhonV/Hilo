@@ -26,7 +26,6 @@ struct EditProfileView: View {
     @State private var selectedImage: UIImage?
     @State private var avatarURL: URL?
     @State private var isAvatarLoading = false
-    @State private var avatarSaveSucceeded = false
     @State private var hasPendingAvatarChange = false
     
     var body: some View {
@@ -203,10 +202,12 @@ struct EditProfileView: View {
                                         errorMessage = "error_updating_profile"
                                     }
 
+                                    AppHaptics.error()
                                     showError = true
 
                                 } catch {
                                     errorMessage = "error_unknown"
+                                    AppHaptics.error()
                                     showError = true
                                 }
                             }
@@ -219,16 +220,11 @@ struct EditProfileView: View {
                     } else {
 
                         Button(String(localized: "common_edit")) {
+                            AppHaptics.action()
                             isEditing = true
                         }
                     }
                 }
-            }
-            .sensoryFeedback(trigger: saveSucceeded) {
-                saveSucceeded ? .success : nil
-            }
-            .sensoryFeedback(trigger: avatarSaveSucceeded) {
-                avatarSaveSucceeded ? .success : nil
             }
             .task(id: authViewModel.currentUser?.id) {
                 guard let user = authViewModel.currentUser else { return }
@@ -277,6 +273,7 @@ struct EditProfileView: View {
         isEditing = false
         isFocused = false
 
+        AppHaptics.success()
         withAnimation(.snappy) {
             saveSucceeded = true
         }
@@ -336,6 +333,7 @@ struct EditProfileView: View {
 
             } catch {
                 errorMessage = "error_loading_profile_picture"
+                AppHaptics.error()
                 showError = true
             }
         }
@@ -361,6 +359,7 @@ struct EditProfileView: View {
             userId: userId,
             imageData: imageData
         )
+        authViewModel.avatarRevision = UUID()
     }
     
     func loadAvatar() {

@@ -55,6 +55,7 @@ struct QuoteCardView: View {
                     }
                     
                     Button(role: .destructive) {
+                        AppHaptics.warning()
                         confirmationDelete = true
                     } label: {
                         Label(String(localized: "common_delete"), systemImage: "trash")
@@ -123,7 +124,9 @@ struct QuoteCardView: View {
                 Task {
                     do {
                         try await quoteViewModel.deleteQuote(quoteId: quote.id)
+                        AppHaptics.success()
                     } catch {
+                        AppHaptics.error()
                         print("error \(error)")
                     }
                 }

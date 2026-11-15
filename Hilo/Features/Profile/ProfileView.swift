@@ -45,6 +45,18 @@ struct ProfileView: View {
                                             EditProfileView()
                                         }
                                         
+                                        NavigationLink {
+                                            ReadingRemindersView()
+                                        } label: {
+                                            Label("reminders_title", systemImage: "bell.badge")
+                                        }
+
+                                        NavigationLink {
+                                            DeleteAccountView()
+                                        } label: {
+                                            Label("account_delete_title", systemImage: "person.crop.circle.badge.minus")
+                                        }
+
                                         Divider()
                                         
                                         Button(String(localized: "profile_sign_out"), role: .destructive) {
@@ -62,23 +74,17 @@ struct ProfileView: View {
                                     }
                                 }
 
-                                AsyncImage(url: profileViewModel.avatarURL) { phase in
-                                    switch phase {
-                                    case .empty:
-                                        ProgressView()
-
-                                    case .success(let image):
-                                        image
+                                Group {
+                                    if let image = profileViewModel.coverImage {
+                                        Image(uiImage: image)
                                             .resizable()
                                             .scaledToFill()
-
-                                    case .failure:
+                                    } else if profileViewModel.avatar.isLoading {
+                                        ProgressView()
+                                    } else {
                                         Image(systemName: "person.crop.circle.fill")
                                             .resizable()
                                             .foregroundStyle(AppColors.secondaryText)
-
-                                    @unknown default:
-                                        EmptyView()
                                     }
                                 }
                                 .frame(width: 110, height: 110)
@@ -104,21 +110,28 @@ struct ProfileView: View {
 
                             VStack(alignment: .center, spacing: 6) {
 
-                                Text(
-                                    authViewModel.currentUser?.displayName
-                                    ?? String(localized: "common_loading")
-                                )
-                                .font(.title2)
-                                .fontWeight(.bold)
-                                .foregroundStyle(AppColors.primaryStrong)
+                                if let user = authViewModel.currentUser {
+                                    Text(user.displayName)
+                                        .font(.title2)
+                                        .fontWeight(.bold)
+                                        .foregroundStyle(AppColors.primaryStrong)
 
-                                Text(
-                                    authViewModel.currentUser?.username
-                                    ?? String(localized: "profile_username_placeholder")
-                                )
-                                .font(.subheadline)
-                                .fontWeight(.bold)
-                                .foregroundStyle(AppColors.secondaryText)
+                                    Text(user.username)
+                                        .font(.subheadline)
+                                        .fontWeight(.bold)
+                                        .foregroundStyle(AppColors.secondaryText)
+                                } else if authViewModel.isLoadingProfile {
+                                    ProgressView(String(localized: "common_loading"))
+                                }
+
+                                if authViewModel.profileLoadFailed {
+                                    Text("profile_load_error")
+                                        .font(.subheadline)
+                                        .foregroundStyle(AppColors.secondaryText)
+                                    Button("common_retry") {
+                                        Task { await authViewModel.reloadCurrentUser() }
+                                    }
+                                }
 
                             }
 
@@ -179,6 +192,7 @@ struct ProfileView: View {
                                 Spacer()
                                 if !quoteViewModel.userQuotes.isEmpty {
                                     Button {
+                                        AppHaptics.selection()
                                         showsQuotesGrid.toggle()
                                     } label: {
                                         Label(showsQuotesGrid ? String(localized: "collection_show_carousel") : String(localized: "quotes_show_grid"),
@@ -227,7 +241,11 @@ struct ProfileView: View {
                 .ignoresSafeArea(edges: .top)
             }
         }
-        .task {
+        .task(id: "\(authViewModel.currentUser?.id.uuidString ?? "")-\(authViewModel.avatarRevision)") {
+            guard let userID = authViewModel.currentUser?.id else { return }
+            await profileViewModel.avatar.load(userID: userID, revision: authViewModel.avatarRevision)
+        }
+        .task(id: authViewModel.currentUser?.id) {
             if let userId = authViewModel.currentUser?.id {
 
                 async let profileTask: Void = profileViewModel.loadProfileData(userId: userId)

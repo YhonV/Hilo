@@ -14,6 +14,13 @@ struct EmptyQuoteCard: View {
             Image(systemName: "quote.bubble")
                 .font(.system(size: 28))
                 .foregroundStyle(iconColor)
+                .frame(width: 56, height: 56)
+                .background {
+                    if style == .surface {
+                        RoundedRectangle(cornerRadius: 18)
+                            .fill(AppColors.accentSurface)
+                    }
+                }
 
             Text(String(localized: "quotes_empty_title"))
                 .font(.headline)
@@ -79,7 +86,7 @@ struct EmptyQuoteCard: View {
         case .overlay:
             return .white.opacity(0.1)
         case .surface:
-            return AppColors.border.opacity(0.5)
+            return AppColors.accentBorder
         }
     }
 }

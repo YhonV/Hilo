@@ -12,7 +12,24 @@ class AuthService {
     private init() {}
     
     func signIn(email: String, password: String) async throws {
-        try await supabase.auth.signIn(email: email, password: password)
+        do {
+            try await supabase.auth.signIn(email: email, password: password)
+            #if DEBUG
+            print("[Hilo/Auth] sign in succeeded")
+            #endif
+        } catch {
+            #if DEBUG
+            if let authError = error as? AuthError {
+                print("[Hilo/Auth] sign in failed: code=\(authError.errorCode.rawValue)")
+            } else if let networkError = error as? URLError {
+                print("[Hilo/Auth] sign in failed: network_code=\(networkError.code.rawValue)")
+            } else {
+                let diagnostic = error as NSError
+                print("[Hilo/Auth] sign in failed: domain=\(diagnostic.domain) code=\(diagnostic.code)")
+            }
+            #endif
+            throw error
+        }
     }
     
     func singUp(email: String, password: String) async throws -> UUID{

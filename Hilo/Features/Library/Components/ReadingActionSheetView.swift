@@ -13,8 +13,6 @@ struct ReadingActionSheetView: View {
     @Environment(LibraryViewModel.self) private var libraryViewModel
     
     @State private var currentPage: Int
-    @State private var successFeedback = false
-    @State private var errorFeedback = false
     
     let bookDetail: UserLibraryBook
     
@@ -73,8 +71,6 @@ struct ReadingActionSheetView: View {
             }
         }
         .padding(20)
-        .sensoryFeedback(.success, trigger: successFeedback)
-        .sensoryFeedback(.error, trigger: errorFeedback)
     }
 
     // MARK: - Actualizar progreso y finalizar lectura
@@ -135,14 +131,13 @@ struct ReadingActionSheetView: View {
                                 userBookId: bookDetail.userBookId,
                                 currentPage: currentPage
                             )
-                            successFeedback.toggle()
-                            try? await Task.sleep(for: .milliseconds(150))
                         }
 
+                        AppHaptics.success()
                         dismiss()
 
                     } catch {
-                        errorFeedback.toggle()
+                        AppHaptics.error()
                         print("Error actualizando lectura: \(error)")
                     }
                 }
@@ -172,13 +167,12 @@ struct ReadingActionSheetView: View {
                         do {
                             try await libraryViewModel.finishReading(userBookId: bookDetail.userBookId)
                             
-                            successFeedback.toggle()
-                            try? await Task.sleep(for: .milliseconds(150))
+                            AppHaptics.success()
 
                             dismiss()
 
                         } catch {
-                            errorFeedback.toggle()
+                            AppHaptics.error()
                             print("Error finalizando lectura: \(error)")
                         }
                     }
@@ -236,12 +230,11 @@ struct ReadingActionSheetView: View {
                     do {
                         try await libraryViewModel.restartReading(userBookId: bookDetail.userBookId)
                         
-                        successFeedback.toggle()
-                        try? await Task.sleep(for: .milliseconds(150))
+                        AppHaptics.success()
                         
                         dismiss()
                     } catch {
-                        errorFeedback.toggle()
+                        AppHaptics.error()
                         print("Error actualizando progreso: \(error)")
                     }
                 }
@@ -268,8 +261,10 @@ struct ReadingActionSheetView: View {
                 Task {
                     do {
                         try await libraryViewModel.restartReading(userBookId: bookDetail.userBookId)
+                        AppHaptics.success()
                         dismiss()
                     } catch {
+                        AppHaptics.error()
                         print("Error actualizando progreso: \(error)")
                     }
                 }

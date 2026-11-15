@@ -9,6 +9,7 @@ import SwiftUI
 struct HomeView: View {
     @Environment(AuthViewModel.self) private var authViewModel
     @Environment(LibraryViewModel.self) private var libraryViewModel
+    @State private var weeklyGoal = WeeklyGoalReminderService.shared
     @State private var isLoadingBooks = false
     @State private var booksLoadFailed = false
     @State private var loadedBooksForUser: UUID?
@@ -40,6 +41,11 @@ struct HomeView: View {
                             HomeReadingSection(books: libraryViewModel.userBooks)
                         }
 
+                        if weeklyGoal.showsOnHome {
+                            HomeWeeklyGoalCard()
+                                .padding(.top, 8)
+                        }
+
                         CalendarView()
                             .padding(.top, 8)
 
@@ -54,6 +60,9 @@ struct HomeView: View {
                     .padding(.top, 12)
                     .padding(.bottom, 20)
                 }
+            }
+            .refreshable {
+                await WeeklyGoalReminderService.shared.refresh()
             }
             .task(id: authViewModel.currentUser?.id) {
                 await loadBooks()

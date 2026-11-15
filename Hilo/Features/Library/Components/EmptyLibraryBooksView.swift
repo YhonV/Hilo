@@ -41,6 +41,8 @@ struct EmptyLibraryBooksView: View {
             Image(systemName: icon)
                 .font(.system(size: 28, weight: .medium))
                 .foregroundStyle(AppColors.accent)
+                .frame(width: 56, height: 56)
+                .background(AppColors.accentSurface, in: RoundedRectangle(cornerRadius: 18))
 
             Text(titleKey)
                 .font(.headline)
@@ -59,7 +61,7 @@ struct EmptyLibraryBooksView: View {
         .background(AppColors.surface, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .stroke(AppColors.border.opacity(0.55), lineWidth: 1)
+                .stroke(AppColors.accentBorder, lineWidth: 1)
         }
     }
 }

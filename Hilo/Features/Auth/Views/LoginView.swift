@@ -139,6 +139,7 @@ struct LoginView: View {
                                         try await signIn(email: email, password: password)
                                     } catch {
                                         errorMessage = String(localized: "auth_sign_in_error")
+                                        AppHaptics.error()
                                         showError = true
                                     }
                                 }
@@ -220,11 +221,13 @@ struct LoginView: View {
         defer { isLoading = false }
         guard !email.isEmpty, !password.isEmpty else {
             errorMessage = "all_fields_required"
+            AppHaptics.error()
             showError = true
             isLoading = false
             return
         }
         try await AuthService.shared.signIn(email: email, password: password)
+        AppHaptics.success()
         clearFields()
     }
     

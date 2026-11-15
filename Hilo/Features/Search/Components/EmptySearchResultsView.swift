@@ -16,7 +16,7 @@ struct EmptySearchResultsView: View {
                 Text("search_no_results_title")
             } icon: {
                 Image(systemName: "books.vertical")
-                    .foregroundStyle(AppColors.primaryStrong)
+                    .foregroundStyle(AppColors.accent)
             }
         } description: {
             Text(

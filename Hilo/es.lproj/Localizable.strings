@@ -47,7 +47,7 @@
 "home_text_tab" = "Inicio";
 "home_discovery_title" = "Por descubrir";
 "home_discovery_library_genres" = "Inspirado en tu biblioteca";
-"home_discovery_explore" = "Nuevas historias para encontrar tu próxima lectura.";
+"home_discovery_explore" = "Explora nuevas lecturas";
 "home_discovery_based_on" = "Inspirado en tu biblioteca: %@.";
 "home_discovery_new_genre" = "Explora otro género";
 "home_discovery_error" = "No pudimos cargar las recomendaciones. Pulsa recargar para intentarlo otra vez.";
@@ -272,3 +272,96 @@
 "recovery_title" = "Recuperar contraseña";
 "recovery_password_mismatch" = "Las contraseñas no coinciden.";
 "recovery_save_error" = "No pudimos actualizar la contraseña. Revisa tu conexión y utiliza una contraseña nueva que cumpla los requisitos de tu cuenta. Si el problema continúa, solicita otro enlace.";
+
+// Reading reminders
+"reminders_title" = "Recordatorios de lectura";
+"reminders_enable" = "Activar recordatorio diario";
+"reminders_time" = "Hora";
+"reminders_rule" = "Un recordatorio diario a la hora local elegida, mientras tengas libros en Leyendo. Se pausa al terminar o quitar tu última lectura. Los ajustes se guardan en este dispositivo para tu cuenta.";
+"reminders_permissions" = "Permisos de notificaciones";
+"reminders_open_settings" = "Abrir ajustes del sistema";
+"reminders_denied_help" = "Permite las notificaciones de Hilo en los ajustes del sistema para recibir recordatorios.";
+"reminders_status" = "Estado del recordatorio";
+"reminders_retry" = "Reintentar";
+"reminders_disabled" = "Recordatorios desactivados.";
+"reminders_waiting_permission" = "Esperando permiso de notificaciones.";
+"reminders_no_books" = "Sin lecturas activas. El recordatorio se programará cuando empieces a leer un libro.";
+"reminders_scheduled" = "Recordatorio diario programado";
+"reminders_permission_allowed" = "Notificaciones permitidas";
+"reminders_permission_quiet" = "Permiso temporal o entrega silenciosa";
+"reminders_permission_denied" = "Notificaciones bloqueadas";
+"reminders_permission_unknown" = "Permiso aún no solicitado";
+"reminders_notification_title" = "Continúa tu lectura";
+"reminders_notification_body" = "Dedica unos minutos a tus lecturas actuales. Tu próxima página te espera en Hilo.";
+"reminders_permission_error" = "No pudimos solicitar el permiso. Vuelve a activar el recordatorio para intentarlo de nuevo.";
+"reminders_schedule_error" = "No pudimos programar el recordatorio. Inténtalo de nuevo.";
+
+// Inactivity reminders
+"inactivity_title" = "Retomar el hábito";
+"inactivity_enable" = "Avisarme después de un período sin leer";
+"inactivity_period" = "Días sin actividad";
+"inactivity_three_days" = "3 días";
+"inactivity_seven_days" = "7 días";
+"inactivity_last_activity" = "Última actividad de lectura";
+"inactivity_next" = "Próximo aviso";
+"inactivity_waiting" = "Sin aviso pendiente. Se consulta tu actividad y se envía un solo aviso por período de inactividad.";
+"inactivity_rule" = "Un único aviso a la hora elegida, 3 o 7 días calendario después de tu última lectura. Empezar, avanzar páginas o terminar un libro reinicia el plazo; abrir la app no cuenta. Sin historial, contamos desde la activación. No necesitas tener libros en Leyendo. Es independiente del aviso diario.";
+"inactivity_notification_title" = "Retoma tu hábito de lectura";
+"inactivity_notification_body" = "Hace unos días que no registras una lectura. Unas páginas pueden ser un buen comienzo.";
+"inactivity_load_error" = "No pudimos consultar tu actividad. Conservamos el último dato conocido; si no hay uno, esperamos antes de programar el aviso.";
+
+// Weekly page goals
+"weekly_goal_title" = "Meta semanal";
+"weekly_goal_target" = "Meta: %d páginas por semana";
+"weekly_goal_enable" = "Recordarme mi meta semanal";
+"weekly_goal_progress" = "Avance de la meta semanal";
+"weekly_goal_count" = "%d de %d páginas";
+"weekly_goal_completed" = "¡Meta semanal cumplida!";
+"weekly_goal_remaining" = "Te faltan %d páginas esta semana";
+"weekly_goal_next" = "Próximo recordatorio de meta";
+"weekly_goal_no_pending" = "Sin avisos pendientes para esta semana.";
+"weekly_goal_rule" = "De lunes a domingo. Recibirás un aviso el miércoles y el sábado, a la hora configurada, si no alcanzas el avance esperado para ese día. Al cumplir la meta se cancelan los avisos de la semana. La meta se guarda para tu cuenta en este dispositivo.";
+"weekly_goal_load_error" = "No pudimos consultar las páginas de esta semana. Los avisos de meta quedan en pausa hasta actualizar el avance.";
+"weekly_goal_notification_title" = "Tu meta de lectura sigue en marcha";
+"weekly_goal_notification_body" = "Registra tus páginas y revisa cuánto te falta para completar tu meta semanal en Hilo.";
+
+// Home weekly goal card
+"home_goal_eyebrow" = "TU SEMANA, PÁGINA A PÁGINA";
+"home_goal_manage" = "Configurar meta y recordatorios";
+"home_goal_loading" = "Actualizando tu semana…";
+"home_goal_unavailable" = "Tu meta sigue aquí. Actualiza para consultar las páginas que llevas esta semana.";
+"home_goal_reminder" = "Recordatorio de tu meta";
+"home_goal_completed_label" = "completado";
+"home_goal_success" = "Meta cumplida";
+"home_goal_keep_going" = "Avance semanal";
+"home_goal_success_detail" = "Completaste las páginas previstas para esta semana.";
+"home_goal_reminder_off" = "Desactivado · Configurar";
+"home_goal_permission" = "Permite las notificaciones para recibirlo";
+"home_goal_reminder_review" = "Revisar el estado del recordatorio";
+"home_goal_reminder_done" = "Meta cumplida · Sin avisos pendientes";
+
+"weekly_goal_show_home" = "Mostrar meta semanal en Inicio";
+"weekly_goal_show_home_help" = "Ocultar la tarjeta no desactiva sus recordatorios.";
+
+// Account deletion
+"account_delete_title" = "Eliminar cuenta";
+"account_delete_heading" = "Eliminar tu cuenta de Hilo";
+"account_delete_explanation" = "Se eliminará tu cuenta y los datos personales asociados. Perderás el acceso a tu biblioteca y no podrás recuperar esta información.";
+"account_delete_data_title" = "Datos que se eliminarán";
+"account_delete_profile_data" = "Perfil y foto de perfil";
+"account_delete_reading_data" = "Biblioteca, avances e historial de lectura";
+"account_delete_quotes_data" = "Citas y otros datos personales asociados";
+"account_delete_preferences_data" = "Preferencias locales y recordatorios de este dispositivo";
+"account_delete_acknowledge" = "Entiendo que la eliminación es permanente";
+"account_delete_action" = "Eliminar mi cuenta";
+"account_delete_working" = "Eliminando cuenta…";
+"account_delete_error" = "No pudimos confirmar la eliminación. Comprueba tu conexión e inténtalo de nuevo. Si el problema continúa, vuelve a iniciar sesión para comprobar el estado de tu cuenta.";
+"account_delete_irreversible" = "Esta acción no se puede deshacer. Al completarse, se cerrará tu sesión.";
+"account_delete_confirm_title" = "¿Eliminar tu cuenta definitivamente?";
+"account_delete_cancel" = "Cancelar";
+"account_delete_confirm_action" = "Eliminar definitivamente";
+"account_delete_confirm_message" = "Se borrarán tu cuenta y sus datos asociados. Esta acción es permanente.";
+
+"account_delete_farewell" = "Te vamos a extrañar mucho :(";
+
+"profile_load_error" = "No pudimos cargar tu perfil.";

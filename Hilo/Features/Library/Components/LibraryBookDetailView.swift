@@ -12,7 +12,6 @@ struct LibraryBookDetailView: View {
     let bookDetail: UserLibraryBook
     @State private var coverImage: UIImage?
     @State private var showReadingStatusOptions: Bool = false
-    @State private var triggerSensoryFeedback: Bool  = false
     @State private var showQuoteSheet: Bool = false
     
     @Environment(LibraryViewModel.self) private var libraryViewModel
@@ -60,7 +59,7 @@ struct LibraryBookDetailView: View {
                 VStack {
                     Button {
                         showReadingStatusOptions = true
-                        triggerSensoryFeedback.toggle()
+                        AppHaptics.action()
                     } label: {
                         Group {
                                 if currentBook.status.name == "read" {
@@ -89,7 +88,6 @@ struct LibraryBookDetailView: View {
                             ])
                             .presentationDragIndicator(.visible)
                     }
-                    .sensoryFeedback(.increase,trigger: triggerSensoryFeedback)
                 }
                 
                 VStack {
@@ -97,6 +95,7 @@ struct LibraryBookDetailView: View {
                         
                         // Agregar cita
                         Button {
+                            AppHaptics.action()
                             showQuoteSheet.toggle()
                         } label: {
                             Label(String(localized: "quote_add"), systemImage: "quote.bubble")
@@ -206,6 +205,7 @@ struct LibraryBookDetailView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
+                        AppHaptics.warning()
                         showRemoveConfirmation = true
                     } label: {
                         Image(systemName: "trash")
@@ -452,8 +452,10 @@ struct LibraryBookDetailView: View {
             try await libraryViewModel.removeBook(
                 userBookId: currentBook.userBookId
             )
+            AppHaptics.success()
             dismiss()
         } catch {
+            AppHaptics.error()
             removeError = String(localized: "library_remove_error")
         }
     }

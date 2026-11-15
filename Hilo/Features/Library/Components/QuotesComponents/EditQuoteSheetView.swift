@@ -46,6 +46,7 @@ struct EditQuoteSheetView: View {
                         saveErrorMessage =
                             String(localized: "quote_update_error")
 
+                        AppHaptics.error()
                         showSaveError = true
                     }
                 }
@@ -71,6 +72,7 @@ struct EditQuoteSheetView: View {
 
     private func updateQuote() async throws {
         guard let input = checkInput() else {
+            AppHaptics.error()
             return
         }
 
@@ -85,6 +87,7 @@ struct EditQuoteSheetView: View {
             pageNumber: input.pageNumber
         )
 
+        AppHaptics.success()
         dismiss()
     }
 

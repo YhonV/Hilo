@@ -50,10 +50,18 @@ source += '''
         assert(vm.userBooks.first?.userBookId == a.userBookId)
         assert(vm.userBooks.first?.status.name == "read")
         let order = vm.userBooks.map(\\.userBookId)
+        let lastAction = vm.lastReadingAction
+        assert(lastAction != nil)
         LibraryService.fails = true
         do { try await vm.updateBookProgres(userBookId: c.userBookId, currentPage: 80); assertionFailure() } catch {}
         assert(vm.userBooks.map(\\.userBookId) == order)
         assert(vm.userBooks.last?.currentPage == 50)
+        assert(vm.lastReadingAction == lastAction)
+        LibraryService.fails = false
+        try await vm.updateBookProgres(userBookId: a.userBookId, currentPage: 100)
+        assert(vm.lastReadingAction == lastAction)
+        try await vm.updateBookProgres(userBookId: a.userBookId, currentPage: 90)
+        assert(vm.lastReadingAction == lastAction)
         LibraryService.rows = vm.userBooks
         try await vm.getUserBooks(userId: UUID())
         assert(vm.userBooks.map(\\.userBookId) == order)

@@ -7,6 +7,7 @@
 import SwiftUI
 
 struct RegisterView: View {
+    @Environment(AuthViewModel.self) private var authViewModel
     @State private var displayName: String = ""
     @State private var email: String = ""
     @State private var username: String = ""
@@ -212,8 +213,12 @@ struct RegisterView: View {
                                     do {
                                         try await register(email: email, password: password)
                                     } catch {
+                                        #if DEBUG
+                                        print("[Hilo/Profile] registration failed: \(UserService.profileErrorDiagnostic(error))")
+                                        #endif
                                         isLoading = false
                                         errorMessage = String(localized: "auth_sign_up_error")
+                                        AppHaptics.error()
                                         showError = true
                                     }
                                 }
@@ -261,6 +266,7 @@ struct RegisterView: View {
     func registerValidationForm(email: String, password: String) -> Bool {
         guard !email.isEmpty, !password.isEmpty, !username.isEmpty, !displayName.isEmpty else {
             errorMessage = "all_fields_required"
+            AppHaptics.error()
             showError = true
             isLoading = false
             return false
@@ -268,6 +274,7 @@ struct RegisterView: View {
         
         guard password == confirmPassword else {
             errorMessage = "passwords_dont_match"
+            AppHaptics.error()
             showError = true
             isLoading = false
             return false
@@ -300,6 +307,8 @@ struct RegisterView: View {
         )
         
         try await userService.createUser(user: userToBeCreate)
+        await authViewModel.reloadCurrentUser()
+        AppHaptics.success()
 
         defer { isLoading = false }
         clearFields()

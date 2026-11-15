@@ -28,7 +28,7 @@ struct ImageGradient: View {
         Rectangle()
             .fill(
                 LinearGradient(
-                    colors: colors,
+                    colors: colors.isEmpty ? [AppColors.primary, AppColors.accent, AppColors.primaryStrong] : colors,
                     startPoint: startPoint,
                     endPoint: endPoint
                 )
@@ -42,7 +42,10 @@ struct ImageGradient: View {
                 updateFor(image: image)
             }
             .onChange(of: image) { oldValue, newValue in
-                guard let newImage = newValue else { return }
+                guard let newImage = newValue else {
+                    colors = []
+                    return
+                }
                 updateFor(image: newImage)
             }
     }

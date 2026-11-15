@@ -53,6 +53,7 @@ struct LibraryBooksSectionView: View {
                 Spacer()
                 if !userLibraryBooks.isEmpty {
                     Button {
+                        AppHaptics.selection()
                         showsGrid.toggle()
                     } label: {
                         Label(showsGrid ? String(localized: "collection_show_carousel") : String(localized: "library_show_grid"),

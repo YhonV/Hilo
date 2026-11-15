@@ -137,6 +137,7 @@ private struct HomeReadingBookCard: View {
             }
 
             Button {
+                AppHaptics.action()
                 showsProgressEditor = true
             } label: {
                 Label(String(localized: "reading_update_progress"), systemImage: "book.pages")

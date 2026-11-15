@@ -1,0 +1,5 @@
+project_id = "Hilo"
+
+[functions.delete-account]
+# JWT is verified against Auth /user inside the function, never merely decoded.
+verify_jwt = false

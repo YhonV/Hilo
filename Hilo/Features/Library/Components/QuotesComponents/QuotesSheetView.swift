@@ -168,6 +168,7 @@ struct QuotesSheetView: View {
                         try await saveQuote()
                     } catch {
                         saveErrorMessage = String(localized: "quote_save_error")
+                        AppHaptics.error()
                         showSaveError = true
                         print("ERROR GUARDANDO CITA:", error)
                     }
@@ -182,6 +183,7 @@ struct QuotesSheetView: View {
     // MARK: - Guardar cita
     private func saveQuote() async throws {
         guard let input = checkInput() else {
+            AppHaptics.error()
             return
         }
 
@@ -195,6 +197,7 @@ struct QuotesSheetView: View {
             sourceType: sourceType
         )
 
+        AppHaptics.success()
         dismiss()
     }
 

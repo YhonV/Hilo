@@ -19,7 +19,6 @@ struct CalendarDayCell: View {
     private var dayNumber: Int {
         Calendar.autoupdatingCurrent.component(.day, from: date)
     }
-    @GestureState private var isPressed = false
     @State private var tapCount = 0
 
 
@@ -85,15 +84,19 @@ struct CalendarDayCell: View {
             .frame(height: 58)
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
-        .scaleEffect(isPressed ? 0.94 : 1)
-        .simultaneousGesture(
-            DragGesture(minimumDistance: 0)
-                .updating($isPressed) { _, state, _ in
-                    state = true
-                }
-        )
-        .animation(.smooth(duration: 0.2), value: isPressed)
+        .buttonStyle(CalendarDayButtonStyle())
         .sensoryFeedback(.selection, trigger: tapCount)
+    }
+}
+
+/// Native button press feedback leaves vertical drags to the parent ScrollView.
+private struct CalendarDayButtonStyle: ButtonStyle {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed && !reduceMotion ? 0.94 : 1)
+            .opacity(configuration.isPressed ? 0.8 : 1)
+            .animation(reduceMotion ? nil : .easeOut(duration: 0.15), value: configuration.isPressed)
     }
 }

@@ -13,14 +13,13 @@ final class ProfileViewModel {
 
     // MARK: - Services
 
-    private let storageService = StorageService()
     private let profileService = ProfileService()
 
 
     // MARK: - Profile
 
-    var avatarURL: URL?
-    var coverImage: UIImage?
+    let avatar = ProfileAvatar()
+    var coverImage: UIImage? { avatar.image }
 
 
     // MARK: - Basic stats
@@ -124,45 +123,13 @@ final class ProfileViewModel {
             isLoading = false
         }
 
-        async let avatarTask: Void = loadAvatar(userId: userId)
         async let statsTask: Void = loadBasicStats(userId: userId)
         async let currentTask: Void = loadCurrentlyReading(userId: userId)
-        _ = await (avatarTask, statsTask, currentTask)
+        _ = await (statsTask, currentTask)
         loadedUserID = userId
         lastLoadedAt = Date()
 //        await loadQuotes(userId: userId)
 //        await loadActivityStats(userId: userId)
-    }
-
-
-    // MARK: - Avatar
-
-    private func loadAvatar(userId: UUID) async {
-
-        do {
-
-            let url = try storageService.getAvatarURL(userId: userId)
-
-            guard let finalURL = URL(
-                string: "\(url.absoluteString)?v=\(Date().timeIntervalSince1970)"
-            ) else {
-                return
-            }
-
-            avatarURL = finalURL
-
-            let (data, _) = try await URLSession.shared.data(from: finalURL)
-
-            guard let image = UIImage(data: data) else {
-                return
-            }
-
-            coverImage = image
-
-        } catch {
-
-            print("Error cargando avatar:", error)
-        }
     }
 
 
