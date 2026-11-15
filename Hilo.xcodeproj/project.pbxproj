@@ -10,6 +10,8 @@
 		C24741FE3030E631000874F0 /* Storage in Frameworks */ = {isa = PBXBuildFile; productRef = C24741FD3030E631000874F0 /* Storage */; };
 		C24742003030E631000874F0 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = C24741FF3030E631000874F0 /* Supabase */; };
 		C2649141301056FC0079E2F8 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = C2649140301056FC0079E2F8 /* GoogleService-Info.plist */; };
+		C26644DE307D48B60093F7C6 /* Nuke in Frameworks */ = {isa = PBXBuildFile; productRef = C26644DD307D48B60093F7C6 /* Nuke */; };
+		C26644E0307D48B60093F7C6 /* NukeUI in Frameworks */ = {isa = PBXBuildFile; productRef = C26644DF307D48B60093F7C6 /* NukeUI */; };
 		C27445CA2F2E954300ED3B42 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = C27445C92F2E954300ED3B42 /* FirebaseAnalytics */; };
 		C27445CC2F2E954300ED3B42 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = C27445CB2F2E954300ED3B42 /* FirebaseAuth */; };
 		C27445CE2F2E954300ED3B42 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = C27445CD2F2E954300ED3B42 /* FirebaseFirestore */; };
@@ -49,22 +51,32 @@
 			files = (
 				C27445CA2F2E954300ED3B42 /* FirebaseAnalytics in Frameworks */,
 				C27445D02F2E954300ED3B42 /* FirebaseStorage in Frameworks */,
+				C26644DE307D48B60093F7C6 /* Nuke in Frameworks */,
 				C24742003030E631000874F0 /* Supabase in Frameworks */,
 				C27445CC2F2E954300ED3B42 /* FirebaseAuth in Frameworks */,
 				C24741FE3030E631000874F0 /* Storage in Frameworks */,
 				C27445CE2F2E954300ED3B42 /* FirebaseFirestore in Frameworks */,
+				C26644E0307D48B60093F7C6 /* NukeUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		C26644DC307D48B60093F7C6 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		C27445AF2F2E89EC00ED3B42 = {
 			isa = PBXGroup;
 			children = (
 				C27445BA2F2E89EC00ED3B42 /* Hilo */,
 				C27445B92F2E89EC00ED3B42 /* Products */,
 				C2649140301056FC0079E2F8 /* GoogleService-Info.plist */,
+				C26644DC307D48B60093F7C6 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -102,6 +114,8 @@
 				C27445CF2F2E954300ED3B42 /* FirebaseStorage */,
 				C24741FD3030E631000874F0 /* Storage */,
 				C24741FF3030E631000874F0 /* Supabase */,
+				C26644DD307D48B60093F7C6 /* Nuke */,
+				C26644DF307D48B60093F7C6 /* NukeUI */,
 			);
 			productName = Hilo;
 			productReference = C27445B82F2E89EC00ED3B42 /* Hilo.app */;
@@ -134,6 +148,7 @@
 			packageReferences = (
 				C27445C82F2E954300ED3B42 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				C24741FC3030E631000874F0 /* XCRemoteSwiftPackageReference "supabase-swift" */,
+				C26644D9307D46D70093F7C6 /* XCRemoteSwiftPackageReference "Nuke" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = C27445B92F2E89EC00ED3B42 /* Products */;
@@ -396,6 +411,14 @@
 				minimumVersion = 2.5.1;
 			};
 		};
+		C26644D9307D46D70093F7C6 /* XCRemoteSwiftPackageReference "Nuke" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/kean/Nuke";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 13.2.0;
+			};
+		};
 		C27445C82F2E954300ED3B42 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
@@ -416,6 +439,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = C24741FC3030E631000874F0 /* XCRemoteSwiftPackageReference "supabase-swift" */;
 			productName = Supabase;
+		};
+		C26644DD307D48B60093F7C6 /* Nuke */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C26644D9307D46D70093F7C6 /* XCRemoteSwiftPackageReference "Nuke" */;
+			productName = Nuke;
+		};
+		C26644DF307D48B60093F7C6 /* NukeUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C26644D9307D46D70093F7C6 /* XCRemoteSwiftPackageReference "Nuke" */;
+			productName = NukeUI;
 		};
 		C27445C92F2E954300ED3B42 /* FirebaseAnalytics */ = {
 			isa = XCSwiftPackageProductDependency;

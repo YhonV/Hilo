@@ -16,12 +16,27 @@ class QuoteService {
         try await supabase.from("quotes").insert(request).select().single().execute().value
     }
     
-    // MARK: -  Obtener todos las citas del usuario
+    // MARK: -  Obtener todos las citas asociadas a un libro
     func getQuotes(userBookId: UUID) async throws -> [Quote] {
         let response: [Quote] = try await supabase
             .from("quotes")
             .select()
             .eq("user_book_id", value: userBookId)
+            .order("created_at", ascending: false)
+            .execute()
+            .value
+        return response
+    }
+    
+    // MARK: -  Obtener todos las citas del usuario
+    func getAllQuotes(userId: UUID) async throws -> [Quote] {
+        let response: [Quote] = try await supabase
+            .from("quotes")
+            .select("""
+                *,
+                user_book!inner(user_id)
+                """)
+            .eq("user_book.user_id", value: userId)
             .order("created_at", ascending: false)
             .execute()
             .value

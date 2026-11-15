@@ -27,7 +27,7 @@ struct LibraryStatus: Decodable {
     let name: String
 }
 
-struct UserLibraryBook: Decodable {
+nonisolated struct UserLibraryBook: Decodable {
     let userBookId: UUID
     let userId: UUID
     let bookId: UUID
@@ -96,10 +96,14 @@ struct LibraryBookEdition: Decodable {
 }
 
 struct UpdateBookProgressParams: Encodable {
-    let currentPage: Int
+    let userBookId: UUID
+    let newPage: Int
+    let logDate: String
 
     enum CodingKeys: String, CodingKey {
-        case currentPage = "current_page"
+        case userBookId = "p_user_book_id"
+        case newPage = "p_new_page"
+        case logDate = "p_log_date"
     }
 }
 
@@ -139,26 +143,43 @@ nonisolated struct FinishReadingResponse: Decodable {
     }
 }
 
+enum BookSaveError: LocalizedError {
+    case missingEdition
+
+    var errorDescription: String? {
+        switch self {
+        case .missingEdition:
+            return "Debes seleccionar una edición antes de guardar el libro."
+        }
+    }
+}
+
 final class LibraryService {
     static let shared = LibraryService()
     init() {}
     
     // MARK: - Guardar libro del usuario
     func saveBookToLibrary(book: Book, status: BookStatus) async throws {
-
+        guard let editionId = book.editionId,
+              editionId.hasPrefix("/books/OL"),
+              editionId.hasSuffix("M") else {
+            throw BookSaveError.missingEdition
+        }
+        
         let params = SaveBookParams(
-            p_google_books_id: book.googleBookId,
+            p_external_id: book.externalId,
             p_title: book.title,
             p_status: status.rawValue,
             p_description: book.description,
             p_authors: book.authors,
-            p_genres: book.genre,
+            p_genres: book.genre.map(\.rawValue),
             p_isbn: book.isbn,
             p_publisher: book.editorial,
             p_language: book.language,
             p_published_date: book.publishedDate,
             p_number_of_pages: book.numberOfPages,
-            p_cover_url: book.cover
+            p_cover_url: book.cover,
+            p_edition_id: editionId,
         )
 
         try await supabase
@@ -173,9 +194,9 @@ final class LibraryService {
             .from("book_editions")
             .select("edition_id")
 
-        if !book.googleBookId.isEmpty {
+        if !book.externalId.isEmpty {
             editionQuery = editionQuery
-                .eq("google_books_id", value: book.googleBookId)
+                .eq("external_id", value: book.externalId)
         } else if let isbn = book.isbn {
             editionQuery = editionQuery
                 .eq("isbn", value: isbn)
@@ -198,6 +219,7 @@ final class LibraryService {
             .select("status_id")
             .eq("user_id", value: userId.uuidString)
             .eq("edition_id", value: edition.editionId.uuidString)
+            .is("deleted_at", value: nil)
             .limit(1)
             .execute()
             .value
@@ -258,18 +280,31 @@ final class LibraryService {
                 )
             """)
             .eq("user_id", value: userId)
+            .is("deleted_at", value: nil)
             .execute()
             .value
         return response
     }
     
     // MARK: - Actualizar progreso de libros
-    func updateBookProgress(userBookId: UUID,currentPage: Int) async throws {
-        let params = UpdateBookProgressParams(currentPage: currentPage)
+    func updateBookProgress(userBookId: UUID, currentPage: Int) async throws {
+
+        let formatter = DateFormatter()
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = .current
+        formatter.dateFormat = "yyyy-MM-dd"
+
+        let logDate = formatter.string(from: Date())
+
+        let params = UpdateBookProgressParams(
+            userBookId: userBookId,
+            newPage: currentPage,
+            logDate: logDate
+        )
+
         try await supabase
-            .from("user_book")
-            .update(params)
-            .eq("user_book_id", value: userBookId)
+            .rpc("update_book_progress", params: params)
             .execute()
     }
     
@@ -306,6 +341,61 @@ final class LibraryService {
             .value
 
         return response
+    }
+    
+    //MARK: - Obtener libro de un usuario 
+    func getUserBook(userBookId: UUID) async throws -> UserLibraryBook {
+
+        let response: UserLibraryBook = try await supabase
+            .from("user_book")
+            .select("""
+                user_book_id,
+                user_id,
+                book_id,
+                edition_id,
+                status_id,
+                current_page,
+                started_at,
+                finished_at,
+                books (
+                    title,
+                    book_authors (
+                        authors (
+                            name
+                        )
+                    )
+                ),
+                book_editions (
+                    isbn,
+                    number_of_pages,
+                    publisher,
+                    published_date,
+                    cover_url
+                ),
+                status (
+                    name
+                )
+            """)
+            .eq("user_book_id", value: userBookId)
+            .is("deleted_at", value: nil)
+            .single()
+            .execute()
+            .value
+
+        return response
+    }
+    
+    // MARK: - Quitar libro de la biblioteca
+    func removeBookFromLibrary(userBookId: UUID) async throws {
+        try await supabase
+            .from("user_book")
+            .update([
+                "deleted_at": ISO8601DateFormatter().string(from: Date())
+            ])
+            .eq("user_book_id", value: userBookId)
+            .eq("user_id", value: supabase.auth.currentUser?.id ?? UUID())
+            .is("deleted_at", value: nil)
+            .execute()
     }
 }
     

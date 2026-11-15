@@ -83,4 +83,30 @@ final class LibraryViewModel {
             return ""
         }
     }
+    
+    func getUserBook(userBookId: UUID) async throws -> UserLibraryBook {
+
+        let book = try await libraryService.getUserBook(
+            userBookId: userBookId
+        )
+
+        if let index = userBooks.firstIndex(where: {
+            $0.userBookId == book.userBookId
+        }) {
+            userBooks[index] = book
+        } else {
+            userBooks.append(book)
+        }
+
+        return book
+    }
+    
+    // MARK: - Quitar libro de la biblioteca
+    func removeBook(userBookId: UUID) async throws {
+        try await libraryService.removeBookFromLibrary(userBookId: userBookId)
+
+        userBooks.removeAll {
+            $0.userBookId == userBookId
+        }
+    }
 }

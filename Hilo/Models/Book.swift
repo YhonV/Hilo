@@ -7,14 +7,14 @@
 import Foundation
 
 struct Book: Codable, Identifiable {
-    var googleBookId: String
+    var externalId: String
     var id: String {
-            googleBookId
+        externalId
         }
     var title: String
     var authors: [String]
     var cover: String
-    var genre: [String]
+    var genre: [BookGenre]
     var description: String?
     var publishedDate: String?
     var numberOfPages: Int?
@@ -23,4 +23,5 @@ struct Book: Codable, Identifiable {
     var totalReviews: Int
     var editorial: String
     var language: String
+    var editionId: String?
 }

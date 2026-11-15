@@ -14,6 +14,7 @@ final class QuoteViewModel {
     
     // MARK: - Objetos
     var quotes: [Quote] = []
+    var userQuotes: [Quote] = []
     
     // MARK: - Guardar citas
     func saveQuote(userBookId: UUID, content: String, pageNumber: Int?, sourceType: SourceTypeQuote) async throws {
@@ -50,5 +51,10 @@ final class QuoteViewModel {
         }
 
         quotes[index] = updatedQuote
+    }
+    
+    // MARK: - Obtener todas las citas del usuario
+    func getAllQuotes(userId: UUID) async throws {
+        userQuotes = try await quoteService.getAllQuotes(userId: userId)
     }
 }
